@@ -30,6 +30,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   cycling on its own timer (staggered phases), so all four can be compared side by
   side. Space pauses, R refires all, C clears, 1-4 or a click fires one cell, and
   the header reports FPS, active count and whether the C++ streak layer is loaded.
+  Reachable from the demo with **G** (Esc goes back).
 - **`cpp/build_profile.json`** — trimmed bindings cut the godot-cpp build from
   ~40 minutes to ~1 minute on 2 cores.
 - godot-cpp is pinned to a 4.7-era commit (`fba3efa`); newer `master` targets the
@@ -39,6 +40,9 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 - `tools/package.sh` excludes extension binaries by default (use
   `--with-extension` for a platform-specific archive) and takes `--help`.
+- `tools/package.sh` now also writes `vfx_2d-<version>-project.zip`: the complete
+  runnable project (demo + gallery + tests), so the demo scenes are not hidden
+  behind the repo. The addon-only archive is unchanged (`--addon-only` skips it).
 - The test suite gains a C++ section (13 checks) that skips cleanly when the
   library is not built, and prints `cpp-streak-field: available|absent` so CI can
   assert which path was exercised.

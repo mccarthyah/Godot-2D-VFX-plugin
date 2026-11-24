@@ -7,13 +7,14 @@ extends Node2D
 ## nothing to drive: the cells cycle by themselves.
 ##
 ## [b]Space[/b] pauses the timers, [b]R[/b] fires all four immediately,
-## [b]C[/b] clears running effects, and [b]1[/b]-[b]4[/b] or a click inside a cell
-## fires just that effect.
+## [b]C[/b] clears running effects, [b]1[/b]-[b]4[/b] or a click inside a cell fires
+## just that effect, and [b]Esc[/b] returns to the interactive demo.
 
 const MARGIN: float = 24.0
 const GAP: float = 20.0
 const HEADER_HEIGHT: float = 104.0
 const GRID_STEP: float = 64.0
+const DEMO_SCENE: String = "res://demo/main.tscn"
 
 const BACKGROUND := Color(0.045, 0.055, 0.075)
 const GRID_COLOR := Color(0.09, 0.11, 0.15)
@@ -113,6 +114,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			_fire(2)
 		KEY_4:
 			_fire(3)
+		KEY_ESCAPE:
+			if ResourceLoader.exists(DEMO_SCENE):
+				get_tree().change_scene_to_file(DEMO_SCENE)
 
 
 func _draw() -> void:
@@ -137,6 +141,8 @@ func _draw_header() -> void:
 			26, TITLE_COLOR)
 	var hint: String = "Space pause · R refire all · C clear · 1-4 or click: fire one cell"
 	hint += "   ·   every cell cycles on its own timer"
+	if ResourceLoader.exists(DEMO_SCENE):
+		hint += "   ·   Esc: back to the demo"
 	_draw_text(hint, Vector2(MARGIN, HEADER_HEIGHT - 24.0), 14, NOTE_COLOR)
 
 

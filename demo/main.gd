@@ -2,7 +2,9 @@ extends Node2D
 ## Interactive sandbox for the 2D VFX Kit.
 ##
 ## Left click anywhere to pop a hit spark, use the buttons (or keys 1-4) to fire
-## each effect, and press Space to toggle the idle auto-demo.
+## each effect, and press Space to toggle the idle auto-demo. Press G (or the
+## "Effect gallery" button) for demo/gallery.tscn, which shows all four side by
+## side on a labelled grid.
 
 const GRID_STEP: float = 64.0
 const TARGET_POSITION := Vector2(930.0, 460.0)
@@ -11,6 +13,7 @@ const SPARK_SPOT := Vector2(380.0, 300.0)
 const EXPLOSION_SPOT := Vector2(620.0, 300.0)
 const LIGHTNING_FROM := Vector2(280.0, 120.0)
 const AUTO_DEMO_INTERVAL: float = 1.2
+const GALLERY_SCENE: String = "res://demo/gallery.tscn"
 
 var _rng := RandomNumberGenerator.new()
 var _mouse_position := Vector2.ZERO
@@ -70,6 +73,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				_on_start_cooldown_ring()
 			KEY_C:
 				VFX2D.stop_all()
+			KEY_G:
+				_open_gallery()
 			KEY_SPACE:
 				_auto_demo = not _auto_demo
 				_auto_demo_clock = 0.0
@@ -124,6 +129,11 @@ func _on_spawn_lightning() -> void:
 	VFX2D.lightning(LIGHTNING_FROM, target, {"branches": 3, "duration": 0.35})
 
 
+func _open_gallery() -> void:
+	if ResourceLoader.exists(GALLERY_SCENE):
+		get_tree().change_scene_to_file(GALLERY_SCENE)
+
+
 func _on_start_cooldown_ring() -> void:
 	if is_instance_valid(_ring):
 		_ring.queue_free()
@@ -167,6 +177,8 @@ func _build_hud() -> void:
 
 	var hint := Label.new()
 	hint.text = "Click: hit spark   ·   1/2/3/4: effects   ·   Space: auto demo   ·   C: clear"
+	if ResourceLoader.exists(GALLERY_SCENE):
+		hint.text += "   ·   G: effect gallery"
 	hint.add_theme_color_override("font_color", Color(0.65, 0.78, 0.9))
 	column.add_child(hint)
 
@@ -177,6 +189,8 @@ func _build_hud() -> void:
 	buttons.add_child(_make_button("Explosion", _on_spawn_explosion))
 	buttons.add_child(_make_button("Lightning", _on_spawn_lightning))
 	buttons.add_child(_make_button("Cooldown ring", _on_start_cooldown_ring))
+	if ResourceLoader.exists(GALLERY_SCENE):
+		buttons.add_child(_make_button("Effect gallery", _open_gallery))
 
 	_status_label = Label.new()
 	_status_label.add_theme_color_override("font_color", Color(0.52, 0.64, 0.78))

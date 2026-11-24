@@ -55,12 +55,19 @@ registers the `VFX2D` autoload for you (unless your project already defines one)
 ### Option B — release archive
 
 Grab `vfx_2d-<version>.zip` from the releases page and extract it into your
-project root. It already contains the `addons/vfx_2d/` path.
+project root. It already contains the `addons/vfx_2d/` path. That archive is
+addon-only — no demo scenes.
 
-### Option C — build the archive yourself
+Want the demo and the effect gallery too? Take **`vfx_2d-<version>-project.zip`**:
+it is the complete runnable project (`project.godot`, `addons/`, `demo/`,
+`tests/`). Open it in Godot, press **F5** for the demo, then **G** for the gallery.
+
+### Option C — build the archives yourself
 
 ```bash
-./tools/package.sh            # -> dist/vfx_2d-0.1.0.zip
+./tools/package.sh              # -> dist/vfx_2d-<version>.zip          (addon)
+                                # -> dist/vfx_2d-<version>-project.zip  (demo + gallery)
+./tools/package.sh --addon-only # skip the project archive
 ```
 
 ### Using it without the editor plugin
@@ -257,6 +264,7 @@ scene):
 - **1 / 2 / 3 / 4** — hit spark, explosion, lightning, cooldown ring
 - **Space** — toggle the idle auto-demo
 - **C** — clear all running effects
+- **G** — the effect gallery
 
 The HUD shows FPS and the live active-effect count.
 
@@ -270,10 +278,17 @@ by side while tuning.
 godot --path . res://demo/gallery.tscn   # or open demo/gallery.tscn and press F6
 ```
 
+It is also one key away while the demo is running: press **G** (or the *Effect
+gallery* button) to jump to it, and **Esc** to come back. In the editor both live
+in the `demo/` folder of the FileSystem dock — if you only ever downloaded the
+addon archive, there is no `demo/` in it, which is why the gallery appears
+"missing": use the repo or the `-project.zip` archive instead.
+
 - **Space** — pause/resume the timers
 - **R** — fire all four immediately
 - **C** — clear running effects
 - **1-4 or click a cell** — fire that single effect
+- **Esc** — back to the interactive demo
 
 The header shows FPS, the live active count, and whether the optional C++ streak
 layer is loaded, so you can A/B density by raising `streak_count` on an effect and
