@@ -85,8 +85,8 @@ jobs:
             exit 1
           fi
           checks="$(grep -oE '[0-9]+ checks' /tmp/tests.log | tail -n 1 | cut -d' ' -f 1)"
-          if [ -z "${checks}" ] || [ "${checks}" -lt 200 ]; then
-            echo "::error::Expected at least 200 checks, got '${checks}'"
+          if [ -z "${checks}" ] || [ "${checks}" -lt 210 ]; then
+            echo "::error::Expected at least 210 checks, got '${checks}'"
             grep -E "VFX TESTS|SCRIPT ERROR|Parse Error|ERROR:" /tmp/tests.log | tail -n 8 | report_log
             exit 1
           fi

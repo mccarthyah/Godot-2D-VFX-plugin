@@ -66,6 +66,7 @@ func _run_all() -> void:
 	await _test_v040_effects()
 	await _test_persistent_effects()
 	await _test_persistent_chaos()
+	await _test_gallery_pages()
 	await _test_chaos_knob(effects)
 	await _test_scene_change_pooling()
 	await _test_streak_field()
@@ -399,6 +400,62 @@ func _test_persistent_chaos() -> void:
 		_check(is_equal_approx(float(node.get("chaos")), 1.0),
 				"%s: chaos can be driven to 1.0" % effect_name)
 		node.free()
+
+
+func _test_gallery_pages() -> void:
+	# The gallery used to fire all sixteen effects at once, which is a stress
+	# test rather than a gallery. It is paged now: a page may only spawn a
+	# handful of effects, and switching pages clears what was running.
+	var gallery: Node = (load("res://demo/gallery.tscn") as PackedScene).instantiate()
+	# Pause before the node enters the tree: otherwise a slow first frame lets a
+	# cell tick on its own and the counts below stop meaning anything.
+	gallery.call("set_paused", true)
+	add_child(gallery)
+	await get_tree().process_frame
+	var pages := int(gallery.call("get_page_count"))
+	_check(pages >= 3, "gallery: split into pages (got %d)" % pages)
+	if pages < 3:
+		gallery.queue_free()
+		await get_tree().process_frame
+		return
+	_check(int(gallery.call("get_cells_on_page")) <= 6,
+			"gallery: a page holds a few cells, not everything (%d)"
+					% int(gallery.call("get_cells_on_page")))
+
+	_check(bool(gallery.call("is_paused")), "gallery: timers can be paused for inspection")
+
+	var peak := 0
+	for page_index in pages:
+		gallery.call("set_page", page_index)
+		await get_tree().process_frame
+		_check(int(gallery.call("get_page")) == page_index,
+				"gallery: set_page(%d) sticks" % page_index)
+		var cells := int(gallery.call("get_cells_on_page"))
+		for cell in cells:
+			gallery.call("_fire", cell)
+			await get_tree().process_frame
+		peak = maxi(peak, VFX2D.get_active_count())
+		_check(VFX2D.get_active_count() <= cells,
+				"gallery: page %d keeps at most one effect per cell (active=%d)"
+						% [page_index + 1, VFX2D.get_active_count()])
+	_check(peak <= 6, "gallery: no page ever runs more than a few effects (peak=%d)" % peak)
+
+	# Firing an index that does not exist on this page must be ignored.
+	var before := VFX2D.get_active_count()
+	gallery.call("_fire", 99)
+	_check(VFX2D.get_active_count() == before, "gallery: out-of-range cells are ignored")
+
+	gallery.call("set_page", 0)
+	await get_tree().process_frame
+	_check(int(gallery.call("get_page")) == 0, "gallery: wrapping back to the first page works")
+	_check(VFX2D.get_persistent_count() == 0,
+			"gallery: switching pages clears persistent modifiers (%d)"
+					% VFX2D.get_persistent_count())
+
+	gallery.queue_free()
+	await _wait(0.1)
+	VFX2D.stop_all()
+	await get_tree().process_frame
 
 
 func _test_chaos_knob(effects: Dictionary) -> void:

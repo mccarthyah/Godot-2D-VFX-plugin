@@ -526,12 +526,25 @@ The HUD shows FPS, the live active-effect count and how many persistent modifier
 are attached. Every new effect also has a button in the HUD, so nothing here is
 keyboard-only.
 
-### Gallery: every effect at once
+### Gallery: every effect, four themed pages
 
-`demo/gallery.tscn` is the "just show me all of them" scene: a 4×4 grid with one
-labelled cell per effect — all sixteen — each firing on its own timer so you can
-judge them side by side while tuning. The trail cell has a small flyer orbiting
-inside it, so the ribbon has something to follow.
+`demo/gallery.tscn` is the "just show me all of them" scene, paged so it stays
+readable and cheap: **Impacts**, **Combat**, **Magic** and **Motion**, four
+labelled cells per page, each firing on its own timer. Sixteen effects firing at
+once is a stress test — on a laptop it drops frames and the smaller shapes get
+lost — so the gallery only ever runs a few at a time, which also makes the FPS
+counter mean something while you tune.
+
+| Page | Effects |
+| --- | --- |
+| 1 · Impacts | hit spark, explosion, debris burst, shockwave |
+| 2 · Combat | slash arc, muzzle flash, lightning, cooldown ring |
+| 3 · Magic | heal sparkle, rune circle, portal, implosion |
+| 4 · Motion | smoke puff, ripple, beam, trail |
+
+The trail cell has a small flyer orbiting inside it, so the ribbon has something
+to follow. Switching pages clears whatever was running, so a beam or portal never
+bleeds onto the next page.
 
 ```bash
 godot --path . res://demo/gallery.tscn   # or open demo/gallery.tscn and press F6
@@ -543,10 +556,11 @@ in the `demo/` folder of the FileSystem dock — if you only ever downloaded the
 addon archive, there is no `demo/` in it, which is why the gallery appears
 "missing": use the repo or the `-project.zip` archive instead.
 
+- **← / →**, **A / D**, **Tab**, or a click on a page tab — change page
+- **1-4 or click a cell** — fire that single cell
 - **Space** — pause/resume the timers
-- **R** — fire everything immediately
+- **R** — fire the whole page immediately
 - **C** — clear running effects (one-shots and modifiers)
-- **1-0, Q W E R T Y or click a cell** — fire that single cell
 - **Esc** — back to the interactive demo
 
 The header shows FPS, the live active count, the persistent-modifier count, and
@@ -567,8 +581,10 @@ cooldown fill/drain behaviour, option overrides, pool reuse of the same instance
 burst handling, `stop_all()`, lightning endpoint geometry, per-effect geometry for
 the newer effects, and the persistent modifiers — `beam()` opening, re-aiming and
 fading, `portal()` open → hold → close, `rune_circle()` fill and self-close,
-`trail()` history recording and self-cleanup when its target dies. The process
-exits non-zero on failure, which is what CI uses.
+`trail()` history recording and self-cleanup when its target dies. The gallery is
+covered too: it must stay paged (a page holds a handful of cells, firing a cell
+spawns one effect, switching pages clears modifiers). The process exits non-zero
+on failure, which is what CI uses.
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) downloads **stock**
 Godot 4.2, 4.3 and 4.7.2 Linux builds, imports the project, runs the test scene,
@@ -584,7 +600,7 @@ The separate [`GDExtension` workflow](.github/workflows/gdextension.yml) builds
 the C++ streak field against stock Godot 4.7.2, then runs the same suite and
 **fails if the extension silently failed to load** — the C++ tests print
 `cpp-streak-field: available|absent`, and the workflow asserts which one ran.
-Same suite, both paths: **216 checks** with the extension, **204** without, zero
+Same suite, both paths: **231 checks** with the extension, **219** without, zero
 engine errors either way. Every one-shot — all eleven — is run through its full
 lifecycle, and every effect (one-shots and modifiers) has its `chaos` knob
 exercised.
@@ -620,7 +636,7 @@ cpp/                         # Optional C++ streak field (GDExtension)
   SConstruct                 # Builds into addons/vfx_2d/bin/
 tools/build_extension.sh     # Fetches godot-cpp, builds, writes .gdextension
 demo/                        # Interactive sandbox + effect gallery
-  gallery.tscn               # All sixteen effects, side by side, on timers
+  gallery.tscn               # All sixteen effects on four themed pages
 tests/test_runner.tscn       # Headless test suite
 tools/package.sh             # Builds dist/vfx_2d-<version>.zip
 ```

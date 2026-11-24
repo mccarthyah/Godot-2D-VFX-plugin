@@ -4,6 +4,24 @@ All notable changes to the 2D VFX Kit are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] — 2026-11-24
+
+### Changed
+
+- **The gallery is paged.** Sixteen effects firing at once made the gallery drop
+  frames, and the smaller shapes were hard to read next to explosions. It now
+  has four themed pages of four cells each — **Impacts**, **Combat**, **Magic**,
+  **Motion** — so only a few effects run at a time and the FPS counter stays
+  meaningful.
+  - Page tabs in the header, clickable; **←/→**, **A/D**, **Tab** or
+    **PageUp/PageDown** also page through. **1-4** fires a single cell, **R**
+    refires the page.
+  - Switching pages clears running effects, so a beam or portal never bleeds
+    into the next page.
+  - `set_paused()` / `is_paused()` are public now, and the suite checks that
+    pages stay small: one effect per cell fired, and no page exceeds a handful.
+- Tests: **231 checks** with the extension, **219** without.
+
 ## [0.4.0] — 2026-11-24
 
 ### Added
@@ -164,6 +182,7 @@ out of in a few lines.
   import, headless tests, demo smoke run on Godot 4.2, 4.3 and 4.7.2.
 - **Packaging** — `tools/package.sh` builds `dist/vfx_2d-<version>.zip`.
 
+[0.4.1]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.4.1
 [0.4.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.4.0
 [0.3.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.3.0
 [0.2.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.2.0

@@ -6,7 +6,7 @@ extends Node2D
 ## the slash arc and debris burst, R/I the ripple and implosion, and B/P/U/T
 ## toggle the persistent modifiers: beam, portal, rune circle and trail. Press G
 ## (or the "Effect gallery" button) for demo/gallery.tscn, which shows all sixteen
-## side by side on a labelled grid.
+## effects as labelled cells across four themed pages, so only a few run at once.
 
 const GRID_STEP: float = 64.0
 const TARGET_POSITION := Vector2(930.0, 460.0)
