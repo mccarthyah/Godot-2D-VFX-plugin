@@ -17,7 +17,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        godot: ["4.3-stable", "4.4-stable"]
+        # 4.2 is the documented floor, 4.7.2 is the current stable release.
+        godot: ["4.2-stable", "4.3-stable", "4.7.2-stable"]
     env:
       GODOT_VERSION: ${{ matrix.godot }}
     steps:
@@ -50,7 +51,7 @@ jobs:
         run: |
           set -o pipefail
           "$GODOT_BIN" --headless --path . res://tests/test_runner.tscn 2>&1 | tee /tmp/tests.log
-          if grep -E "SCRIPT ERROR|Parse Error|Failed to load" /tmp/tests.log; then
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/tests.log; then
             echo "::error::GDScript errors were reported during the test run"
             exit 1
           fi
@@ -78,7 +79,7 @@ jobs:
         run: |
           set -o pipefail
           "$GODOT_BIN" --headless --path . --fixed-fps 60 --quit-after 300 2>&1 | tee /tmp/demo.log
-          if grep -E "SCRIPT ERROR|Parse Error|Failed to load" /tmp/demo.log; then
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/demo.log; then
             echo "::error::GDScript errors were reported while running the demo scene"
             exit 1
           fi

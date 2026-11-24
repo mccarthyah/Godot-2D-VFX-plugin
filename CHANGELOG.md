@@ -30,7 +30,7 @@ out of in a few lines.
 - **Headless test suite** — `tests/test_runner.tscn` covering effect lifecycles,
   pooling, option overrides, cooldown behaviour, and lightning geometry.
 - **CI** — GitHub Actions matrix against stock Godot 4.3/4.4 Linux builds:
-  import, headless tests, demo smoke run.
+  import, headless tests, demo smoke run on Godot 4.2, 4.3 and 4.7.2.
 - **Packaging** — `tools/package.sh` builds `dist/vfx_2d-<version>.zip`.
 
 [0.1.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.1.0

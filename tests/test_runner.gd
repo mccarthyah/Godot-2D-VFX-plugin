@@ -6,6 +6,10 @@ extends Node
 ## godot --headless --path . res://tests/test_runner.tscn
 ## [/codeblock]
 ## Exits with code 0 when every check passes and 1 when anything fails.
+##
+## Headless Godot still issues draw notifications, so spawning each effect here
+## also executes its `_draw()` code (arcs, polylines, particle setup). Any engine
+## error raised from drawing makes `grep -E "ERROR:"` fail the CI job.
 
 const HIT_SPARK_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/hit_spark.tscn")
 const EXPLOSION_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/explosion.tscn")

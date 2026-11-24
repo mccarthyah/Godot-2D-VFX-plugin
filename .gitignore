@@ -29,3 +29,6 @@ dist/
 
 # macOS
 .DS_Store
+
+# Files pulled from connected apps (Google Drive etc.) land here
+/google_drive/

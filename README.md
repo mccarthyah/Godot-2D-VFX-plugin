@@ -37,7 +37,7 @@ built for **game feel plumbing**:
 
 ## Requirements
 
-- Godot **4.2 or newer** (CI runs against stock 4.3 and 4.4 Linux builds)
+- Godot **4.2 or newer** (CI runs against stock 4.2, 4.3 and 4.7.2 Linux builds)
 - Any renderer; the demo uses GL Compatibility for the widest support
 
 ## Installation
@@ -244,9 +244,15 @@ cooldown fill/drain behaviour, option overrides, pool reuse of the same instance
 burst handling, `stop_all()`, and lightning endpoint geometry. The process exits
 non-zero on failure, which is what CI uses.
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) downloads a **stock**
-Godot 4.3 and 4.4 Linux build, imports the project, runs the test scene, then
-smoke-runs the demo scene and fails on any `SCRIPT ERROR` / parse error.
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) downloads **stock**
+Godot 4.2, 4.3 and 4.7.2 Linux builds, imports the project, runs the test scene,
+then smoke-runs the demo scene. A run fails on any `SCRIPT ERROR`, parse error or
+engine `ERROR:` line.
+
+Headless still issues draw notifications, so `_draw()` really runs for every
+effect during the suite — the procedural geometry (arcs, polylines, layered
+discs) is exercised, not just the timing and pooling logic. What CI cannot judge
+is how it *looks*; that needs the demo on a real display.
 
 ## Repository layout
 
