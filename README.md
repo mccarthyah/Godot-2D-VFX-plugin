@@ -260,6 +260,25 @@ scene):
 
 The HUD shows FPS and the live active-effect count.
 
+### Gallery: every effect at once
+
+`demo/gallery.tscn` is the "just show me all of them" scene: a 2×2 grid with one
+labelled cell per effect, each firing on its own timer so you can judge them side
+by side while tuning.
+
+```bash
+godot --path . res://demo/gallery.tscn   # or open demo/gallery.tscn and press F6
+```
+
+- **Space** — pause/resume the timers
+- **R** — fire all four immediately
+- **C** — clear running effects
+- **1-4 or click a cell** — fire that single effect
+
+The header shows FPS, the live active count, and whether the optional C++ streak
+layer is loaded, so you can A/B density by raising `streak_count` on an effect and
+watching the frame rate. CI smoke-runs the gallery on every supported engine.
+
 ## Tests and CI
 
 The suite runs the effects for real, in a headless engine:
@@ -307,7 +326,8 @@ cpp/                         # Optional C++ streak field (GDExtension)
   src/register_types.cpp     # Class registration / entry point
   SConstruct                 # Builds into addons/vfx_2d/bin/
 tools/build_extension.sh     # Fetches godot-cpp, builds, writes .gdextension
-demo/                        # Interactive sandbox scene
+demo/                        # Interactive sandbox + effect gallery
+  gallery.tscn               # All four effects, side by side, on timers
 tests/test_runner.tscn       # Headless test suite
 tools/package.sh             # Builds dist/vfx_2d-<version>.zip
 ```

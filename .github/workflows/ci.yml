@@ -84,6 +84,18 @@ jobs:
             exit 1
           fi
 
+      - name: Gallery smoke run
+        run: |
+          set -o pipefail
+          # The gallery cycles all four effects, so this exercises every spawn
+          # path (and the C++ streak layer when present) without any input.
+          "$GODOT_BIN" --headless --path . res://demo/gallery.tscn \
+            --fixed-fps 60 --quit-after 400 2>&1 | tee /tmp/gallery.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/gallery.log; then
+            echo "::error::GDScript errors were reported while running the gallery scene"
+            exit 1
+          fi
+
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v7
@@ -92,4 +104,5 @@ jobs:
           path: |
             /tmp/tests.log
             /tmp/demo.log
+            /tmp/gallery.log
           if-no-files-found: ignore

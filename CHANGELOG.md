@@ -26,6 +26,10 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   and can bind a specific engine build's API (`--godot`).
 - **`GDExtension` workflow** — builds the extension against stock Godot 4.7.2,
   then runs the suite and fails if the extension silently failed to load.
+- **`demo/gallery.tscn`** — a labelled 2×2 gallery with one cell per effect, each
+  cycling on its own timer (staggered phases), so all four can be compared side by
+  side. Space pauses, R refires all, C clears, 1-4 or a click fires one cell, and
+  the header reports FPS, active count and whether the C++ streak layer is loaded.
 - **`cpp/build_profile.json`** — trimmed bindings cut the godot-cpp build from
   ~40 minutes to ~1 minute on 2 cores.
 - godot-cpp is pinned to a 4.7-era commit (`fba3efa`); newer `master` targets the

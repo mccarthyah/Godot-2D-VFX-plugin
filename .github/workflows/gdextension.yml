@@ -106,6 +106,16 @@ jobs:
           echo "::notice title=2D VFX Kit C++ (Godot ${GODOT_VERSION})::${summary}"
           echo "checks reported: ${checks}"
 
+      - name: Gallery smoke run with the extension
+        run: |
+          set -o pipefail
+          "$GODOT_BIN" --headless --path . res://demo/gallery.tscn \
+            --fixed-fps 60 --quit-after 400 2>&1 | tee /tmp/gallery.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/gallery.log; then
+            echo "::error::Errors were reported while running the gallery with the extension"
+            exit 1
+          fi
+
       - name: Demo smoke run with the extension
         run: |
           set -o pipefail
