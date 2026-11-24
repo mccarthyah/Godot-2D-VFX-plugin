@@ -7,7 +7,7 @@
 Procedural, asset-free 2D effects for Godot 4. Twenty-four effects: hit sparks,
 explosions, lightning bolts and chains, cooldown rings, smoke, shockwaves, muzzle
 flashes, heal sparkles, slash arcs, debris bursts, ripples, implosions, frost
-bursts, acid splashes, ground cracks and blink streaks — plus seven persistent
+bursts, acid splashes, ground cracks and blink streaks, plus seven persistent
 modifiers (rune circles, portals, beams, trails, shield bubbles, tethers and
 vortex fields) that live until you stop them. One-shots are pooled, so they stay
 cheap when the screen is full of them. Every effect carries a `chaos` knob, so
@@ -66,7 +66,7 @@ built for **game feel plumbing**:
   bursts of hundreds of sparks do not allocate mid-combat.
 - **Tunable in the inspector.** Each effect is a normal scene: open
   `hit_spark.tscn`, change the spark count, hit play.
-- **Safe to call from anywhere** — signals, animation callbacks, AI code — with
+- **Safe to call from anywhere**: signals, animation callbacks, AI code, with
   an active-effect cap so a pathological loop cannot tank the frame.
 
 ## Requirements
@@ -76,7 +76,7 @@ built for **game feel plumbing**:
 
 ## Installation
 
-### Option A — drop the folder in
+### Option A: drop the folder in
 
 The short version (full instructions, including the verification snippet and
 troubleshooting table, live in [`docs/INSTALL.md`](docs/INSTALL.md)):
@@ -85,23 +85,23 @@ Copy `addons/vfx_2d/` from this repo into your project's `addons/` folder, then
 enable **2D VFX Kit** in *Project → Project Settings → Plugins*. The plugin
 registers the `VFX2D` autoload for you (unless your project already defines one).
 
-### Option B — release archive (or AssetLib)
+### Option B: release archive (or AssetLib)
 
 Grab `vfx_2d-<version>.zip` from the releases page and extract it into your
 project root. It already contains the `addons/vfx_2d/` path; that archive is
-addon-only — no demo scenes.
+addon-only, so no demo scenes.
 
 Want the demo and the effect gallery too? Take **`vfx_2d-<version>-project.zip`**:
 it is the complete runnable project (`project.godot`, `addons/`, `demo/`,
 `tests/`). Open it in Godot, press **F5** for the demo, then **G** for the gallery.
 
 Installing from the Godot AssetLib works the same way. That entry is built with
-`./tools/package.sh --assetlib`, which packs the addon folder — README and
-licence included, no demo, no binaries — and then checks the archive before
+`./tools/package.sh --assetlib`, which packs the addon folder (README and
+licence included, no demo, no binaries) and then checks the archive before
 handing it over. The submission checklist lives in
 [`docs/ASSETLIB.md`](docs/ASSETLIB.md).
 
-### Option C — build the archives yourself
+### Option C: build the archives yourself
 
 ```bash
 ./tools/package.sh              # -> dist/vfx_2d-<version>.zip          (addon)
@@ -159,7 +159,7 @@ func _ready() -> void:
 
 ## Effects
 
-### Hit spark — `effects/hit_spark.tscn`
+### Hit spark: `effects/hit_spark.tscn`
 
 Bright flash plus a directional burst of sparks. Additive blended.
 
@@ -177,7 +177,7 @@ Bright flash plus a directional burst of sparks. Additive blended.
 | `flash_color` | white | Flash tint |
 | `chaos` | `0.65` | Torn star, splinter shards, spray variance |
 
-### Explosion — `effects/explosion.tscn`
+### Explosion: `effects/explosion.tscn`
 
 Layered fireball, expanding shockwave and flying debris.
 
@@ -193,9 +193,9 @@ Layered fireball, expanding shockwave and flying debris.
 | `debris_size` / `debris_color` | `3` / amber | Debris look |
 | `chaos` | `0.6` | Lopsided lobes, wobbling fronts, secondary pop |
 
-### Lightning — `effects/lightning.tscn`
+### Lightning: `effects/lightning.tscn`
 
-Procedurally generated bolt with branches and flicker — no two strikes match.
+Procedurally generated bolt with branches and flicker; no two strikes match.
 
 | Property | Default | Notes |
 | --- | --- | --- |
@@ -212,7 +212,7 @@ Procedurally generated bolt with branches and flicker — no two strikes match.
 `get_bolt_points()` and `get_branch_points()` expose the generated geometry if
 you want to hit-test or attach effects to the bolt.
 
-### C++ streak field — optional GDExtension
+### C++ streak field: optional GDExtension
 
 GDScript stops scaling when a burst needs to be hundreds of streaks thick. The
 extension integrates particles in C++ and submits them as one
@@ -237,7 +237,7 @@ Build products are gitignored; delete `addons/vfx_2d/bin/` and the generated
 `.gdextension` to return to pure GDScript. Full API, tuning notes and
 troubleshooting: [`cpp/README.md`](cpp/README.md).
 
-### Smoke puff — `effects/smoke_puff.tscn`
+### Smoke puff: `effects/smoke_puff.tscn`
 
 Billowing, additive-free smoke or dust: overlapping blobs that grow, drift upward
 and dissolve. Use it for landings, dashes, footsteps, broken crates.
@@ -252,7 +252,7 @@ and dissolve. Use it for landings, dashes, footsteps, broken crates.
 | `inner_color` / `outer_color` | grey | Colour gradient across the cloud |
 | `chaos` | `0.65` | How torn each blob outline is |
 
-### Shockwave — `effects/shockwave.tscn`
+### Shockwave: `effects/shockwave.tscn`
 
 Rings and cracks, no fire: an impact wave that layers under projectiles, heavy
 landings and parries.
@@ -266,7 +266,7 @@ landings and parries.
 | `ring_color` / `core_color` | pale blue / white | Tint of the front and the flash |
 | `chaos` | `0.6` | How ragged the front is |
 
-### Muzzle flash — `effects/muzzle_flash.tscn`
+### Muzzle flash: `effects/muzzle_flash.tscn`
 
 Directional: torn cone of light, uneven star and a spark spray along `direction`.
 Belongs on the weapon, not the target.
@@ -280,10 +280,10 @@ Belongs on the weapon, not the target.
 | `use_streaks` / `streak_count` | `true` / `120` | Optional C++ streak layer |
 | `chaos` | `0.7` | Ragged edge and spray variance |
 
-### Heal sparkle — `effects/heal_sparkle.tscn`
+### Heal sparkle: `effects/heal_sparkle.tscn`
 
-Ascending, twinkling motes with a soft glow and a couple of accent stars —
-pickups, heals, level-ups.
+Ascending, twinkling motes with a soft glow and a couple of accent stars, for
+pickups, heals and level-ups.
 
 | Property | Default | Notes |
 | --- | --- | --- |
@@ -295,7 +295,7 @@ pickups, heals, level-ups.
 | `sparkle_color` / `glow_color` | green / deep green | Motes and backing glow |
 | `chaos` | `0.55` | Orbit scatter and jitter |
 
-### Slash arc — `effects/slash_arc.tscn`
+### Slash arc: `effects/slash_arc.tscn`
 
 A tapered melee crescent that sweeps through its arc over `sweep` of the
 duration, shedding sparkles along the cut. Point it anywhere with `direction`.
@@ -316,11 +316,11 @@ duration, shedding sparkles along the cut. Point it anywhere with `direction`.
 VFX2D.slash_arc(hero.global_position, aim_direction, {"arc_degrees": 160.0, "radius": 96.0})
 ```
 
-### Debris burst — `effects/debris_burst.tscn`
+### Debris burst: `effects/debris_burst.tscn`
 
 Solid chunks, not sparks: each one is a drawn polygon with its own velocity,
 spin, gravity and drag, so the pieces arc, tumble and fall. Draws without an
-additive material — broken things are opaque.
+additive material, since broken things are opaque.
 
 | Property | Default | Notes |
 | --- | --- | --- |
@@ -334,10 +334,10 @@ additive material — broken things are opaque.
 | `chunk_color` / `chunk_color_dark` | stone / shadow | Chunk shading |
 | `chaos` | `0.55` | Size, shape and launch scatter |
 
-### Ripple — `effects/ripple.tscn`
+### Ripple: `effects/ripple.tscn`
 
-Flattened, wobbling rings plus a few droplets — water splashes, sonar pings,
-footsteps in puddles, shield rebounds.
+Flattened, wobbling rings plus a few droplets for water splashes, sonar pings,
+footsteps in puddles and shield rebounds.
 
 | Property | Default | Notes |
 | --- | --- | --- |
@@ -351,7 +351,7 @@ footsteps in puddles, shield rebounds.
 | `ring_color` / `droplet_color` | cyan / white | Water palette |
 | `chaos` | `0.5` | Wobble, ring timing and droplet spread |
 
-### Implosion — `effects/implosion.tscn`
+### Implosion: `effects/implosion.tscn`
 
 The reverse of an explosion: motes spiral inward along streaks, pinch into a
 small flash, then release a short outward puff. Charging attacks, black holes,
@@ -368,7 +368,7 @@ vacuum pulls.
 | `mote_color` / `core_color` | violet / white | Motes and pinch |
 | `chaos` | `0.55` | Spiral variance, mote jitter, release scatter |
 
-### Frost burst — `effects/frost_burst.tscn`
+### Frost burst: `effects/frost_burst.tscn`
 
 Hard-edged ice: angular shards thrown outward, a cold flash, then a slow
 crystalline shimmer as they fall. Deliberately sharp next to the round explosion.
@@ -383,7 +383,7 @@ crystalline shimmer as they fall. Deliberately sharp next to the round explosion
 | `shimmer` | `0.6` | Specular glint flicker |
 | `chaos` | `0.5` | Shard shape, size and scatter |
 
-### Acid splash — `effects/acid_splash.tscn`
+### Acid splash: `effects/acid_splash.tscn`
 
 Sticky acid: bubbles rise out of a splat and pop on a delay, each pop throwing
 droplets, while the puddle drips. Drawn without an additive material.
@@ -397,7 +397,7 @@ droplets, while the puddle drips. Drawn without an additive material.
 | `pop_droplets` | `3` | Droplets per pop |
 | `chaos` | `0.55` | Sizes, pop timing, droplet spread |
 
-### Impact crack — `effects/impact_crack.tscn`
+### Impact crack: `effects/impact_crack.tscn`
 
 Ground-aligned slam: jagged cracks race outward, dust puffs up between them and a
 flat flash marks the hit. Set `surface` to the surface direction (default
@@ -412,7 +412,7 @@ flat flash marks the hit. Set `surface` to the surface direction (default
 | `dust_count` / `dust_rise` | `8` / `70` | Dust puffs |
 | `chaos` | `0.5` | Crack paths, kinks, dust scatter |
 
-### Chain lightning — `effects/chain_lightning.tscn`
+### Chain lightning: `effects/chain_lightning.tscn`
 
 A bolt that hops between several points: one jagged segment per hop, revealed in
 order and dimmer each time. Spawn it with an array of targets.
@@ -426,7 +426,7 @@ order and dimmer each time. Spawn it with an array of targets.
 | `jaggedness` / `flicker` | `14` / `0.05` | Bolt wobble and re-jag rate |
 | `chaos` | `0.5` | Per-hop wobble, timing, flash scatter |
 
-### Blink — `effects/blink.tscn`
+### Blink: `effects/blink.tscn`
 
 Two-point teleport: the source collapses, a stretched streak snaps across the
 gap, then a ring and spark burst open at the destination.
@@ -439,7 +439,7 @@ gap, then a ring and spark burst open at the destination.
 | `spark_count` | `8` | Sparks at the arrival burst |
 | `chaos` | `0.5` | Streak drift, ring timing, spark scatter |
 
-### Cooldown ring — `effects/cooldown_ring.tscn`
+### Cooldown ring: `effects/cooldown_ring.tscn`
 
 A modifier node, not a one-shot: it circles whatever it is parented to. Previews
 in the editor (change `progress` to see the arc).
@@ -461,9 +461,9 @@ var ring := VFX2D.cooldown_ring($Icon, 3.0, {"reverse": true, "tick_count": 12})
 ring.completed.connect(_on_cooldown_ready)
 ```
 
-### Persistent modifiers — runes, portals, beams, trails, shields, tethers, vortexes
+### Persistent modifiers: runes, portals, beams, trails, shields, tethers, vortexes
 
-The one-shots are fire-and-forget. These seven are *attached*: they stay alive
+The one-shots are fire-and-forget. These seven are attached: they stay alive
 across frames until you stop them, and they return the node so you can keep
 driving it.
 
@@ -500,19 +500,19 @@ itself, so a despawned projectile never leaves a ribbon hanging.
 | `PortalEffect` | `VFX2D.portal(at, options)` | `width` `58`, `height` `78`, `rim_width` `4`, `spin_speed` `1.8`, `shimmer_count` `14`, `open_time` `0.3`, `close_time` `0.35`, `lifetime` `0` |
 | `BeamEffect` | `VFX2D.beam(from, to, options)` | `width` `6`, `glow_width` `20`, `pulse_speed` `900`, `pulse_spacing` `120`, `wobble` `0.35`, `warmup` `0.12`, `fade_time` `0.22`, `lifetime` `0` |
 | `TrailEffect` | `VFX2D.trail(target, options)` | `history` `0.35` s, `width_start` `8`, `width_end` `0.8`, `mote_count` `6` |
-| `ShieldBubble` | `VFX2D.shield(target, options)` | `radius` `64`, `hex_size` `13`, `rim_width` `2.5`, `hit_flash` `0.3`, `lifetime` `0` — call `hit(world_point)` on impacts |
-| `Tether` | `VFX2D.tether(from, to, options)` | `sag` `42`, `link_count` `16`, `thickness` `2.5`, `pulse_speed` `1.4` — `set_targets()` re-aims |
-| `Vortex` | `VFX2D.vortex(at, options)` | `radius` `96`, `strength` `210` px/s, `spin` `3.4` rad/s, `mote_count` `26`, `lifetime` `0` — sprays C++ streaks on start when the extension is loaded |
+| `ShieldBubble` | `VFX2D.shield(target, options)` | `radius` `64`, `hex_size` `13`, `rim_width` `2.5`, `hit_flash` `0.3`, `lifetime` `0`; call `hit(world_point)` on impacts |
+| `Tether` | `VFX2D.tether(from, to, options)` | `sag` `42`, `link_count` `16`, `thickness` `2.5`, `pulse_speed` `1.4`; `set_targets()` re-aims |
+| `Vortex` | `VFX2D.vortex(at, options)` | `radius` `96`, `strength` `210` px/s, `spin` `3.4` rad/s, `mote_count` `26`, `lifetime` `0`; sprays C++ streaks on start when the extension is loaded |
 
 All seven export `chaos` (`rune_circle` `0.25`, `portal` `0.45`, `beam` `0.45`,
 `trail` `0.4`, `shield_bubble` `0.3`, `tether` `0.4`, `vortex` `0.45`) and the
 usual colour exports. `shield.hit()` and `tether.set_targets()` are the two
 "gameplay can talk back" entry points.
 
-### Chaos — one knob on every effect
+### Chaos: one knob on every effect
 
 Each effect exports `chaos` (`0.0`–`1.0`, default roughly `0.6`). It is not a
-random speed bump: it changes the *shape* of what is drawn, and it is reseeded on
+random speed bump: it changes the shape of what is drawn, and it is reseeded on
 every `play()`, so a pooled effect never repeats itself.
 
 | Effect | What `chaos` moves |
@@ -548,8 +548,7 @@ VFX2D.hit_spark(at, dir, {"chaos": 1.0})   # splintered and lopsided
 ```
 
 The knob is honest about direction: `0` is a clean shape, `1` is the wildest the
-effect gets. Ring defaults to `0.25` on purpose — a cooldown still has to be
-readable.
+effect gets. Ring defaults to `0.25` on purpose, so a cooldown stays readable.
 
 ## API reference
 
@@ -617,7 +616,7 @@ pooling for free.
   change.
 - When an effect finishes, `VFX2D` hides it, resets its transform and keeps it in
   a per-scene pool (`pool_size_per_effect`). The next spawn of that scene reuses
-  the same instance — no `instantiate()` in the hot path.
+  the same instance, so there is no `instantiate()` in the hot path.
 - If more than `max_active_effects` effects are running, the oldest is stopped to
   keep the frame budget predictable.
 - Modifiers are not pooled: cooldown rings, runes, portals, beams and trails are
@@ -633,16 +632,16 @@ pooling for free.
 Open this repository in Godot and press **F5** (the demo scene is the main
 scene):
 
-- **Left click** — hit spark at the cursor
-- **1 / 2 / 3 / 4** — hit spark, explosion, lightning, cooldown ring
-- **5 / 6 / 7 / 8** — smoke puff, shockwave, muzzle flash, heal sparkle
-- **9 / 0** — slash arc, debris burst
-- **R / I** — ripple, implosion
-- **F / L / X / K / M** — frost burst, chain lightning, acid splash, impact crack, blink
-- **B / P / U / T / H / V / N** — toggle a beam, portal, rune circle, trail, shield, tether or vortex
-- **Space** — toggle the idle auto-demo
-- **C** — clear all running effects
-- **G** — the effect gallery
+- **\*Left click**: hit spark at the cursor
+- **\*1 / 2 / 3 / 4**: hit spark, explosion, lightning, cooldown ring
+- **\*5 / 6 / 7 / 8**: smoke puff, shockwave, muzzle flash, heal sparkle
+- **\*9 / 0**: slash arc, debris burst
+- **\*R / I**: ripple, implosion
+- **\*F / L / X / K / M**: frost burst, chain lightning, acid splash, impact crack, blink
+- **\*B / P / U / T / H / V / N**: toggle a beam, portal, rune circle, trail, shield, tether or vortex
+- **\*Space**: toggle the idle auto-demo
+- **\*C**: clear all running effects
+- **\*G**: the effect gallery
 
 The HUD shows FPS, the live active-effect count and how many persistent modifiers
 are attached. Every new effect also has a button in the HUD, so nothing here is
@@ -652,9 +651,9 @@ keyboard-only.
 
 `demo/gallery.tscn` is the "just show me all of them" scene, paged so it stays
 readable and cheap: six themed pages, four labelled cells per page, each firing
-on its own timer. Twenty-four effects firing at once is a stress test — on a
-laptop it drops frames and the smaller shapes get lost — so the gallery only ever
-runs a few at a time, which also makes the FPS counter mean something while you
+on its own timer. Twenty-four effects firing at once is a stress test: on a
+laptop it drops frames and the smaller shapes get lost, so the gallery only runs
+a few at a time, which also makes the FPS counter mean something while you
 tune.
 
 | Page | Effects |
@@ -676,16 +675,16 @@ godot --path . res://demo/gallery.tscn   # or open demo/gallery.tscn and press F
 
 It is also one key away while the demo is running: press **G** (or the *Effect
 gallery* button) to jump to it, and **Esc** to come back. In the editor both live
-in the `demo/` folder of the FileSystem dock — if you only ever downloaded the
-addon archive, there is no `demo/` in it, which is why the gallery appears
+in the `demo/` folder of the FileSystem dock. If you only downloaded the addon
+archive there is no `demo/` in it, which is why the gallery appears
 "missing": use the repo or the `-project.zip` archive instead.
 
-- **← / →**, **A / D**, **Tab**, or a click on a page tab — change page
-- **1-4 or click a cell** — fire that single cell
-- **Space** — pause/resume the timers
-- **R** — fire the whole page immediately
-- **C** — clear running effects (one-shots and modifiers)
-- **Esc** — back to the interactive demo
+- **← / →**, **A / D**, **Tab**, or a click on a page tab: change page
+- **\*1-4 or click a cell**: fire that single cell
+- **\*Space**: pause/resume the timers
+- **\*R**: fire the whole page immediately
+- **\*C**: clear running effects (one-shots and modifiers)
+- **\*Esc**: back to the interactive demo
 
 The header shows FPS, the live active count, the persistent-modifier count, and
 whether the optional C++ streak layer is loaded, so you can A/B density by raising
@@ -703,8 +702,8 @@ godot --headless --path . res://tests/test_runner.tscn
 It covers: effect lifecycles and replay, `finished` being emitted exactly once,
 cooldown fill/drain behaviour, option overrides, pool reuse of the same instance,
 burst handling, `stop_all()`, lightning endpoint geometry, per-effect geometry for
-the newer effects, and the persistent modifiers — `beam()` opening, re-aiming and
-fading, `portal()` open → hold → close, `rune_circle()` fill and self-close,
+the newer effects, and the persistent modifiers: `beam()` opening, re-aiming and
+fading, `portal()` opening, holding and closing, `rune_circle()` fill and self-close,
 `trail()` history recording and self-cleanup when its target dies. The gallery is
 covered too: it must stay paged (a page holds a handful of cells, firing a cell
 spawns one effect, switching pages clears modifiers). The process exits non-zero
@@ -716,16 +715,16 @@ then smoke-runs the demo scene. A run fails on any `SCRIPT ERROR`, parse error o
 engine `ERROR:` line.
 
 Headless still issues draw notifications, so `_draw()` really runs for every
-effect during the suite — the procedural geometry (arcs, polylines, layered
-discs) is exercised, not just the timing and pooling logic. What CI cannot judge
-is how it *looks*; that needs the demo on a real display.
+effect during the suite, so the procedural geometry (arcs, polylines, layered
+discs) is exercised and not only the timing and pooling logic. What CI cannot judge
+is how it looks; that needs the demo on a real display.
 
 The separate [`GDExtension` workflow](.github/workflows/gdextension.yml) builds
 the C++ streak field against stock Godot 4.7.2, then runs the same suite and
-**fails if the extension silently failed to load** — the C++ tests print
+**fails if the extension silently failed to load**: the C++ tests print
 `cpp-streak-field: available|absent`, and the workflow asserts which one ran.
 Same suite, both paths: **330 checks** with the extension, **318** without, zero
-engine errors either way. Every one-shot — all sixteen — is run through its full
+engine errors either way. Every one-shot (all sixteen) is run through its full
 lifecycle, and every effect (one-shots and modifiers) has its `chaos` knob
 exercised.
 
@@ -784,4 +783,4 @@ tools/package.sh             # Builds dist/vfx_2d-<version>.zip
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

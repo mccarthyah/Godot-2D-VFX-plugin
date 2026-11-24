@@ -639,8 +639,8 @@ func _draw() -> void:
 
 func _draw_header() -> void:
 	var page: Dictionary = PAGES[_page]
-	_draw_text("2D VFX Kit — effect gallery", Vector2(MARGIN, 36.0), 24, TITLE_COLOR)
-	_draw_text("%d/%d · %s — %s" % [_page + 1, get_page_count(), page["title"], page["note"]],
+	_draw_text("2D VFX Kit: effect gallery", Vector2(MARGIN, 36.0), 24, TITLE_COLOR)
+	_draw_text("%d/%d · %s · %s" % [_page + 1, get_page_count(), page["title"], page["note"]],
 			Vector2(MARGIN, 60.0), 14, TITLE_COLOR)
 	var hint := "←/→ or Tab: pages · 1-4 or click: fire one cell · Space pause"
 	hint += " · R refire page · C clear"

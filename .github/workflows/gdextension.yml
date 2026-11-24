@@ -58,8 +58,8 @@ jobs:
           # extension class is registered: a bare `class Foo : Node` reproduces
           # it, and it happens after the import has written both caches (an
           # ordinary editor quit exits cleanly). Tolerate that one exit code,
-          # then assert the files a successful import must produce — those are
-          # what actually make the extension load.
+          # then assert the files a successful import must produce; those are what
+          # make the extension load.
           set +e
           "$GODOT_BIN" --headless --path . --import > /tmp/import.log 2>&1
           status=$?
@@ -90,7 +90,7 @@ jobs:
             exit 1
           fi
           if ! grep -q "cpp-streak-field: available" /tmp/tests.log; then
-            echo "::error::The extension did not load — the C++ tests were skipped"
+            echo "::error::The extension did not load, so the C++ tests were skipped"
             exit 1
           fi
           if ! grep -q "\[VFX TESTS\] PASS" /tmp/tests.log; then

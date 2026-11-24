@@ -1,12 +1,11 @@
 # C++ streak field (optional GDExtension)
 
-The GDScript effects are deliberately cheap: a few hundred particles and some
-`_draw()` geometry. That is the right cost for gameplay code, but it stops
-scaling exactly where sparks start reading as *heat* — hundreds to thousands of
-velocity-aligned streaks per burst. Every particle then costs a `_draw()` call
-and a script instruction budget.
+The GDScript effects are cheap by design: a few hundred particles and some
+`_draw()` geometry. That holds up until you want hundreds or thousands of
+velocity-aligned streaks per burst, where every particle costs a `_draw()` call
+and script time.
 
-This extension moves that hot loop to C++:
+This extension moves that loop to C++:
 
 - particles are plain structs in one `std::vector` (no nodes, no signals, no
   per-particle allocation);
@@ -34,17 +33,17 @@ pip install scons                    # once
 header and the interface JSON from that binary and builds against all three, so
 the library matches the engine that will load it. The script also uses a
 **build profile** ([`build_profile.json`](build_profile.json)) listing only the
-classes this extension touches — that is the difference between a ~40 minute
+classes this extension touches, which is the difference between a ~40 minute
 full godot-cpp build and a ~1 minute one.
 
 The script clones [godot-cpp](https://github.com/godotengine/godot-cpp) into
 `cpp/godot-cpp/` (gitignored, pinned with `GODOT_CPP_REF`, default `master`),
 builds the library, drops it in `addons/vfx_2d/bin/` and generates
-`addons/vfx_2d/vfx_streaks.gdextension`. Delete both to return to GDScript —
+`addons/vfx_2d/vfx_streaks.gdextension`. Delete both to return to GDScript;
 nothing else in the addon needs to change.
 
 Versions: godot-cpp has no 4.7 branch, so the build pins the commit
-`fba3efa` (2026-07-29) — the last one whose interface still matches 4.7.x.
+`fba3efa` (2026-07-29), the last one whose interface still matches 4.7.x.
 Later `master` targets the 4.8 interface and 4.7 rejects it with
 `non-existent interface function: get_godot_version`. Override with `--ref` or
 `GODOT_CPP_REF`. The generated descriptor sets `compatibility_minimum` to the
@@ -54,7 +53,7 @@ Build products are gitignored, so a fresh clone stays pure GDScript and the main
 CI matrix (4.2 / 4.3 / 4.7.2) keeps testing the fallback path. The
 `GDExtension` workflow builds the library and tests the loaded path.
 
-## Node API — `VFXStreakField2D`
+## Node API: `VFXStreakField2D`
 
 ### Methods
 
@@ -115,7 +114,7 @@ The built-in effects use it automatically: `HitSparkEffect` and
 
 `RenderingServer.canvas_item_add_multiline` takes **one colour per segment**
 (`colors * 2 == points`), not one per vertex. Each streak is therefore emitted
-as two segments — head→mid→tail — which is what produces the gradient in a
+as two segments (head, mid, tail), which is what produces the gradient in a
 single draw call. Passing per-vertex colours trips a
 `p_colors.size() * 2 != p_points.size()` engine error.
 
@@ -123,7 +122,7 @@ single draw call. Passing per-vertex colours trips a
 
 - Streak length reads as speed: `streak_scale` × velocity. Below ~0.02 s the
   burst looks like dots; above ~0.08 s it smears into ribbons.
-- `drag` is what sells impact — sparks should decelerate fast, then drift.
+- `drag` is what sells impact: sparks should decelerate fast, then drift.
 - `turbulence` above ~0.6 stops looking like sparks and starts looking like
   embers in a fire, which is useful for burning debris but not for hits.
 - Keep `count` proportional to blast size: ~60 for a hit, 200–400 for an
@@ -147,6 +146,6 @@ single draw call. Passing per-vertex colours trips a
 | `VFXStreaks.is_available()` is `false` | Library not built, or `addons/vfx_2d/vfx_streaks.gdextension` missing |
 | Godot prints "Can't open dynamic library" | Built for a different platform, arch or engine version |
 | `compatibility_minimum` mismatch | Engine older than the targeted API; rebuild with `--api 4.6` |
-| `non-existent interface function: get_godot_version` | godot-cpp and engine interfaces disagree — rebuild with `--godot <that engine>`, or the engine was built without a matching GDExtension interface |
+| `non-existent interface function: get_godot_version` | godot-cpp and engine interfaces disagree. Rebuild with `--godot <that engine>`, or the engine was built without a matching GDExtension interface |
 | Nothing visible, no errors | `additive = true` on a light background, or `tail_color` alpha not `0` |
-| `godot --headless --path . --import` segfaults (exit 134) *after* importing | Engine bug in 4.7.2: the `--import` teardown crashes as soon as any extension class is registered. The import and `.godot/global_script_class_cache.cfg` are already written, and a normal editor quit is unaffected — treat the exit code as harmless in scripts |
+| `godot --headless --path . --import` segfaults (exit 134) after importing | Engine bug in 4.7.2: the `--import` teardown crashes as soon as any extension class is registered. The import and `.godot/global_script_class_cache.cfg` are already written, and a normal editor quit is unaffected. Treat the exit code as harmless in scripts |

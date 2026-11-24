@@ -374,7 +374,7 @@ func _build_hud() -> void:
 	panel.add_child(column)
 
 	var title := Label.new()
-	title.text = "2D VFX Kit — v0.5 demo"
+	title.text = "2D VFX Kit v0.5 demo"
 	title.add_theme_font_size_override("font_size", 22)
 	column.add_child(title)
 

@@ -2,7 +2,7 @@ class_name ShieldBubble
 extends Node2D
 ## Reactive energy bubble: a hex lattice over a dome that flashes where it is
 ## struck, then fades when you stop it. Unlike the other modifiers this one
-## listens to gameplay — call [method hit] with a world position.
+## listens to gameplay: call [method hit] with a world position.
 ##
 ## [codeblock]
 ## var bubble := VFX2D.shield(player, {"radius": 72.0})

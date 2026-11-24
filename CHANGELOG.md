@@ -4,67 +4,66 @@ All notable changes to the 2D VFX Kit are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.5.1] — 2026-11-24
+## [0.5.1] - 2026-11-24
 
 ### Added
 
-- **`docs/INSTALL.md`** — the full install and usage guide: three ways to install,
+- **`docs/INSTALL.md`**: the full install and usage guide: three ways to install,
   enabling the plugin, a copy-paste verification snippet, the whole effect
   catalogue with calls, options/`chaos`, the optional C++ layer, updating,
   removing, and a troubleshooting table.
-- **`docs/ASSETLIB.md`** — how to publish the kit on Godot AssetLib: archive
+- **`docs/ASSETLIB.md`**: how to publish the kit on Godot AssetLib: archive
   layout, the submission form field by field, the preview image, and what must
-  *not* ship.
-- **`addons/vfx_2d/README.md` and `addons/vfx_2d/LICENSE`** — the addon now
+  not ship.
+- **`addons/vfx_2d/README.md` and `addons/vfx_2d/LICENSE`**: the addon now
   carries its own instructions and licence, so an installed copy is
   self-explanatory without the repository.
-- **`./tools/package.sh --assetlib`** — builds
+- **`./tools/package.sh --assetlib`**: builds
   `dist/vfx_2d-<version>-assetlib.zip` (addon + its docs, no demo, no tests, no
   binaries), the shape AssetLib expects.
 - **A CI job that installs the packaged plugin into an empty project** on Godot
-  4.2 and 4.7.2, enables it, and runs a scene against it — packaging is now
-  tested, not assumed.
+  4.2 and 4.7.2, enables it, and runs a scene against it, so packaging is
+  tested and not assumed.
 
 ### Fixed
 
 - **The editor plugin no longer removes the `VFX2D` autoload on exit.** It added
   the autoload and then stripped it again when the editor closed, so a project
-  that relied on the plugin simply had no `VFX2D` at runtime — the classic
-  "works in the editor, broken in the export". Enabling the plugin now registers
-  the autoload, saves `project.godot` immediately, and leaves it alone
-  afterwards. Disable the plugin to drop the editor hooks; delete the autoload
-  entry yourself if you want it gone.
+  that relied on the plugin had no `VFX2D` at runtime. Enabling the plugin now
+  registers the autoload, saves `project.godot` immediately, and leaves it
+  alone afterwards. Disable the plugin to drop the editor hooks; delete the
+  autoload entry yourself if you want it gone.
 - The stored autoload is rewritten to a `res://` path, because Godot 4.4+ records
   new autoloads as `uid://` references that 4.2 and 4.3 cannot resolve.
 - **No more "Could not find type `VFXEffect`" on a freshly installed copy.** The
   effects now extend the base class by path and `vfx_2d.gd` preloads it, instead
   of relying on global `class_name` lookups that are not resolvable until Godot
-  has finished scanning the project — Godot 4.2 parses the addon before that
+  has finished scanning the project. Godot 4.2 parses the addon before that
   cache exists and printed a wall of parse errors on the first open of a brand
   new project. Caught by the new packaged-plugin CI job.
 
-## [0.5.0] — 2026-11-24
+## [0.5.0] - 2026-11-24
 
 ### Added
 
 - **Five more one-shot effects**, all pooled `VFXEffect` scenes:
-  - `frost_burst` — angular ice shards, cold flash and a crystalline shimmer
+  - `frost_burst`: angular ice shards, cold flash and a crystalline shimmer
     (`frost_burst.tscn`).
-  - `acid_splash` — bubbles that rise and pop on a delay, each pop throwing
+  - `acid_splash`: bubbles that rise and pop on a delay, each pop throwing
     droplets, over a sticky splat (`acid_splash.tscn`).
-  - `impact_crack` — ground-aligned jagged cracks, dust and a flat flash;
+  - `impact_crack`: ground-aligned jagged cracks, dust and a flat flash;
     `surface` decides which way they fan (`impact_crack.tscn`).
-  - `chain_lightning` — a bolt that hops through an array of targets, one jagged
+  - `chain_lightning`: a bolt that hops through an array of targets, one jagged
     segment per hop, dimmer each time (`chain_lightning.tscn`).
-  - `blink` — two-point teleport: collapse at the source, streak, burst at the
+  - `blink`: two-point teleport: collapse at the source, streak, burst at the
     destination (`blink.tscn`).
 - **Three reactive modifiers**, extending the persistent category:
-  - `shield_bubble` (`ShieldBubble`) — hex lattice over a dome; `hit(world_point)`
+  - `shield_bubble` (`ShieldBubble`): hex lattice over a dome; `hit(world_point)`
     flashes and ripples where it is struck, `stop()` closes it.
-  - `tether` (`Tether`) — sagging energy chain between two nodes with pulses
+  - `tether` (`Tether`): sagging energy chain between two nodes with pulses
     running along it; `set_targets()` re-aims, and it frees itself when either end
     disappears.
-  - `vortex` (`Vortex`) — pull field: motes spawn on the rim, spiral in and
+  - `vortex` (`Vortex`): pull field: motes spawn on the rim, spiral in and
     recycle; also sprays a ring of C++ streaks on start when the extension is
     loaded.
 - **`VFX2D.frost_burst()`, `acid_splash()`, `impact_crack()`, `chain()`,
@@ -73,7 +72,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 ### Changed
 
 - The gallery has **six pages**: Impacts, Combat, Magic, **Elemental**, **Reactive**
-  and Motion — twenty-four effects, still only four cells running at a time. The
+  and Motion: twenty-four effects, still only four cells running at a time. The
   shield cell flashes itself on a timer so the reactive part is visible.
 - The demo adds keys **F** (frost burst), **L** (chain lightning), **X** (acid
   splash), **K** (impact crack), **M** (blink) and **H / V / N** to toggle the
@@ -83,14 +82,14 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   mote count and fade. **330 checks** with the extension, **318** without.
 - Version bumped to `0.5.0`.
 
-## [0.4.1] — 2026-11-24
+## [0.4.1] - 2026-11-24
 
 ### Changed
 
 - **The gallery is paged.** Sixteen effects firing at once made the gallery drop
   frames, and the smaller shapes were hard to read next to explosions. It now
-  has four themed pages of four cells each — **Impacts**, **Combat**, **Magic**,
-  **Motion** — so only a few effects run at a time and the FPS counter stays
+  has four themed pages of four cells each (**Impacts**, **Combat**, **Magic**,
+  **Motion**), so only a few effects run at a time and the FPS counter stays
   meaningful.
   - Page tabs in the header, clickable; **←/→**, **A/D**, **Tab** or
     **PageUp/PageDown** also page through. **1-4** fires a single cell, **R**
@@ -101,29 +100,29 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
     pages stay small: one effect per cell fired, and no page exceeds a handful.
 - Tests: **231 checks** with the extension, **219** without.
 
-## [0.4.0] — 2026-11-24
+## [0.4.0] - 2026-11-24
 
 ### Added
 
 - **Four more one-shot effects**, each a normal pooled `VFXEffect` scene:
-  - `slash_arc` — a tapered melee crescent that sweeps through its arc and sheds
+  - `slash_arc`: a tapered melee crescent that sweeps through its arc and sheds
     sparkles (`slash_arc.tscn`).
-  - `debris_burst` — solid chunks with their own velocity, spin, gravity and
+  - `debris_burst`: solid chunks with their own velocity, spin, gravity and
     drag, drawn without an additive material (`debris_burst.tscn`).
-  - `ripple` — flattened, wobbling rings plus droplets (`ripple.tscn`).
-  - `implosion` — motes spiral inward, pinch into a flash, then release
+  - `ripple`: flattened, wobbling rings plus droplets (`ripple.tscn`).
+  - `implosion`: motes spiral inward, pinch into a flash, then release
     (`implosion.tscn`).
 - **`VFX2D.slash_arc()`, `debris_burst()`, `ripple()`, `implosion()`**, so every
   one-shot spawns the same way.
 - **Persistent modifiers**, a new category: nodes that live until you stop them,
   returned by the spawner so you can keep driving them.
-  - `rune_circle` (`RuneCircle`) — rotating cast circle with a progressive
+  - `rune_circle` (`RuneCircle`): rotating cast circle with a progressive
     `fill` that doubles as a cast bar (`start(seconds)`, `set_fill()`, `stop()`).
-  - `portal` (`PortalEffect`) — oval gateway with `open_time` / hold / `close_time`
+  - `portal` (`PortalEffect`): oval gateway with `open_time` / hold / `close_time`
     and an `lifetime` escape hatch (`get_openness()`).
-  - `beam` (`BeamEffect`) — sustained laser: core, glow, travelling pulses and
+  - `beam` (`BeamEffect`): sustained laser: core, glow, travelling pulses and
     flaring ends (`end_at()`, `stop()`).
-  - `trail` (`TrailEffect`) — ribbon history emitter for projectiles and dashes,
+  - `trail` (`TrailEffect`): ribbon history emitter for projectiles and dashes,
     recording the target's global positions so it never inherits its rotation
     (`attach_to()`, `stop()`).
 - **`VFX2D.beam()`, `portal()`, `rune_circle()`, `trail()`** plus
@@ -146,16 +145,16 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   coverage for all four modifiers.
 - Version bumped to `0.4.0`.
 
-## [0.3.0] — 2026-11-24
+## [0.3.0] - 2026-11-24
 
 ### Added
 
 - **Four new effects**, each a normal `VFXEffect` scene with its own knobs:
-  - `smoke_puff` — billowing, additive-free smoke or dust (`smoke_puff.tscn`).
-  - `shockwave` — rings and radial cracks, no fire (`shockwave.tscn`).
-  - `muzzle_flash` — directional torn cone, star and spark spray
+  - `smoke_puff`: billowing, additive-free smoke or dust (`smoke_puff.tscn`).
+  - `shockwave`: rings and radial cracks, no fire (`shockwave.tscn`).
+  - `muzzle_flash`: directional torn cone, star and spark spray
     (`muzzle_flash.tscn`).
-  - `heal_sparkle` — ascending, twinkling motes for pickups and buffs
+  - `heal_sparkle`: ascending, twinkling motes for pickups and buffs
     (`heal_sparkle.tscn`).
 - **`VFX2D.smoke_puff()`, `shockwave()`, `muzzle_flash()`, `heal_sparkle()`**, so
   all eight effects spawn the same way.
@@ -163,7 +162,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   stars and splinters on the hit spark, lopsided lobes and ghost fronts on the
   explosion, per-flicker branch topology and sub-branches on lightning, arc
   wobble on the ring, and equivalent shape-level irregularity on the new four.
-- `core/vfx_shapes.gd` — shared procedural outlines (wobbling rings, jagged
+- `core/vfx_shapes.gd`: shared procedural outlines (wobbling rings, jagged
   cones, uneven stars) used by the effects. Loaded with a relative `preload`, so
   effects still parse before the editor's class cache exists.
 
@@ -176,7 +175,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - `lightning`'s branch count is only exact when `chaos` is `0`; with chaos on it
   varies per flicker by design, and the suite now pins that explicitly.
 
-## [0.2.0] — 2026-11-24
+## [0.2.0] - 2026-11-24
 
 ### Added
 
@@ -191,19 +190,19 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - **Effect integration**: `HitSparkEffect` and `ExplosionEffect` gain
   `use_streaks`, `streak_count` and `streak_turbulence`. They attach the streak
   layer automatically when the extension is loaded.
-- **`cpp/`** — extension sources, `SConstruct`, `cpp/README.md` with the full
+- **`cpp/`**: extension sources, `SConstruct`, `cpp/README.md` with the full
   node API, tuning notes and troubleshooting.
-- **`tools/build_extension.sh`** — fetches godot-cpp, builds debug/release
+- **`tools/build_extension.sh`**: fetches godot-cpp, builds debug/release
   libraries into `addons/vfx_2d/bin/`, generates the `.gdextension` descriptor,
   and can bind a specific engine build's API (`--godot`).
-- **`GDExtension` workflow** — builds the extension against stock Godot 4.7.2,
+- **`GDExtension` workflow**: builds the extension against stock Godot 4.7.2,
   then runs the suite and fails if the extension silently failed to load.
-- **`demo/gallery.tscn`** — a labelled 2×2 gallery with one cell per effect, each
+- **`demo/gallery.tscn`**: a labelled 2×2 gallery with one cell per effect, each
   cycling on its own timer (staggered phases), so all four can be compared side by
   side. Space pauses, R refires all, C clears, 1-4 or a click fires one cell, and
   the header reports FPS, active count and whether the C++ streak layer is loaded.
   Reachable from the demo with **G** (Esc goes back).
-- **`cpp/build_profile.json`** — trimmed bindings cut the godot-cpp build from
+- **`cpp/build_profile.json`**: trimmed bindings cut the godot-cpp build from
   ~40 minutes to ~1 minute on 2 cores.
 - godot-cpp is pinned to a 4.7-era commit (`fba3efa`); newer `master` targets the
   4.8 interface, which 4.7.x rejects.
@@ -232,34 +231,34 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - The suite grew a scene-change regression test (8 checks) that fails if dead
   pool entries are kept, not just when the engine complains.
 
-## [0.1.0] — 2026-11-24
+## [0.1.0] - 2026-11-24
 
 First working baseline: a plugin you can drop into a project and get game-feel
 out of in a few lines.
 
 ### Added
 
-- **`VFX2D` autoload** — spawn API (`hit_spark`, `explosion`, `lightning`,
+- **`VFX2D` autoload**: spawn API (`hit_spark`, `explosion`, `lightning`,
   `cooldown_ring`, `spawn`), per-scene instance pooling, an active-effect cap,
   `stop_all()`, and `effect_spawned` / `effect_finished` signals.
-- **`VFXEffect` base class** — duration-driven one-shot effects with
+- **`VFXEffect` base class**: duration-driven one-shot effects with
   `play()` / `stop()`, `progress`, dictionary-based `configure()`, and
   `_on_play` / `_on_update` / `_on_stop` virtuals.
-- **Hit spark** — directional flash + spark burst, additive blending.
-- **Explosion** — layered fireball, expanding shockwave ring, radial debris.
-- **Lightning** — procedural midpoint-displacement bolt with branches, glow
+- **Hit spark**: directional flash + spark burst, additive blending.
+- **Explosion**: layered fireball, expanding shockwave ring, radial debris.
+- **Lightning**: procedural midpoint-displacement bolt with branches, glow
   layers, and flicker.
-- **Cooldown ring** — fill or drain arc, clockwise or counter-clockwise, optional
+- **Cooldown ring**: fill or drain arc, clockwise or counter-clockwise, optional
   tick marks; previews in the editor.
-- **Editor plugin** — registers the `VFX2D` autoload when enabled, without
+- **Editor plugin**: registers the `VFX2D` autoload when enabled, without
   overriding a hand-registered one.
-- **Demo project** — interactive sandbox scene with buttons, hotkeys, and an
+- **Demo project**: interactive sandbox scene with buttons, hotkeys, and an
   idle auto-demo.
-- **Headless test suite** — `tests/test_runner.tscn` covering effect lifecycles,
+- **Headless test suite**: `tests/test_runner.tscn` covering effect lifecycles,
   pooling, option overrides, cooldown behaviour, and lightning geometry.
-- **CI** — GitHub Actions matrix against stock Godot 4.3/4.4 Linux builds:
+- **CI**: GitHub Actions matrix against stock Godot 4.3/4.4 Linux builds:
   import, headless tests, demo smoke run on Godot 4.2, 4.3 and 4.7.2.
-- **Packaging** — `tools/package.sh` builds `dist/vfx_2d-<version>.zip`.
+- **Packaging**: `tools/package.sh` builds `dist/vfx_2d-<version>.zip`.
 
 [0.5.1]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.5.1
 [0.5.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.5.0

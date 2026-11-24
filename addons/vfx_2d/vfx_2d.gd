@@ -24,15 +24,11 @@ signal effect_spawned(effect: VFXEffect)
 ## Emitted when an effect finishes, whether it ran to completion or was stopped.
 signal effect_finished(effect: VFXEffect)
 
-## The effect base class, preloaded by path. Godot only fills in global
-## [code]class_name[/code] lookups after it has scanned the project, so on a
-## freshly installed copy (Godot 4.2 in particular) a plain [code]VFXEffect[/code]
-## type hint fails to resolve and the autoload will not load. A preload does not
-## need the cache.
+## Effect base class, preloaded by path. Global class names are not resolvable
+## until the project has been scanned once, which breaks a fresh install.
 const VFXEffect := preload("res://addons/vfx_2d/core/vfx_effect.gd")
 
-# The same reason applies to the concrete classes named by the spawners'
-# return types: preloads resolve immediately, global names do not.
+# Same reason: these are return types on the spawners below.
 const ChainLightningEffect := preload("res://addons/vfx_2d/effects/chain_lightning.gd")
 const BlinkEffect := preload("res://addons/vfx_2d/effects/blink.gd")
 const FrostBurstEffect := preload("res://addons/vfx_2d/effects/frost_burst.gd")
@@ -92,7 +88,7 @@ func smoke_puff(at: Vector2, options: Dictionary = {}) -> VFXEffect:
 	return spawn(_effect_scene("smoke_puff"), at, options)
 
 
-## Spawns an expanding shockwave centred on [param at] — rings and cracks, no fire.
+## Spawns an expanding shockwave centred on [param at]: rings and cracks, no fire.
 func shockwave(at: Vector2, options: Dictionary = {}) -> VFXEffect:
 	return spawn(_effect_scene("shockwave"), at, options)
 
@@ -106,7 +102,7 @@ func muzzle_flash(at: Vector2, direction: Vector2 = Vector2.RIGHT,
 	return spawn(_effect_scene("muzzle_flash"), at, opts)
 
 
-## Spawns ascending sparkles at [param at] — pickups, heals and buffs.
+## Spawns ascending sparkles at [param at], for pickups, heals and buffs.
 func heal_sparkle(at: Vector2, options: Dictionary = {}) -> VFXEffect:
 	return spawn(_effect_scene("heal_sparkle"), at, options)
 
@@ -130,7 +126,7 @@ func ripple(at: Vector2, options: Dictionary = {}) -> VFXEffect:
 	return spawn(_effect_scene("ripple"), at, options)
 
 
-## Spawns an inward collapse at [param at] — the reverse of an explosion.
+## Spawns an inward collapse at [param at], the reverse of an explosion.
 func implosion(at: Vector2, options: Dictionary = {}) -> VFXEffect:
 	return spawn(_effect_scene("implosion"), at, options)
 
@@ -435,7 +431,7 @@ func _take_free_instance(scene: PackedScene) -> VFXEffect:
 	while not pool.is_empty():
 		# Pool entries can be freed objects: effects are parented to the VFX2D
 		# layer, which belongs to the current scene, so change_scene_* frees the
-		# whole pool at once. Popping into an untyped variable is deliberate —
+		# whole pool at once. Popping into an untyped variable is deliberate:
 		# assigning a freed instance to a typed one raises an engine error before
 		# is_instance_valid() ever runs.
 		var candidate: Variant = pool.pop_back()

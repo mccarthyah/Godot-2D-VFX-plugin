@@ -46,10 +46,10 @@ func _ready() -> void:
 	await _run_all()
 	var summary := "%d checks, %d failure(s)" % [_checks, _failures]
 	if _failures == 0:
-		print("[VFX TESTS] PASS — " + summary)
+		print("[VFX TESTS] PASS: " + summary)
 		get_tree().quit(0)
 	else:
-		printerr("[VFX TESTS] FAIL — " + summary)
+		printerr("[VFX TESTS] FAIL: " + summary)
 		get_tree().quit(1)
 
 

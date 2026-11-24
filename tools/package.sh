@@ -83,7 +83,7 @@ if [ "$assetlib_only" = "1" ]; then
     fi
 
     if [ "$problems" = "1" ]; then
-        echo "AssetLib archive failed its checks — fix the issues above." >&2
+        echo "AssetLib archive failed its checks; see the FAIL lines above." >&2
         exit 1
     fi
 
@@ -111,7 +111,7 @@ zip -qr "$out" addons/vfx_2d "${excludes[@]}"
 
 echo "Packaged ${out}"
 if [ "$include_extension" = "1" ]; then
-    echo "Includes locally built GDExtension binaries — Linux/engine specific, see cpp/README.md."
+    echo "Includes locally built GDExtension binaries, Linux/engine specific. See cpp/README.md."
 else
     echo "GDScript only. Extract into a Godot project root (it contains addons/vfx_2d/)."
 fi

@@ -93,7 +93,7 @@ jobs:
           summary="$(grep -E "\[VFX TESTS\] (PASS|FAIL)" /tmp/tests.log | tail -n 1)"
           echo "::notice title=2D VFX Kit (Godot ${GODOT_VERSION})::${summary}"
           {
-            echo "### 2D VFX Kit — Godot ${GODOT_VERSION}"
+            echo "### 2D VFX Kit / Godot ${GODOT_VERSION}"
             echo ""
             echo "${summary}"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -158,8 +158,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The floor is the interesting one: it has no idea what a uid:// is, so a
-        # project.godot written by 4.7 must still resolve here.
+        # Oldest supported engine and current stable. 4.2 cannot read the
+        # uid:// autoload entries newer editors write.
         godot: ["4.2-stable", "4.7.2-stable"]
     env:
       GODOT_VERSION: ${{ matrix.godot }}
@@ -228,8 +228,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Anything error-ish in a log becomes its own annotation, so a failing
-          # run is readable from the API without downloading logs.
+          # Echo error lines as annotations so a failure is visible without
+          # downloading the job logs.
           report_errors() {
               local log="$1" label="$2" found=0 line
               while IFS= read -r line; do
@@ -246,8 +246,7 @@ jobs:
             exit 1
           fi
 
-          # Portability guard: the stored autoload must be a res:// path so the
-          # same project.godot still opens on 4.2, whatever wrote it.
+          # The stored autoload must be a res:// path, not a uid:// reference.
           if ! grep -q '^VFX2D="\*res://addons/vfx_2d/vfx_2d.gd"' "$INSTALL_PROJECT/project.godot"; then
             echo "::error title=Autoload::The plugin did not persist a res:// autoload entry"
             grep -A3 '\[autoload\]' "$INSTALL_PROJECT/project.godot" || true

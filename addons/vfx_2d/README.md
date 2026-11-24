@@ -1,22 +1,22 @@
-# 2D VFX Kit — addon
+# 2D VFX Kit addon
 
 Procedural, asset-free 2D effects for Godot 4.2+. No PNGs, no audio, no import
 step: every effect is drawn with `_draw()` and `CPUParticles2D`, so it scales to
 any resolution and adds nothing to your resource budget.
 
-This folder is the addon. Everything below works from inside it — you do not need
+This folder is the addon. Everything below works from inside it; you do not need
 the rest of the repository (demo, gallery, tests) to use the kit.
 
 ## Enable it
 
 1. Copy `addons/vfx_2d/` into your project (or install the release archive into
-   the project root — it already has the `addons/` level).
+   the project root; it already has the `addons/` level).
 2. **Project → Project Settings → Plugins**, enable **2D VFX Kit**.
    That registers the `VFX2D` autoload for you.
 3. Check the Output panel: `[2D VFX Kit] Registered the VFX2D autoload.`
 
 The plugin adds the autoload once and saves it, so it survives restarts and ends
-up in your exports. It never removes it again — disable the plugin and the
+up in your exports. It never removes it again: disable the plugin and the
 autoload stays, because it is the runtime API.
 
 Prefer to wire it up yourself? Tick **Advanced Settings** in the plugins tab and
@@ -55,7 +55,7 @@ var ribbon := VFX2D.trail(bullet, {"history": 0.3})
 var gate := VFX2D.portal(door.global_position)
 ```
 
-Every spawner takes an `options` dictionary of exported properties — pass any
+Every spawner takes an `options` dictionary of exported properties; pass any
 property by name, and typos produce a warning instead of a crash. Every effect
 carries a `chaos` knob (`0` = tidy and symmetric, `1` = the wildest it gets),
 reseeded on every `play()`, so pooled effects never repeat themselves.
@@ -84,15 +84,15 @@ properties `use_streaks` / `streak_count` are ignored when it is absent. See
 
 ## Troubleshooting
 
-- **`VFX2D` is not declared** — the plugin is not enabled, or the autoload was
+- **`VFX2D` is not declared**: the plugin is not enabled, or the autoload was
   removed. Check Project Settings → Autoload for an entry named `VFX2D`.
-- **Unknown class `VFXEffect` / parse errors on first open** — let the editor
+- **Unknown class `VFXEffect` / parse errors on first open**: let the editor
   finish scanning (the global class cache is built once), or run
   `godot --headless --path . --import` once from a terminal.
-- **Effects appear behind your sprites** — one-shots are parented to a
+- **Effects appear behind your sprites**: one-shots are parented to a
   `VFX2D_Layer` node at `z_index = 100`. Change `container_node_name` /
   edit the layer's `z_index` if your project uses a different convention.
-- **Effects appear at the wrong place after a camera move** — spawn with global
+- **Effects appear at the wrong place after a camera move**: spawn with global
   positions; the layer is parented to the current scene, not to the camera.
 
 ## License

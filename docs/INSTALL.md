@@ -50,7 +50,7 @@ cp -r vendor/vfx/addons/vfx_2d addons/vfx_2d
 ```
 
 Pinning a submodule is the nicest option if you want to review updates before
-they land. Keep only `addons/vfx_2d/` in your project — the rest of the repo
+they land. Keep only `addons/vfx_2d/` in your project; the rest of the repo
 (demo, gallery, tests, `cpp/`) is development material.
 
 ---
@@ -69,7 +69,7 @@ That is the editor plugin doing its only job: adding
 `res://addons/vfx_2d/vfx_2d.gd` as an autoload named `VFX2D` and saving the
 setting straight away, so it survives the session and lands in your export.
 
-The plugin never removes the autoload — not when you disable it, not when the
+The plugin never removes the autoload, not when you disable it and not when the
 editor closes. It is the runtime API, so pulling it out would break
 `godot --path .` runs and exports made with the plugin switched off. Remove the
 entry from **Project Settings → Autoload** yourself if you want it gone.
@@ -104,7 +104,7 @@ func _ready() -> void:
 	print("effects dir: ", VFX2D.get_script().resource_path.get_base_dir())
 ```
 
-If `VFX2D` is reported as an unknown identifier, the plugin is not enabled — go
+If `VFX2D` is reported as an unknown identifier the plugin is not enabled. Go
 back to step 2.
 
 ---
@@ -194,7 +194,7 @@ VFX2D.beam(from, to, {"width": 10.0, "pulse_speed": 1400.0})
 
 Unknown keys warn instead of crashing, so typos are loud but harmless. Every
 effect also exports `chaos` (`0.0`–`1.0`), reseeded per play, which changes the
-*shape* of the geometry rather than just the speed.
+shape of the geometry rather than the speed alone.
 
 ---
 
@@ -209,7 +209,7 @@ extension:
 ```
 
 Prebuilt Linux libraries ship in `vfx_2d-<version>-cpp.zip`. Binaries are
-platform *and* engine-version specific, so build your own for other targets.
+specific to the platform and engine version, so build your own for other targets.
 Effects attach the layer automatically when it is present (`use_streaks`,
 `streak_count`); nothing changes if it is not.
 
@@ -233,16 +233,16 @@ enabled. Your autoload setting and any code are untouched; check
 | --- | --- |
 | `Identifier "VFX2D" not declared` | Plugin not enabled, or autoload deleted. Enable the plugin, or add the autoload yourself (step 2) |
 | `--headless` run hangs, or parses fail, on a copy you never opened in the editor | Godot needs an import pass before it knows the project's classes: run `godot --headless --path . --import` once, or open the project in the editor first. The editor does this for you |
-| `Could not find type "VFXEffect"` on first open | Should not happen from 0.5.1 on — the addon resolves its base class by path. If you see it on an older copy, update; otherwise let the editor finish its initial scan |
+| `Could not find type "VFXEffect"` on first open | Should not happen from 0.5.1 on: the addon resolves its base class by path. If you see it on an older copy, update; otherwise let the editor finish its initial scan |
 | Effects render behind sprites | They live on a `VFX2D_Layer` node at `z_index = 100`; adjust that layer or your own z-indices |
-| Nothing appears at all | Spawn positions are global — check the point is on screen, and that the effect is not culled by a `CanvasLayer`/camera setup |
+| Nothing appears at all | Spawn positions are global, so check the point is on screen, and that the effect is not culled by a `CanvasLayer`/camera setup |
 | Effects vanish after `change_scene_to_file()` | By design: the layer belongs to the scene. Spawn again after the change; the pool self-cleans |
 | Demo/gallery "missing" | The addon archive has no `demo/`; grab the `-project.zip` archive or the repo if you want the gallery |
 | Extension not loading | Check the version in `bin/` matches your engine; rebuild with `tools/build_extension.sh`. The kit still works without it |
-| Warnings about unknown option keys | The key is not an exported property — check the effect's script for the real name |
+| Warnings about unknown option keys | The key is not an exported property; check the effect's script for the real name |
 
 ---
 
 ## License
 
-MIT — see [LICENSE](../LICENSE). Bundling it into a commercial game is fine.
+MIT, see [LICENSE](../LICENSE). Bundling it into a commercial game is fine.

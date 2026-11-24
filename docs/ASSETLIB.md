@@ -11,7 +11,7 @@ This is the checklist for shipping a release of the 2D VFX Kit to the
 # -> dist/vfx_2d-<version>-assetlib.zip
 ```
 
-That archive is the addon only — no `demo/`, `tests/`, `cpp/` or binaries — and
+That archive is the addon only (no `demo/`, `tests/`, `cpp/` or binaries), and
 it is laid out the way AssetLib expects after extraction:
 
 ```
@@ -25,7 +25,7 @@ addons/vfx_2d/
 ```
 
 AssetLib extracts the zip into the user's project root, so the `addons/` level
-must be the first path in the archive — that is what `--assetlib` guarantees. The
+must be the first path in the archive, which is what `--assetlib` guarantees. The
 script then checks the archive it just wrote, and exits non-zero if anything is
 off:
 
@@ -48,7 +48,7 @@ been validated for submission, and uploading either works.
 
 - [ ] `addons/vfx_2d/plugin.cfg` has the **new** version (`version="0.5.1"`).
 - [ ] `CHANGELOG.md` has an entry for it, with a link reference at the bottom.
-- [ ] `./tools/package.sh --assetlib` was run *after* the version bump.
+- [ ] `./tools/package.sh --assetlib` was run after the version bump.
 - [ ] The suite is green on stock 4.2/4.3/4.7.2 (CI does this on every push).
 - [ ] `godot --headless --path . res://tests/test_runner.tscn` passes locally.
 - [ ] The archive installs into an empty project: extract, enable, verify (see
@@ -68,7 +68,7 @@ Open <https://godotengine.org/asset-library/asset/submit> and fill it in:
 | Repository URL | `https://github.com/mccarthyah/Godot-2D-VFX-plugin` |
 | Issue tracker URL | `https://github.com/mccarthyah/Godot-2D-VFX-plugin/issues` |
 | License | **MIT** |
-| Title | `2D VFX Kit — procedural effects, no assets` |
+| Title | `2D VFX Kit: procedural effects, no assets` |
 | Description | short paragraph: 24 effects + 8 modifiers, pooled, `chaos` knob, optional C++ streak layer, works without it |
 | Preview image | a 16:9 frame of the gallery (see below) |
 | Tags | `2d`, `vfx`, `effects`, `particles`, `procedural`, `juice` |
@@ -92,24 +92,24 @@ referencing it from the top of `README.md`.
 - A reviewer approves the entry; until then the asset is visible only to you.
 - Updates do **not** need a new submission: use **Edit** on the asset page,
   bump the version, and upload the new `-assetlib.zip`.
-- Keep the version in `plugin.cfg` authoritative — the packaging script reads it,
+- Keep the version in `plugin.cfg` authoritative: the packaging script reads it,
   and so does the editor's plugin list.
 - If the API changes, say so in `CHANGELOG.md` under **Changed**/**Removed**;
   AssetLib shows the description, not the changelog.
 
 ## 6. Alternatives worth doing anyway
 
-- **GitHub Releases** — attach all three archives (`-project.zip` for the demo
+- **GitHub Releases**: attach all three archives (`-project.zip` for the demo
   and gallery, `-cpp.zip` for prebuilt Linux libraries). This is what the README
   links to, and it works before AssetLib approval.
-- **A `.gitattributes` `export-ignore` list** — keeps demo/tests out of
+- **A `.gitattributes` `export-ignore` list**: keeps demo/tests out of
   `git archive` output if you ever distribute that way.
 
-## 7. What *not* to ship to AssetLib
+## 7. What not to ship to AssetLib
 
-- `addons/vfx_2d/bin/` and `vfx_streaks.gdextension` — platform- and
+- `addons/vfx_2d/bin/` and `vfx_streaks.gdextension`: platform- and
   engine-version-specific; ship them in the separate `-cpp` archive instead.
-- `demo/`, `tests/`, `tools/`, `cpp/` — development material, and the demo needs
+- `demo/`, `tests/`, `tools/`, `cpp/`: development material, and the demo needs
   its own `project.godot` to run.
-- `.godot/`, `dist/`, `godot-cpp/` — caches and build products (already ignored
+- `.godot/`, `dist/`, `godot-cpp/`: caches and build products (already ignored
   by `.gitignore`).

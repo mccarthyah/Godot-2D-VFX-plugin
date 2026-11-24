@@ -30,14 +30,12 @@ dist/
 # macOS
 .DS_Store
 
-# Files pulled from connected apps (Google Drive etc.) land here
-/google_drive/
-
 # C++ GDExtension build products (rebuild with tools/build_extension.sh)
 /cpp/godot-cpp/
 /cpp/.sconsign.dblite
 /cpp/.scons_env.json
 /cpp/.sconf_temp/
+*.os
 /addons/vfx_2d/bin/
 /addons/vfx_2d/vfx_streaks.gdextension
 /addons/vfx_2d/vfx_streaks.gdextension.uid
