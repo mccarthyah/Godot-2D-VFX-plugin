@@ -31,6 +31,22 @@ signal effect_finished(effect: VFXEffect)
 ## need the cache.
 const VFXEffect := preload("res://addons/vfx_2d/core/vfx_effect.gd")
 
+# The same reason applies to the concrete classes named by the spawners'
+# return types: preloads resolve immediately, global names do not.
+const ChainLightningEffect := preload("res://addons/vfx_2d/effects/chain_lightning.gd")
+const BlinkEffect := preload("res://addons/vfx_2d/effects/blink.gd")
+const FrostBurstEffect := preload("res://addons/vfx_2d/effects/frost_burst.gd")
+const AcidSplashEffect := preload("res://addons/vfx_2d/effects/acid_splash.gd")
+const ImpactCrackEffect := preload("res://addons/vfx_2d/effects/impact_crack.gd")
+const ShieldBubble := preload("res://addons/vfx_2d/effects/shield_bubble.gd")
+const Tether := preload("res://addons/vfx_2d/effects/tether.gd")
+const Vortex := preload("res://addons/vfx_2d/effects/vortex.gd")
+const BeamEffect := preload("res://addons/vfx_2d/effects/beam.gd")
+const PortalEffect := preload("res://addons/vfx_2d/effects/portal.gd")
+const RuneCircle := preload("res://addons/vfx_2d/effects/rune_circle.gd")
+const TrailEffect := preload("res://addons/vfx_2d/effects/trail.gd")
+const CooldownRing := preload("res://addons/vfx_2d/effects/cooldown_ring.gd")
+
 @export_group("Pooling")
 ## Maximum number of idle instances kept per effect scene. Finished effects
 ## beyond this budget are freed instead of pooled.
