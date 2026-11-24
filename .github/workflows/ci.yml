@@ -50,7 +50,10 @@ jobs:
       - name: Run headless test suite
         run: |
           set -o pipefail
+          set +e
           "$GODOT_BIN" --headless --path . res://tests/test_runner.tscn 2>&1 | tee /tmp/tests.log
+          suite_status="${PIPESTATUS[0]}"
+          set -e
           # Surface the offending log lines as annotations: the step log itself is
           # not always retrievable from a restricted network.
           report_log() {
@@ -64,6 +67,11 @@ jobs:
               echo "::error title=2D VFX Kit (Godot ${GODOT_VERSION})::${line}"
             done
           }
+          if [ "${suite_status}" -ne 0 ]; then
+            echo "::error::The suite exited with status ${suite_status}"
+            grep -E "VFX TESTS|SCRIPT ERROR|Parse Error|ERROR:|at: " /tmp/tests.log | tail -n 8 | report_log
+            exit 1
+          fi
           if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/tests.log; then
             echo "::error::GDScript errors were reported during the test run"
             grep -E "VFX TESTS|SCRIPT ERROR|Parse Error|ERROR:|at: " /tmp/tests.log | tail -n 8 | report_log
@@ -94,9 +102,19 @@ jobs:
       - name: Demo smoke run
         run: |
           set -o pipefail
+          set +e
           "$GODOT_BIN" --headless --path . --fixed-fps 60 --quit-after 300 2>&1 | tee /tmp/demo.log
+          demo_status="${PIPESTATUS[0]}"
+          set -e
           if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/demo.log; then
             echo "::error::GDScript errors were reported while running the demo scene"
+            tail -n 8 /tmp/demo.log | while IFS= read -r line; do
+              echo "::error title=demo (Godot ${GODOT_VERSION})::${line//%/%25}"
+            done
+            exit 1
+          fi
+          if [ "${demo_status}" -ne 0 ]; then
+            echo "::error::The demo exited with status ${demo_status}"
             exit 1
           fi
 
@@ -105,10 +123,20 @@ jobs:
           set -o pipefail
           # The gallery cycles all four effects, so this exercises every spawn
           # path (and the C++ streak layer when present) without any input.
+          set +e
           "$GODOT_BIN" --headless --path . res://demo/gallery.tscn \
             --fixed-fps 60 --quit-after 400 2>&1 | tee /tmp/gallery.log
+          gallery_status="${PIPESTATUS[0]}"
+          set -e
           if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/gallery.log; then
             echo "::error::GDScript errors were reported while running the gallery scene"
+            tail -n 8 /tmp/gallery.log | while IFS= read -r line; do
+              echo "::error title=gallery (Godot ${GODOT_VERSION})::${line//%/%25}"
+            done
+            exit 1
+          fi
+          if [ "${gallery_status}" -ne 0 ]; then
+            echo "::error::The gallery exited with status ${gallery_status}"
             exit 1
           fi
 
