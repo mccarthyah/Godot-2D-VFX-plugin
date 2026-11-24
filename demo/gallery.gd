@@ -437,7 +437,7 @@ func _advance_timers(delta: float) -> void:
 
 
 func _clear_effects() -> void:
-	VFX2D.stop_all()
+	Sparkform.stop_all()
 	_persistent.clear()
 	_shield = null
 	_hit_clock = 0.0
@@ -486,84 +486,84 @@ func _fire(index: int) -> void:
 	match String(cell["effect"]):
 		"hit_spark":
 			var direction := Vector2.from_angle(_rng.randf_range(-PI, PI))
-			VFX2D.hit_spark(center, direction, {"spark_count": 16, "spark_speed": 340.0})
+			Sparkform.hit_spark(center, direction, {"spark_count": 16, "spark_speed": 340.0})
 		"explosion":
-			VFX2D.explosion(center, {"radius": 72.0})
+			Sparkform.explosion(center, {"radius": 72.0})
 		"lightning":
-			VFX2D.lightning(center + Vector2(-span * 0.2, -46.0),
+			Sparkform.lightning(center + Vector2(-span * 0.2, -46.0),
 					center + Vector2(span * 0.2, 34.0),
 					{"segments": 14, "branches": 3, "duration": 0.3})
 		"cooldown_ring":
 			if is_instance_valid(_ring_target):
 				_ring_target.position = center
-				VFX2D.cooldown_ring(_ring_target, 1.8,
+				Sparkform.cooldown_ring(_ring_target, 1.8,
 						{"radius": 56.0, "width": 9.0, "tick_count": 12})
 		"smoke_puff":
-			VFX2D.smoke_puff(center, {"radius": 58.0, "rise": 0.7})
+			Sparkform.smoke_puff(center, {"radius": 58.0, "rise": 0.7})
 		"shockwave":
-			VFX2D.shockwave(center, {"radius": 60.0, "expansion": 2.4})
+			Sparkform.shockwave(center, {"radius": 60.0, "expansion": 2.4})
 		"muzzle_flash":
-			VFX2D.muzzle_flash(center + Vector2(-span * 0.18, 0.0), Vector2.RIGHT,
+			Sparkform.muzzle_flash(center + Vector2(-span * 0.18, 0.0), Vector2.RIGHT,
 					{"length": 86.0, "cone_degrees": 30.0})
 		"heal_sparkle":
-			VFX2D.heal_sparkle(center, {"radius": 52.0, "mote_count": 16})
+			Sparkform.heal_sparkle(center, {"radius": 52.0, "mote_count": 16})
 		"slash_arc":
 			var aim := Vector2.from_angle(_rng.randf_range(-PI, PI))
-			VFX2D.slash_arc(center, aim, {"radius": 68.0, "sparkle_count": 8})
+			Sparkform.slash_arc(center, aim, {"radius": 68.0, "sparkle_count": 8})
 		"debris_burst":
-			VFX2D.debris_burst(center + Vector2(0.0, 26.0),
+			Sparkform.debris_burst(center + Vector2(0.0, 26.0),
 					{"chunk_count": 12, "gravity": 780.0, "speed": 210.0})
 		"ripple":
-			VFX2D.ripple(center + Vector2(0.0, 30.0), {"radius": 78.0, "rings": 3})
+			Sparkform.ripple(center + Vector2(0.0, 30.0), {"radius": 78.0, "rings": 3})
 		"implosion":
-			VFX2D.implosion(center, {"radius": 66.0, "mote_count": 22})
+			Sparkform.implosion(center, {"radius": 66.0, "mote_count": 22})
 		"rune_circle":
 			_stop_persistent(index)
 			if is_instance_valid(_rune_target):
 				_rune_target.position = center
-				_persistent[index] = VFX2D.rune_circle(_rune_target, 1.1,
+				_persistent[index] = Sparkform.rune_circle(_rune_target, 1.1,
 						{"radius": 44.0, "fill": 0.7, "segments": 10})
 		"portal":
 			_stop_persistent(index)
-			_persistent[index] = VFX2D.portal(center,
+			_persistent[index] = Sparkform.portal(center,
 					{"width": 52.0, "height": 68.0, "lifetime": 1.2})
 		"beam":
 			_stop_persistent(index)
-			_persistent[index] = VFX2D.beam(center + Vector2(-span * 0.26, 20.0),
+			_persistent[index] = Sparkform.beam(center + Vector2(-span * 0.26, 20.0),
 					center + Vector2(span * 0.26, -20.0),
 					{"width": 6.0, "lifetime": 1.4})
 		"trail":
 			_stop_persistent(index)
 			if is_instance_valid(_trail_flyer):
-				_persistent[index] = VFX2D.trail(_trail_flyer,
+				_persistent[index] = Sparkform.trail(_trail_flyer,
 						{"history": 0.55, "width_start": 7.0, "mote_count": 9})
 		"frost_burst":
-			VFX2D.frost_burst(center, {"shard_count": 14, "speed": 260.0})
+			Sparkform.frost_burst(center, {"shard_count": 14, "speed": 260.0})
 		"acid_splash":
-			VFX2D.acid_splash(center + Vector2(0.0, 30.0),
+			Sparkform.acid_splash(center + Vector2(0.0, 30.0),
 					{"bubble_count": 10, "splat_radius": 34.0})
 		"chain_lightning":
 			var first: Vector2 = center + Vector2(-span * 0.26, -30.0)
-			VFX2D.chain(first, [
+			Sparkform.chain(first, [
 				center + Vector2(span * 0.05, 26.0),
 				center + Vector2(span * 0.28, -22.0),
 			], {"duration": 0.45})
 		"vortex":
 			_stop_persistent(index)
-			_persistent[index] = VFX2D.vortex(center,
+			_persistent[index] = Sparkform.vortex(center,
 					{"radius": 62.0, "lifetime": 1.6})
 		"blink":
-			VFX2D.blink(center + Vector2(-span * 0.3, 30.0),
+			Sparkform.blink(center + Vector2(-span * 0.3, 30.0),
 					center + Vector2(span * 0.3, -30.0))
 		"impact_crack":
-			VFX2D.impact_crack(center + Vector2(0.0, 34.0),
+			Sparkform.impact_crack(center + Vector2(0.0, 34.0),
 					{"radius": 96.0, "crack_count": 8})
 		"shield_bubble":
 			_stop_persistent(index)
 			_shield = null
 			if is_instance_valid(_shield_target):
 				_shield_target.position = center
-				var bubble: ShieldBubble = VFX2D.shield(_shield_target,
+				var bubble: ShieldBubble = Sparkform.shield(_shield_target,
 						{"radius": 56.0, "lifetime": 1.8, "hex_size": 11.0})
 				if bubble != null:
 					_shield = bubble
@@ -574,7 +574,7 @@ func _fire(index: int) -> void:
 			if is_instance_valid(_tether_a) and is_instance_valid(_tether_b):
 				_tether_a.position = center + Vector2(-span * 0.3, 18.0)
 				_tether_b.position = center + Vector2(span * 0.3, -18.0)
-				_persistent[index] = VFX2D.tether(_tether_a, _tether_b,
+				_persistent[index] = Sparkform.tether(_tether_a, _tether_b,
 						{"sag": 26.0, "link_count": 12})
 
 
@@ -639,7 +639,7 @@ func _draw() -> void:
 
 func _draw_header() -> void:
 	var page: Dictionary = PAGES[_page]
-	_draw_text("2D VFX Kit: effect gallery", Vector2(MARGIN, 36.0), 24, TITLE_COLOR)
+	_draw_text("Sparkform: effect gallery", Vector2(MARGIN, 36.0), 24, TITLE_COLOR)
 	_draw_text("%d/%d · %s · %s" % [_page + 1, get_page_count(), page["title"], page["note"]],
 			Vector2(MARGIN, 60.0), 14, TITLE_COLOR)
 	var hint := "←/→ or Tab: pages · 1-4 or click: fire one cell · Space pause"
@@ -667,8 +667,8 @@ func _draw_status(view: Vector2) -> void:
 	var streaks: String = "on" if VFXStreaks.is_available() else "off"
 	var status := "FPS %d   ·   active %d   ·   persistent %d   ·   C++ streaks %s" % [
 			Engine.get_frames_per_second(),
-			VFX2D.get_active_count(),
-			VFX2D.get_persistent_count(),
+			Sparkform.get_active_count(),
+			Sparkform.get_persistent_count(),
 			streaks,
 	]
 	if _paused:

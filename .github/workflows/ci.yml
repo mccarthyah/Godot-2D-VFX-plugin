@@ -64,7 +64,7 @@ jobs:
                 break
               fi
               line="${line//%/%25}"
-              echo "::error title=2D VFX Kit (Godot ${GODOT_VERSION})::${line}"
+              echo "::error title=Sparkform (Godot ${GODOT_VERSION})::${line}"
             done
           }
           if [ "${suite_status}" -ne 0 ]; then
@@ -91,9 +91,9 @@ jobs:
             exit 1
           fi
           summary="$(grep -E "\[VFX TESTS\] (PASS|FAIL)" /tmp/tests.log | tail -n 1)"
-          echo "::notice title=2D VFX Kit (Godot ${GODOT_VERSION})::${summary}"
+          echo "::notice title=Sparkform (Godot ${GODOT_VERSION})::${summary}"
           {
-            echo "### 2D VFX Kit / Godot ${GODOT_VERSION}"
+            echo "### Sparkform / Godot ${GODOT_VERSION}"
             echo ""
             echo "${summary}"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -187,10 +187,10 @@ jobs:
           set -euo pipefail
           project="$RUNNER_TEMP/install_check"
           mkdir -p "$project"
-          unzip -q dist/vfx_2d-*-assetlib.zip -d "$project"
-          test -f "$project/addons/vfx_2d/plugin.cfg"
-          test -f "$project/addons/vfx_2d/README.md"
-          test -f "$project/addons/vfx_2d/LICENSE"
+          unzip -q dist/sparkform-*-assetlib.zip -d "$project"
+          test -f "$project/addons/sparkform/plugin.cfg"
+          test -f "$project/addons/sparkform/README.md"
+          test -f "$project/addons/sparkform/LICENSE"
           cat > "$project/project.godot" <<'EOF'
           config_version=5
 
@@ -202,16 +202,16 @@ jobs:
 
           [editor_plugins]
 
-          enabled=PackedStringArray("res://addons/vfx_2d/plugin.cfg")
+          enabled=PackedStringArray("res://addons/sparkform/plugin.cfg")
           EOF
           cat > "$project/install_check.gd" <<'EOF'
           extends Node
 
           func _ready() -> void:
-              VFX2D.hit_spark(Vector2(40.0, 40.0), Vector2.UP)
-              print("[INSTALL CHECK] active=%d" % VFX2D.get_active_count())
+              Sparkform.hit_spark(Vector2(40.0, 40.0), Vector2.UP)
+              print("[INSTALL CHECK] active=%d" % Sparkform.get_active_count())
               await get_tree().create_timer(0.3).timeout
-              print("[INSTALL CHECK] autoload=", VFX2D.get_script().resource_path)
+              print("[INSTALL CHECK] autoload=", Sparkform.get_script().resource_path)
               get_tree().quit(0)
           EOF
           cat > "$project/install_check.tscn" <<'EOF'
@@ -247,7 +247,7 @@ jobs:
           fi
 
           # The stored autoload must be a res:// path, not a uid:// reference.
-          if ! grep -q '^VFX2D="\*res://addons/vfx_2d/vfx_2d.gd"' "$INSTALL_PROJECT/project.godot"; then
+          if ! grep -q '^Sparkform="\*res://addons/sparkform/sparkform.gd"' "$INSTALL_PROJECT/project.godot"; then
             echo "::error title=Autoload::The plugin did not persist a res:// autoload entry"
             grep -A3 '\[autoload\]' "$INSTALL_PROJECT/project.godot" || true
             exit 1
@@ -260,4 +260,4 @@ jobs:
             exit 1
           fi
           grep -q "\[INSTALL CHECK\] active=1" /tmp/install_run.log
-          grep -q "\[INSTALL CHECK\] autoload=res://addons/vfx_2d/vfx_2d.gd" /tmp/install_run.log
+          grep -q "\[INSTALL CHECK\] autoload=res://addons/sparkform/sparkform.gd" /tmp/install_run.log

@@ -1,5 +1,5 @@
 extends Node2D
-## Interactive sandbox for the 2D VFX Kit.
+## Interactive sandbox for Sparkform.
 ##
 ## Left click anywhere to pop a hit spark, use the buttons (or keys 1-8) to fire
 ## the one-shots, and press Space to toggle the idle auto-demo. Keys 9 and 0 add
@@ -68,14 +68,14 @@ func _process(delta: float) -> void:
 		if _auto_demo_clock >= AUTO_DEMO_INTERVAL:
 			_auto_demo_clock = 0.0
 			var spot := Vector2(_rng.randf_range(280.0, 1020.0), _rng.randf_range(220.0, 560.0))
-			VFX2D.hit_spark(spot, Vector2.from_angle(_rng.randf_range(-PI, PI)))
+			Sparkform.hit_spark(spot, Vector2.from_angle(_rng.randf_range(-PI, PI)))
 	_update_persistent(delta)
 	if _status_label != null:
 		_status_label.text = ("FPS %d   ·   active %d   ·   persistent %d"
 				+ "   ·   auto demo %s   ·   C++ streaks %s") % [
 			Engine.get_frames_per_second(),
-			VFX2D.get_active_count(),
-			VFX2D.get_persistent_count(),
+			Sparkform.get_active_count(),
+			Sparkform.get_persistent_count(),
 			"on" if _auto_demo else "off",
 			"on" if VFXStreaks.is_available() else "off",
 		]
@@ -143,7 +143,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_N:
 				_on_toggle_vortex()
 			KEY_C:
-				VFX2D.stop_all()
+				Sparkform.stop_all()
 			KEY_G:
 				_open_gallery()
 			KEY_SPACE:
@@ -179,82 +179,82 @@ func _draw_crosshair(at: Vector2) -> void:
 
 func _spark_at(at: Vector2) -> void:
 	var direction: Vector2 = at - get_viewport_rect().size * 0.5
-	VFX2D.hit_spark(at, direction)
+	Sparkform.hit_spark(at, direction)
 
 
 func _on_spawn_hit_spark() -> void:
 	var direction := Vector2(
 			_rng.randf_range(-1.0, 1.0),
 			_rng.randf_range(-1.0, 0.2))
-	VFX2D.hit_spark(SPARK_SPOT, direction)
+	Sparkform.hit_spark(SPARK_SPOT, direction)
 
 
 func _on_spawn_explosion() -> void:
-	VFX2D.explosion(EXPLOSION_SPOT)
+	Sparkform.explosion(EXPLOSION_SPOT)
 
 
 func _on_spawn_lightning() -> void:
 	var target: Vector2 = _mouse_position
 	if target.y < 150.0:
 		target = EXPLOSION_SPOT
-	VFX2D.lightning(LIGHTNING_FROM, target, {"branches": 3, "duration": 0.35})
+	Sparkform.lightning(LIGHTNING_FROM, target, {"branches": 3, "duration": 0.35})
 
 
 func _on_smoke_puff() -> void:
-	VFX2D.smoke_puff(SMOKE_FEET + Vector2(_rng.randf_range(-40.0, 40.0), 0.0))
+	Sparkform.smoke_puff(SMOKE_FEET + Vector2(_rng.randf_range(-40.0, 40.0), 0.0))
 
 
 func _on_shockwave() -> void:
-	VFX2D.shockwave(SHOCKWAVE_SPOT, {"radius": 90.0})
+	Sparkform.shockwave(SHOCKWAVE_SPOT, {"radius": 90.0})
 
 
 func _on_muzzle_flash() -> void:
 	var aim: Vector2 = _mouse_position - MUZZLE_ORIGIN
-	VFX2D.muzzle_flash(MUZZLE_ORIGIN, aim)
+	Sparkform.muzzle_flash(MUZZLE_ORIGIN, aim)
 
 
 func _on_heal_sparkle() -> void:
-	VFX2D.heal_sparkle(HEAL_SPOT)
+	Sparkform.heal_sparkle(HEAL_SPOT)
 
 
 func _on_slash_arc() -> void:
 	var aim: Vector2 = _mouse_position - SLASH_SPOT
-	VFX2D.slash_arc(SLASH_SPOT, aim)
+	Sparkform.slash_arc(SLASH_SPOT, aim)
 
 
 func _on_debris_burst() -> void:
-	VFX2D.debris_burst(DEBRIS_SPOT)
+	Sparkform.debris_burst(DEBRIS_SPOT)
 
 
 func _on_ripple() -> void:
-	VFX2D.ripple(RIPPLE_SPOT)
+	Sparkform.ripple(RIPPLE_SPOT)
 
 
 func _on_implosion() -> void:
-	VFX2D.implosion(IMPLOSION_SPOT)
+	Sparkform.implosion(IMPLOSION_SPOT)
 
 
 func _on_frost_burst() -> void:
-	VFX2D.frost_burst(FROST_SPOT, {"shard_count": 18})
+	Sparkform.frost_burst(FROST_SPOT, {"shard_count": 18})
 
 
 func _on_chain_lightning() -> void:
-	VFX2D.chain(LIGHTNING_FROM, [_mouse_position,
+	Sparkform.chain(LIGHTNING_FROM, [_mouse_position,
 			TARGET_POSITION + Vector2(-60.0, 40.0)], {"duration": 0.5})
 
 
 func _on_acid_splash() -> void:
-	VFX2D.acid_splash(ACID_SPOT)
+	Sparkform.acid_splash(ACID_SPOT)
 
 
 func _on_impact_crack() -> void:
-	VFX2D.impact_crack(CRACK_SPOT, {"radius": 170.0})
+	Sparkform.impact_crack(CRACK_SPOT, {"radius": 170.0})
 
 
 func _on_blink() -> void:
 	if not is_instance_valid(_flyer):
 		return
-	VFX2D.blink(_flyer.global_position, _mouse_position)
+	Sparkform.blink(_flyer.global_position, _mouse_position)
 	_flyer.position = _mouse_position
 
 
@@ -263,7 +263,7 @@ func _on_toggle_shield() -> void:
 		_shield.stop()
 		_shield = null
 		return
-	_shield = VFX2D.shield(_ring_target, {"radius": 74.0})
+	_shield = Sparkform.shield(_ring_target, {"radius": 74.0})
 	if _shield != null:
 		_shield.hit(_mouse_position)
 
@@ -274,7 +274,7 @@ func _on_toggle_tether() -> void:
 		_tether = null
 		return
 	if is_instance_valid(_flyer):
-		_tether = VFX2D.tether(_ring_target, _flyer, {"sag": 60.0})
+		_tether = Sparkform.tether(_ring_target, _flyer, {"sag": 60.0})
 
 
 func _on_toggle_vortex() -> void:
@@ -282,7 +282,7 @@ func _on_toggle_vortex() -> void:
 		_vortex.stop()
 		_vortex = null
 		return
-	_vortex = VFX2D.vortex(_mouse_position, {"radius": 120.0})
+	_vortex = Sparkform.vortex(_mouse_position, {"radius": 120.0})
 
 
 func _on_toggle_beam() -> void:
@@ -290,7 +290,7 @@ func _on_toggle_beam() -> void:
 		_beam.stop()
 		_beam = null
 		return
-	_beam = VFX2D.beam(MUZZLE_ORIGIN, _mouse_position, {"width": 7.0})
+	_beam = Sparkform.beam(MUZZLE_ORIGIN, _mouse_position, {"width": 7.0})
 
 
 func _on_toggle_portal() -> void:
@@ -298,7 +298,7 @@ func _on_toggle_portal() -> void:
 		_portal.stop()
 		_portal = null
 		return
-	_portal = VFX2D.portal(TARGET_POSITION, {"width": 70.0, "height": 94.0})
+	_portal = Sparkform.portal(TARGET_POSITION, {"width": 70.0, "height": 94.0})
 
 
 func _on_toggle_rune() -> void:
@@ -307,7 +307,7 @@ func _on_toggle_rune() -> void:
 		_rune = null
 		return
 	_cast_clock = 0.0
-	_rune = VFX2D.rune_circle(_ring_target, 0.0, {"radius": 62.0, "segments": 14})
+	_rune = Sparkform.rune_circle(_ring_target, 0.0, {"radius": 62.0, "segments": 14})
 
 
 func _on_toggle_trail() -> void:
@@ -316,7 +316,7 @@ func _on_toggle_trail() -> void:
 		_trail = null
 		return
 	if is_instance_valid(_flyer):
-		_trail = VFX2D.trail(_flyer, {"history": 0.4})
+		_trail = Sparkform.trail(_flyer, {"history": 0.4})
 
 
 ## Keeps the live persistent modifiers pointed at the right places.
@@ -340,7 +340,7 @@ func _open_gallery() -> void:
 func _on_start_cooldown_ring() -> void:
 	if is_instance_valid(_ring):
 		_ring.queue_free()
-	_ring = VFX2D.cooldown_ring(_ring_target, 2.5, {"radius": 56.0, "width": 10.0})
+	_ring = Sparkform.cooldown_ring(_ring_target, 2.5, {"radius": 56.0, "width": 10.0})
 
 
 func _make_button(text: String, callback: Callable) -> Button:
@@ -374,7 +374,7 @@ func _build_hud() -> void:
 	panel.add_child(column)
 
 	var title := Label.new()
-	title.text = "2D VFX Kit v0.5 demo"
+	title.text = "Sparkform v0.6 demo"
 	title.add_theme_font_size_override("font_size", 22)
 	column.add_child(title)
 

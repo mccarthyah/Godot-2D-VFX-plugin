@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Packages the addon into distributable archives:
 #
-#   dist/vfx_2d-<version>.zip           drop-in addon (addons/vfx_2d/ only)
-#   dist/vfx_2d-<version>-project.zip   the whole runnable project, demo and
+#   dist/sparkform-<version>.zip           drop-in addon (addons/sparkform/ only)
+#   dist/sparkform-<version>-project.zip   the whole runnable project, demo and
 #                                       effect gallery included
-#   dist/vfx_2d-<version>-assetlib.zip  editor-plugin archive for Godot AssetLib
+#   dist/sparkform-<version>-assetlib.zip  editor-plugin archive for Godot AssetLib
 #                                       (the addon folder, validated for submission)
 #
 #   ./tools/package.sh                    # both archives, pure GDScript
@@ -36,10 +36,10 @@ for arg in "$@"; do
 done
 
 if [ -z "$version" ]; then
-    version="$(sed -n 's/^version="\(.*\)"$/\1/p' addons/vfx_2d/plugin.cfg)"
+    version="$(sed -n 's/^version="\(.*\)"$/\1/p' addons/sparkform/plugin.cfg)"
 fi
 if [ -z "$version" ]; then
-    echo "Could not determine the addon version from addons/vfx_2d/plugin.cfg" >&2
+    echo "Could not determine the addon version from addons/sparkform/plugin.cfg" >&2
     exit 1
 fi
 
@@ -49,11 +49,11 @@ fi
 # makes this one submittable.
 if [ "$assetlib_only" = "1" ]; then
     mkdir -p dist
-    assetlib_out="dist/vfx_2d-${version}-assetlib.zip"
+    assetlib_out="dist/sparkform-${version}-assetlib.zip"
     rm -f "$assetlib_out"
-    zip -qr "$assetlib_out" addons/vfx_2d \
+    zip -qr "$assetlib_out" addons/sparkform \
         -x '*.DS_Store' -x '*.import' \
-        -x 'addons/vfx_2d/bin/*' -x 'addons/vfx_2d/vfx_streaks.gdextension*'
+        -x 'addons/sparkform/bin/*' -x 'addons/sparkform/vfx_streaks.gdextension*'
 
     listing="$(unzip -Z1 "$assetlib_out")"
     problems=0
@@ -63,11 +63,11 @@ if [ "$assetlib_only" = "1" ]; then
     }
 
     for required in \
-        addons/vfx_2d/plugin.cfg \
-        addons/vfx_2d/plugin.gd \
-        addons/vfx_2d/vfx_2d.gd \
-        addons/vfx_2d/README.md \
-        addons/vfx_2d/LICENSE; do
+        addons/sparkform/plugin.cfg \
+        addons/sparkform/plugin.gd \
+        addons/sparkform/sparkform.gd \
+        addons/sparkform/README.md \
+        addons/sparkform/LICENSE; do
         grep -qx "$required" <<< "$listing" || fail "missing $required"
     done
     if grep -Eq '\.(so|dll|dylib|wasm|gdextension)$' <<< "$listing"; then
@@ -99,28 +99,28 @@ suffix=""
 if [ "$include_extension" = "1" ]; then
     suffix="-cpp"
 fi
-out="dist/vfx_2d-${version}${suffix}.zip"
+out="dist/sparkform-${version}${suffix}.zip"
 rm -f "$out"
 
 excludes=(-x '*.DS_Store' -x '*.import')
 if [ "$include_extension" = "0" ]; then
-    excludes+=(-x 'addons/vfx_2d/bin/*' -x 'addons/vfx_2d/vfx_streaks.gdextension*')
+    excludes+=(-x 'addons/sparkform/bin/*' -x 'addons/sparkform/vfx_streaks.gdextension*')
 fi
 
-zip -qr "$out" addons/vfx_2d "${excludes[@]}"
+zip -qr "$out" addons/sparkform "${excludes[@]}"
 
 echo "Packaged ${out}"
 if [ "$include_extension" = "1" ]; then
     echo "Includes locally built GDExtension binaries, Linux/engine specific. See cpp/README.md."
 else
-    echo "GDScript only. Extract into a Godot project root (it contains addons/vfx_2d/)."
+    echo "GDScript only. Extract into a Godot project root (it contains addons/sparkform/)."
 fi
 
 if [ "$include_project" = "1" ]; then
-    project_out="dist/vfx_2d-${version}-project.zip"
+    project_out="dist/sparkform-${version}-project.zip"
     rm -f "$project_out"
     zip -qr "$project_out" project.godot icon.svg README.md LICENSE \
-        addons/vfx_2d demo tests "${excludes[@]}"
+        addons/sparkform demo tests "${excludes[@]}"
     echo "Packaged ${project_out}"
     echo "Open it in Godot and press F5 (demo) or F6 on demo/gallery.tscn (effect gallery)."
 fi

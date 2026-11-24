@@ -38,8 +38,8 @@ full godot-cpp build and a ~1 minute one.
 
 The script clones [godot-cpp](https://github.com/godotengine/godot-cpp) into
 `cpp/godot-cpp/` (gitignored, pinned with `GODOT_CPP_REF`, default `master`),
-builds the library, drops it in `addons/vfx_2d/bin/` and generates
-`addons/vfx_2d/vfx_streaks.gdextension`. Delete both to return to GDScript;
+builds the library, drops it in `addons/sparkform/bin/` and generates
+`addons/sparkform/vfx_streaks.gdextension`. Delete both to return to GDScript;
 nothing else in the addon needs to change.
 
 Versions: godot-cpp has no 4.7 branch, so the build pins the commit
@@ -143,7 +143,7 @@ single draw call. Passing per-vertex colours trips a
 
 | Symptom | Cause |
 | --- | --- |
-| `VFXStreaks.is_available()` is `false` | Library not built, or `addons/vfx_2d/vfx_streaks.gdextension` missing |
+| `VFXStreaks.is_available()` is `false` | Library not built, or `addons/sparkform/vfx_streaks.gdextension` missing |
 | Godot prints "Can't open dynamic library" | Built for a different platform, arch or engine version |
 | `compatibility_minimum` mismatch | Engine older than the targeted API; rebuild with `--api 4.6` |
 | `non-existent interface function: get_godot_version` | godot-cpp and engine interfaces disagree. Rebuild with `--godot <that engine>`, or the engine was built without a matching GDExtension interface |

@@ -1,8 +1,38 @@
 # Changelog
 
-All notable changes to the 2D VFX Kit are documented here.
+All notable changes to Sparkform are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.6.0] - 2026-11-24
+
+Renamed. The kit is now **Sparkform**, and the autoload is `Sparkform` instead of
+`VFX2D`.
+
+### Changed
+
+- Addon folder is `addons/sparkform/` (was `addons/vfx_2d/`), plugin name is
+  **Sparkform**, and the autoload script is `addons/sparkform/sparkform.gd`.
+- The autoload is registered as `Sparkform`. Calls read
+  `Sparkform.hit_spark(...)`, `Sparkform.explosion(...)`, and so on; find and
+  replace `VFX2D.` with `Sparkform.` when updating.
+- Archives are named `sparkform-<version>*.zip`.
+- Effect class names (`VFXEffect`, `VFXStreaks`, `HitSparkEffect`, ...) are
+  unchanged, as is the optional `VFXStreakField2D` extension.
+
+### Upgrading from 0.5.1
+
+1. Delete `addons/vfx_2d/` and the `VFX2D` entry under *Project Settings →
+   Autoload*.
+2. Drop in `addons/sparkform/` and enable **Sparkform** in *Project Settings →
+   Plugins*; the plugin registers the new autoload itself.
+3. Replace `VFX2D.` with `Sparkform.` in your scripts.
+
+### Also in this release
+
+- Comments, printed strings and docs no longer use typographic dashes or
+  emphasis italics, a few over-long comments were cut back, and the stray
+  `cpp/src/*.os` build output is no longer tracked.
 
 ## [0.5.1] - 2026-11-24
 
@@ -15,11 +45,11 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - **`docs/ASSETLIB.md`**: how to publish the kit on Godot AssetLib: archive
   layout, the submission form field by field, the preview image, and what must
   not ship.
-- **`addons/vfx_2d/README.md` and `addons/vfx_2d/LICENSE`**: the addon now
+- **`addons/sparkform/README.md` and `addons/sparkform/LICENSE`**: the addon now
   carries its own instructions and licence, so an installed copy is
   self-explanatory without the repository.
 - **`./tools/package.sh --assetlib`**: builds
-  `dist/vfx_2d-<version>-assetlib.zip` (addon + its docs, no demo, no tests, no
+  `dist/sparkform-<version>-assetlib.zip` (addon + its docs, no demo, no tests, no
   binaries), the shape AssetLib expects.
 - **A CI job that installs the packaged plugin into an empty project** on Godot
   4.2 and 4.7.2, enables it, and runs a scene against it, so packaging is
@@ -27,16 +57,16 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ### Fixed
 
-- **The editor plugin no longer removes the `VFX2D` autoload on exit.** It added
+- **The editor plugin no longer removes the `Sparkform` autoload on exit.** It added
   the autoload and then stripped it again when the editor closed, so a project
-  that relied on the plugin had no `VFX2D` at runtime. Enabling the plugin now
+  that relied on the plugin had no `Sparkform` at runtime. Enabling the plugin now
   registers the autoload, saves `project.godot` immediately, and leaves it
   alone afterwards. Disable the plugin to drop the editor hooks; delete the
   autoload entry yourself if you want it gone.
 - The stored autoload is rewritten to a `res://` path, because Godot 4.4+ records
   new autoloads as `uid://` references that 4.2 and 4.3 cannot resolve.
 - **No more "Could not find type `VFXEffect`" on a freshly installed copy.** The
-  effects now extend the base class by path and `vfx_2d.gd` preloads it, instead
+  effects now extend the base class by path and `sparkform.gd` preloads it, instead
   of relying on global `class_name` lookups that are not resolvable until Godot
   has finished scanning the project. Godot 4.2 parses the addon before that
   cache exists and printed a wall of parse errors on the first open of a brand
@@ -66,7 +96,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   - `vortex` (`Vortex`): pull field: motes spawn on the rim, spiral in and
     recycle; also sprays a ring of C++ streaks on start when the extension is
     loaded.
-- **`VFX2D.frost_burst()`, `acid_splash()`, `impact_crack()`, `chain()`,
+- **`Sparkform.frost_burst()`, `acid_splash()`, `impact_crack()`, `chain()`,
   `blink()`, `shield()`, `tether()`, `vortex()`**, plus `chaos` on all eight.
 
 ### Changed
@@ -112,7 +142,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   - `ripple`: flattened, wobbling rings plus droplets (`ripple.tscn`).
   - `implosion`: motes spiral inward, pinch into a flash, then release
     (`implosion.tscn`).
-- **`VFX2D.slash_arc()`, `debris_burst()`, `ripple()`, `implosion()`**, so every
+- **`Sparkform.slash_arc()`, `debris_burst()`, `ripple()`, `implosion()`**, so every
   one-shot spawns the same way.
 - **Persistent modifiers**, a new category: nodes that live until you stop them,
   returned by the spawner so you can keep driving them.
@@ -125,8 +155,8 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   - `trail` (`TrailEffect`): ribbon history emitter for projectiles and dashes,
     recording the target's global positions so it never inherits its rotation
     (`attach_to()`, `stop()`).
-- **`VFX2D.beam()`, `portal()`, `rune_circle()`, `trail()`** plus
-  `VFX2D.get_persistent_count()`. `stop_all()` now clears modifiers too, and a
+- **`Sparkform.beam()`, `portal()`, `rune_circle()`, `trail()`** plus
+  `Sparkform.get_persistent_count()`. `stop_all()` now clears modifiers too, and a
   trail frees itself when its target leaves the tree, so despawns leave no
   ribbon behind.
 - **`chaos` on every new effect**, one-shots and modifiers alike.
@@ -156,7 +186,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
     (`muzzle_flash.tscn`).
   - `heal_sparkle`: ascending, twinkling motes for pickups and buffs
     (`heal_sparkle.tscn`).
-- **`VFX2D.smoke_puff()`, `shockwave()`, `muzzle_flash()`, `heal_sparkle()`**, so
+- **`Sparkform.smoke_puff()`, `shockwave()`, `muzzle_flash()`, `heal_sparkle()`**, so
   all eight effects spawn the same way.
 - **`chaos` on every effect** (`0.0`–`1.0`, reseeded per `play()`): torn flash
   stars and splinters on the hit spark, lopsided lobes and ghost fronts on the
@@ -170,7 +200,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 - The gallery is now a 4×2 grid with all eight effects, keys **1**-**8** to fire
   one cell. The demo HUD hint and README list the new effects.
-- Tests cover the new effects' lifecycles, their `VFX2D` methods and the `chaos`
+- Tests cover the new effects' lifecycles, their `Sparkform` methods and the `chaos`
   knob on all eight (120 checks with the extension, 108 without).
 - `lightning`'s branch count is only exact when `chaos` is `0`; with chaos on it
   varies per flicker by design, and the suite now pins that explicitly.
@@ -193,7 +223,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - **`cpp/`**: extension sources, `SConstruct`, `cpp/README.md` with the full
   node API, tuning notes and troubleshooting.
 - **`tools/build_extension.sh`**: fetches godot-cpp, builds debug/release
-  libraries into `addons/vfx_2d/bin/`, generates the `.gdextension` descriptor,
+  libraries into `addons/sparkform/bin/`, generates the `.gdextension` descriptor,
   and can bind a specific engine build's API (`--godot`).
 - **`GDExtension` workflow**: builds the extension against stock Godot 4.7.2,
   then runs the suite and fails if the extension silently failed to load.
@@ -211,7 +241,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 - `tools/package.sh` excludes extension binaries by default (use
   `--with-extension` for a platform-specific archive) and takes `--help`.
-- `tools/package.sh` now also writes `vfx_2d-<version>-project.zip`: the complete
+- `tools/package.sh` now also writes `sparkform-<version>-project.zip`: the complete
   runnable project (demo + gallery + tests), so the demo scenes are not hidden
   behind the repo. The addon-only archive is unchanged (`--addon-only` skips it).
 - The test suite gains a C++ section (13 checks) that skips cleanly when the
@@ -222,7 +252,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 ### Fixed
 
 - Spawning an effect after a scene change no longer raises *"Trying to assign
-  invalid previously freed instance"*. Effects are parented to a `VFX2D_Layer`
+  invalid previously freed instance"*. Effects are parented to a `Sparkform_Layer`
   that belongs to the current scene, so `change_scene_*` freed the whole pool
   while the autoload still held the instances. The pool now skips freed or
   queued entries, prunes itself when a new layer is built, and `get_active_count()`
@@ -238,7 +268,7 @@ out of in a few lines.
 
 ### Added
 
-- **`VFX2D` autoload**: spawn API (`hit_spark`, `explosion`, `lightning`,
+- **`Sparkform` autoload**: spawn API (`hit_spark`, `explosion`, `lightning`,
   `cooldown_ring`, `spawn`), per-scene instance pooling, an active-effect cap,
   `stop_all()`, and `effect_spawned` / `effect_finished` signals.
 - **`VFXEffect` base class**: duration-driven one-shot effects with
@@ -250,7 +280,7 @@ out of in a few lines.
   layers, and flicker.
 - **Cooldown ring**: fill or drain arc, clockwise or counter-clockwise, optional
   tick marks; previews in the editor.
-- **Editor plugin**: registers the `VFX2D` autoload when enabled, without
+- **Editor plugin**: registers the `Sparkform` autoload when enabled, without
   overriding a hand-registered one.
 - **Demo project**: interactive sandbox scene with buttons, hotkeys, and an
   idle auto-demo.
@@ -258,8 +288,9 @@ out of in a few lines.
   pooling, option overrides, cooldown behaviour, and lightning geometry.
 - **CI**: GitHub Actions matrix against stock Godot 4.3/4.4 Linux builds:
   import, headless tests, demo smoke run on Godot 4.2, 4.3 and 4.7.2.
-- **Packaging**: `tools/package.sh` builds `dist/vfx_2d-<version>.zip`.
+- **Packaging**: `tools/package.sh` builds `dist/sparkform-<version>.zip`.
 
+[0.6.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.6.0
 [0.5.1]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.5.1
 [0.5.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.5.0
 [0.4.1]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.4.1

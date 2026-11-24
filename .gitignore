@@ -36,6 +36,6 @@ dist/
 /cpp/.scons_env.json
 /cpp/.sconf_temp/
 *.os
-/addons/vfx_2d/bin/
-/addons/vfx_2d/vfx_streaks.gdextension
-/addons/vfx_2d/vfx_streaks.gdextension.uid
+/addons/sparkform/bin/
+/addons/sparkform/vfx_streaks.gdextension
+/addons/sparkform/vfx_streaks.gdextension.uid

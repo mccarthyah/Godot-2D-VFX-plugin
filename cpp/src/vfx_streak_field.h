@@ -15,7 +15,7 @@ namespace godot {
 /// Data-oriented spark field: thousands of velocity-aligned streaks integrated
 /// and drawn in one multimesh-style canvas call.
 ///
-/// This is the C++ half of the 2D VFX Kit. GDScript is fine at a few dozen
+/// This is the C++ half of Sparkform. GDScript is fine at a few dozen
 /// particles, but per-particle line geometry in `_draw()` does not scale to the
 /// densities that make sparks read as heat (hundreds to thousands). Here every
 /// particle is a plain struct, integration is a tight loop, and all streaks are

@@ -48,8 +48,8 @@ jobs:
 
       - name: Show the generated descriptor
         run: |
-          cat addons/vfx_2d/vfx_streaks.gdextension
-          ls -la addons/vfx_2d/bin/
+          cat addons/sparkform/vfx_streaks.gdextension
+          ls -la addons/sparkform/bin/
 
       - name: Import project and register the extension
         run: |
@@ -103,7 +103,7 @@ jobs:
             exit 1
           fi
           summary="$(grep -E "\[VFX TESTS\] (PASS|FAIL)" /tmp/tests.log | tail -n 1)"
-          echo "::notice title=2D VFX Kit C++ (Godot ${GODOT_VERSION})::${summary}"
+          echo "::notice title=Sparkform C++ (Godot ${GODOT_VERSION})::${summary}"
           echo "checks reported: ${checks}"
 
       - name: Gallery smoke run with the extension

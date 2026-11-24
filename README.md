@@ -1,4 +1,4 @@
-# Godot 2D VFX Kit
+# Sparkform
 
 [![CI](https://github.com/mccarthyah/Godot-2D-VFX-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/mccarthyah/Godot-2D-VFX-plugin/actions/workflows/ci.yml)
 [![Godot 4.2+](https://img.shields.io/badge/Godot-4.2%2B-478cbf)](https://godotengine.org)
@@ -14,34 +14,34 @@ cheap when the screen is full of them. Every effect carries a `chaos` knob, so
 nothing looks stamped from a stencil.
 
 ```gdscript
-VFX2D.hit_spark(enemy.global_position, Vector2.UP)
-VFX2D.explosion(boss.global_position, {"radius": 120.0})
-VFX2D.lightning(caster.global_position, target.global_position, {"branches": 4})
-VFX2D.cooldown_ring(ability_icon, 2.5)
+Sparkform.hit_spark(enemy.global_position, Vector2.UP)
+Sparkform.explosion(boss.global_position, {"radius": 120.0})
+Sparkform.lightning(caster.global_position, target.global_position, {"branches": 4})
+Sparkform.cooldown_ring(ability_icon, 2.5)
 
-VFX2D.smoke_puff(feet.global_position, {"radius": 70.0})        # dust, landings
-VFX2D.shockwave(impact.global_position, {"radius": 150.0})      # parries, slams
-VFX2D.muzzle_flash(barrel.global_position, aim_direction)       # gunfire
-VFX2D.heal_sparkle(player.global_position)                      # pickups, buffs
+Sparkform.smoke_puff(feet.global_position, {"radius": 70.0})        # dust, landings
+Sparkform.shockwave(impact.global_position, {"radius": 150.0})      # parries, slams
+Sparkform.muzzle_flash(barrel.global_position, aim_direction)       # gunfire
+Sparkform.heal_sparkle(player.global_position)                      # pickups, buffs
 
-VFX2D.slash_arc(hero.global_position, facing)                   # sword swings
-VFX2D.debris_burst(crate.global_position)                       # broken objects
-VFX2D.ripple(water_point, {"radius": 130.0})                     # splashes, sonar
-VFX2D.implosion(vortex.global_position)                         # charging attacks
+Sparkform.slash_arc(hero.global_position, facing)                   # sword swings
+Sparkform.debris_burst(crate.global_position)                       # broken objects
+Sparkform.ripple(water_point, {"radius": 130.0})                     # splashes, sonar
+Sparkform.implosion(vortex.global_position)                         # charging attacks
 
-VFX2D.frost_burst(hit_point)                                     # ice shards
-VFX2D.acid_splash(puddle)                                        # corrosive goo
-VFX2D.impact_crack(floor_point, {"surface": Vector2.UP})          # ground slam
-VFX2D.chain(caster.global_position, [a.global_position, b.global_position])
-VFX2D.blink(from_point, to_point)                                # teleport
+Sparkform.frost_burst(hit_point)                                     # ice shards
+Sparkform.acid_splash(puddle)                                        # corrosive goo
+Sparkform.impact_crack(floor_point, {"surface": Vector2.UP})          # ground slam
+Sparkform.chain(caster.global_position, [a.global_position, b.global_position])
+Sparkform.blink(from_point, to_point)                                # teleport
 
-var beam := VFX2D.beam(turret.global_position, aim_point)        # sustained laser
-var rune := VFX2D.rune_circle(caster, 2.5)                       # cast bar
+var beam := Sparkform.beam(turret.global_position, aim_point)        # sustained laser
+var rune := Sparkform.rune_circle(caster, 2.5)                       # cast bar
 rune.set_fill(0.6)                                               # driven per frame
-var bubble := VFX2D.shield(player, {"radius": 72.0})             # reactive shell
+var bubble := Sparkform.shield(player, {"radius": 72.0})             # reactive shell
 bubble.hit(enemy.global_position)
-var leash := VFX2D.tether(player, enemy)                         # sagging chain
-var pull := VFX2D.vortex(charge_point, {"radius": 120.0})        # pull field
+var leash := Sparkform.tether(player, enemy)                         # sagging chain
+var pull := Sparkform.vortex(charge_point, {"radius": 120.0})        # pull field
 beam.stop()
 ```
 
@@ -61,7 +61,7 @@ Most 2D effect packs are sprite sheets you have to animate by hand. This one is
 built for **game feel plumbing**:
 
 - **One line to spawn**, one dictionary to tune. Every effect exposes its knobs
-  as exported properties, and `VFX2D` merges your overrides into them.
+  as exported properties, and `Sparkform` merges your overrides into them.
 - **Pooled by default.** A finished effect is hidden and reused, not freed, so
   bursts of hundreds of sparks do not allocate mid-combat.
 - **Tunable in the inspector.** Each effect is a normal scene: open
@@ -81,17 +81,17 @@ built for **game feel plumbing**:
 The short version (full instructions, including the verification snippet and
 troubleshooting table, live in [`docs/INSTALL.md`](docs/INSTALL.md)):
 
-Copy `addons/vfx_2d/` from this repo into your project's `addons/` folder, then
-enable **2D VFX Kit** in *Project → Project Settings → Plugins*. The plugin
-registers the `VFX2D` autoload for you (unless your project already defines one).
+Copy `addons/sparkform/` from this repo into your project's `addons/` folder, then
+enable **Sparkform** in *Project → Project Settings → Plugins*. The plugin
+registers the `Sparkform` autoload for you (unless your project already defines one).
 
 ### Option B: release archive (or AssetLib)
 
-Grab `vfx_2d-<version>.zip` from the releases page and extract it into your
-project root. It already contains the `addons/vfx_2d/` path; that archive is
+Grab `sparkform-<version>.zip` from the releases page and extract it into your
+project root. It already contains the `addons/sparkform/` path; that archive is
 addon-only, so no demo scenes.
 
-Want the demo and the effect gallery too? Take **`vfx_2d-<version>-project.zip`**:
+Want the demo and the effect gallery too? Take **`sparkform-<version>-project.zip`**:
 it is the complete runnable project (`project.godot`, `addons/`, `demo/`,
 `tests/`). Open it in Godot, press **F5** for the demo, then **G** for the gallery.
 
@@ -104,17 +104,17 @@ handing it over. The submission checklist lives in
 ### Option C: build the archives yourself
 
 ```bash
-./tools/package.sh              # -> dist/vfx_2d-<version>.zip          (addon)
-                                # -> dist/vfx_2d-<version>-project.zip  (demo + gallery)
+./tools/package.sh              # -> dist/sparkform-<version>.zip          (addon)
+                                # -> dist/sparkform-<version>-project.zip  (demo + gallery)
 ./tools/package.sh --addon-only # skip the project archive
-./tools/package.sh --assetlib   # -> dist/vfx_2d-<version>-assetlib.zip, validated
+./tools/package.sh --assetlib   # -> dist/sparkform-<version>-assetlib.zip, validated
 ```
 
 ### Using it without the editor plugin
 
 If you would rather control the autoload yourself, add it manually in
-*Project Settings → Autoload*: **name** `VFX2D`, **path**
-`res://addons/vfx_2d/vfx_2d.gd`. The plugin detects an existing `VFX2D`
+*Project Settings → Autoload*: **name** `Sparkform`, **path**
+`res://addons/sparkform/sparkform.gd`. The plugin detects an existing `Sparkform`
 autoload and leaves it alone, so the two approaches never fight.
 
 ## Quick start
@@ -123,24 +123,24 @@ autoload and leaves it alone, so the two approaches never fight.
 extends Node2D
 
 func _on_bullet_hit(target: Node2D, impact_direction: Vector2) -> void:
-    VFX2D.hit_spark(target.global_position, -impact_direction)
+    Sparkform.hit_spark(target.global_position, -impact_direction)
 
 func _on_grenade_explode(at: Vector2) -> void:
-    VFX2D.explosion(at, {"radius": 140.0})
-    VFX2D.cooldown_ring(self, 0.6)          # optional reaction ring on any node
+    Sparkform.explosion(at, {"radius": 140.0})
+    Sparkform.cooldown_ring(self, 0.6)          # optional reaction ring on any node
 
 func _on_enemy_step(at: Vector2, facing: Vector2) -> void:
-    VFX2D.smoke_puff(at, {"radius": 40.0, "rise": 0.3})
-    VFX2D.shockwave(at, {"radius": 60.0, "chaos": 0.9})
+    Sparkform.smoke_puff(at, {"radius": 40.0, "rise": 0.3})
+    Sparkform.shockwave(at, {"radius": 60.0, "chaos": 0.9})
 
 func _on_shoot(muzzle: Node2D, aim: Vector2) -> void:
-    VFX2D.muzzle_flash(muzzle.global_position, aim)
+    Sparkform.muzzle_flash(muzzle.global_position, aim)
 
 func _on_pickup(player: Node2D) -> void:
-    VFX2D.heal_sparkle(player.global_position, {"mote_count": 26})
+    Sparkform.heal_sparkle(player.global_position, {"mote_count": 26})
 
 func _on_chain_lightning(from: Node2D, to: Node2D) -> void:
-    VFX2D.lightning(from.global_position, to.global_position, {
+    Sparkform.lightning(from.global_position, to.global_position, {
         "branches": 3,
         "duration": 0.4,
         "bolt_color": Color(0.7, 0.8, 1.0),
@@ -152,7 +152,7 @@ shake, hitstop, damage):
 
 ```gdscript
 func _ready() -> void:
-    VFX2D.effect_spawned.connect(func(effect: VFXEffect) -> void:
+    Sparkform.effect_spawned.connect(func(effect: VFXEffect) -> void:
         if effect is ExplosionEffect:
             $Camera2D.add_trauma(0.4))
 ```
@@ -199,7 +199,7 @@ Procedurally generated bolt with branches and flicker; no two strikes match.
 
 | Property | Default | Notes |
 | --- | --- | --- |
-| `end_offset` | `Vector2(220, 0)` | Local-space endpoint; set by `VFX2D.lightning()` |
+| `end_offset` | `Vector2(220, 0)` | Local-space endpoint; set by `Sparkform.lightning()` |
 | `segments` | `14` | More segments = more jitter detail |
 | `jaggedness` | `0.45` | How far the bolt strays from the straight line |
 | `width` | `3.5` | Core stroke width (glow layers scale from it) |
@@ -233,7 +233,7 @@ if VFXStreaks.is_available():
     VFXStreaks.burst(field, {"count": 800, "spread": TAU, "speed_max": 900.0})
 ```
 
-Build products are gitignored; delete `addons/vfx_2d/bin/` and the generated
+Build products are gitignored; delete `addons/sparkform/bin/` and the generated
 `.gdextension` to return to pure GDScript. Full API, tuning notes and
 troubleshooting: [`cpp/README.md`](cpp/README.md).
 
@@ -313,7 +313,7 @@ duration, shedding sparkles along the cut. Point it anywhere with `direction`.
 | `chaos` | `0.55` | Edge tearing and sparkle scatter |
 
 ```gdscript
-VFX2D.slash_arc(hero.global_position, aim_direction, {"arc_degrees": 160.0, "radius": 96.0})
+Sparkform.slash_arc(hero.global_position, aim_direction, {"arc_degrees": 160.0, "radius": 96.0})
 ```
 
 ### Debris burst: `effects/debris_burst.tscn`
@@ -457,7 +457,7 @@ in the editor (change `progress` to see the arc).
 | `chaos` / `glow` | `0.25` / `true` | Arc wobble, tick jitter, pulsing glow |
 
 ```gdscript
-var ring := VFX2D.cooldown_ring($Icon, 3.0, {"reverse": true, "tick_count": 12})
+var ring := Sparkform.cooldown_ring($Icon, 3.0, {"reverse": true, "tick_count": 12})
 ring.completed.connect(_on_cooldown_ready)
 ```
 
@@ -468,41 +468,41 @@ across frames until you stop them, and they return the node so you can keep
 driving it.
 
 ```gdscript
-var beam := VFX2D.beam(turret.global_position, target.global_position)
+var beam := Sparkform.beam(turret.global_position, target.global_position)
 beam.end_at(target.global_position)      # re-aim each frame
 beam.stop()                              # fade out, then free
 
-var portal := VFX2D.portal(door.global_position, {"lifetime": 8.0})
+var portal := Sparkform.portal(door.global_position, {"lifetime": 8.0})
 portal.stop()                            # play the closing animation now
 
-var rune := VFX2D.rune_circle(caster, 2.5)   # child of caster, casts for 2.5 s
+var rune := Sparkform.rune_circle(caster, 2.5)   # child of caster, casts for 2.5 s
 rune.set_fill(cast_progress)                  # 0..1 = cast bar
 
-var trail := VFX2D.trail(bullet, {"history": 0.3})
+var trail := Sparkform.trail(bullet, {"history": 0.3})
 
-var bubble := VFX2D.shield(player, {"radius": 72.0})   # reactive: call hit()
+var bubble := Sparkform.shield(player, {"radius": 72.0})   # reactive: call hit()
 bubble.hit(enemy.global_position)
 
-var leash := VFX2D.tether(player, enemy)               # chain between two nodes
+var leash := Sparkform.tether(player, enemy)               # chain between two nodes
 leash.set_targets(player, other_enemy)
 
-var pull := VFX2D.vortex(charge_point, {"strength": 260.0})
+var pull := Sparkform.vortex(charge_point, {"strength": 260.0})
 ```
 
 Every modifier emits `finished` once and frees itself (unless
-`free_on_finish = false`). They are tracked by `VFX2D.get_persistent_count()`
-and torn down by `VFX2D.stop_all()`. A trail whose target leaves the tree frees
+`free_on_finish = false`). They are tracked by `Sparkform.get_persistent_count()`
+and torn down by `Sparkform.stop_all()`. A trail whose target leaves the tree frees
 itself, so a despawned projectile never leaves a ribbon hanging.
 
 | Class | Spawner | Key properties |
 | --- | --- | --- |
-| `RuneCircle` | `VFX2D.rune_circle(target, seconds, options)` | `radius` `54`, `segments` `12`, `spin_speed` `0.7`, `fill` `0`, `tick_length` `9`, `pulse` `0.35`, `lifetime` `0` (`0` = until stopped) |
-| `PortalEffect` | `VFX2D.portal(at, options)` | `width` `58`, `height` `78`, `rim_width` `4`, `spin_speed` `1.8`, `shimmer_count` `14`, `open_time` `0.3`, `close_time` `0.35`, `lifetime` `0` |
-| `BeamEffect` | `VFX2D.beam(from, to, options)` | `width` `6`, `glow_width` `20`, `pulse_speed` `900`, `pulse_spacing` `120`, `wobble` `0.35`, `warmup` `0.12`, `fade_time` `0.22`, `lifetime` `0` |
-| `TrailEffect` | `VFX2D.trail(target, options)` | `history` `0.35` s, `width_start` `8`, `width_end` `0.8`, `mote_count` `6` |
-| `ShieldBubble` | `VFX2D.shield(target, options)` | `radius` `64`, `hex_size` `13`, `rim_width` `2.5`, `hit_flash` `0.3`, `lifetime` `0`; call `hit(world_point)` on impacts |
-| `Tether` | `VFX2D.tether(from, to, options)` | `sag` `42`, `link_count` `16`, `thickness` `2.5`, `pulse_speed` `1.4`; `set_targets()` re-aims |
-| `Vortex` | `VFX2D.vortex(at, options)` | `radius` `96`, `strength` `210` px/s, `spin` `3.4` rad/s, `mote_count` `26`, `lifetime` `0`; sprays C++ streaks on start when the extension is loaded |
+| `RuneCircle` | `Sparkform.rune_circle(target, seconds, options)` | `radius` `54`, `segments` `12`, `spin_speed` `0.7`, `fill` `0`, `tick_length` `9`, `pulse` `0.35`, `lifetime` `0` (`0` = until stopped) |
+| `PortalEffect` | `Sparkform.portal(at, options)` | `width` `58`, `height` `78`, `rim_width` `4`, `spin_speed` `1.8`, `shimmer_count` `14`, `open_time` `0.3`, `close_time` `0.35`, `lifetime` `0` |
+| `BeamEffect` | `Sparkform.beam(from, to, options)` | `width` `6`, `glow_width` `20`, `pulse_speed` `900`, `pulse_spacing` `120`, `wobble` `0.35`, `warmup` `0.12`, `fade_time` `0.22`, `lifetime` `0` |
+| `TrailEffect` | `Sparkform.trail(target, options)` | `history` `0.35` s, `width_start` `8`, `width_end` `0.8`, `mote_count` `6` |
+| `ShieldBubble` | `Sparkform.shield(target, options)` | `radius` `64`, `hex_size` `13`, `rim_width` `2.5`, `hit_flash` `0.3`, `lifetime` `0`; call `hit(world_point)` on impacts |
+| `Tether` | `Sparkform.tether(from, to, options)` | `sag` `42`, `link_count` `16`, `thickness` `2.5`, `pulse_speed` `1.4`; `set_targets()` re-aims |
+| `Vortex` | `Sparkform.vortex(at, options)` | `radius` `96`, `strength` `210` px/s, `spin` `3.4` rad/s, `mote_count` `26`, `lifetime` `0`; sprays C++ streaks on start when the extension is loaded |
 
 All seven export `chaos` (`rune_circle` `0.25`, `portal` `0.45`, `beam` `0.45`,
 `trail` `0.4`, `shield_bubble` `0.3`, `tether` `0.4`, `vortex` `0.45`) and the
@@ -543,8 +543,8 @@ every `play()`, so a pooled effect never repeats itself.
 | Vortex | Mote speed, spiral variance, arc wobble |
 
 ```gdscript
-VFX2D.hit_spark(at, dir, {"chaos": 0.0})   # tidy, symmetric, readable
-VFX2D.hit_spark(at, dir, {"chaos": 1.0})   # splintered and lopsided
+Sparkform.hit_spark(at, dir, {"chaos": 0.0})   # tidy, symmetric, readable
+Sparkform.hit_spark(at, dir, {"chaos": 1.0})   # splintered and lopsided
 ```
 
 `0` gives a clean shape, `1` gives the wildest the effect gets. The cooldown ring
@@ -552,7 +552,7 @@ defaults to `0.25`, so it stays readable.
 
 ## API reference
 
-### `VFX2D` (autoload)
+### `Sparkform` (autoload)
 
 | Method | Returns | Description |
 | --- | --- | --- |
@@ -588,7 +588,7 @@ defaults to `0.25`, so it stays readable.
 Signals: `effect_spawned(effect)`, `effect_finished(effect)`.
 
 Exported tuning: `pool_size_per_effect` (default `24`), `max_active_effects`
-(default `160`), `container_node_name` (default `VFX2D_Layer`).
+(default `160`), `container_node_name` (default `Sparkform_Layer`).
 
 `options` is applied to the effect with `configure()`, which sets any exported
 property by name and warns (instead of crashing) on typos.
@@ -606,15 +606,15 @@ property by name and warns (instead of crashing) on typos.
 | `_on_play()` / `_on_update(progress, delta)` / `_on_stop()` | Virtual hooks |
 
 Custom effects are just scenes whose root script extends `VFXEffect`; spawn them
-with `VFX2D.spawn(preload("res://my_effect.tscn"), position)` and they inherit
+with `Sparkform.spawn(preload("res://my_effect.tscn"), position)` and they inherit
 pooling for free.
 
 ## How pooling works
 
-- Effects are parented to a `VFX2D_Layer` node created under the current scene,
+- Effects are parented to a `Sparkform_Layer` node created under the current scene,
   so they never land inside gameplay containers and are cleaned up on scene
   change.
-- When an effect finishes, `VFX2D` hides it, resets its transform and keeps it in
+- When an effect finishes, `Sparkform` hides it, resets its transform and keeps it in
   a per-scene pool (`pool_size_per_effect`). The next spawn of that scene reuses
   the same instance, so there is no `instantiate()` in the hot path.
 - If more than `max_active_effects` effects are running, the oldest is stopped to
@@ -623,7 +623,7 @@ pooling for free.
   long-lived nodes. They are tracked separately so `stop_all()` can clear them
   too, and they drop out of that list when they free themselves.
 - The pool follows the scene. Because effects live under the current scene's
-  `VFX2D_Layer`, a `change_scene_*` frees them all; the next spawn drops those
+  `Sparkform_Layer`, a `change_scene_*` frees them all; the next spawn drops those
   dead references (an earlier build tried to reuse one and raised *"Trying to
   assign invalid previously freed instance"*). The suite covers this.
 
@@ -731,10 +731,10 @@ exercised.
 ## Repository layout
 
 ```
-addons/vfx_2d/
+addons/sparkform/
   plugin.cfg                 # Editor plugin manifest
-  plugin.gd                  # Registers the VFX2D autoload
-  vfx_2d.gd                  # Autoload: spawn API + pooling
+  plugin.gd                  # Registers the Sparkform autoload
+  sparkform.gd                  # Autoload: spawn API + pooling
   core/vfx_effect.gd         # VFXEffect base class
   core/vfx_shapes.gd         # Procedural outlines shared by the effects
   effects/hit_spark.*        # Effect scenes + scripts
@@ -764,12 +764,12 @@ addons/vfx_2d/
 cpp/                         # Optional C++ streak field (GDExtension)
   src/vfx_streak_field.*     # Particle integration + multiline draw
   src/register_types.cpp     # Class registration / entry point
-  SConstruct                 # Builds into addons/vfx_2d/bin/
+  SConstruct                 # Builds into addons/sparkform/bin/
 tools/build_extension.sh     # Fetches godot-cpp, builds, writes .gdextension
 demo/                        # Interactive sandbox + effect gallery
   gallery.tscn               # All twenty-four effects on six themed pages
 tests/test_runner.tscn       # Headless test suite
-tools/package.sh             # Builds dist/vfx_2d-<version>.zip
+tools/package.sh             # Builds dist/sparkform-<version>.zip
 ```
 
 ## Roadmap

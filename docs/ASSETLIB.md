@@ -1,6 +1,6 @@
 # Publishing on Godot AssetLib
 
-This is the checklist for shipping a release of the 2D VFX Kit to the
+This is the checklist for shipping a Sparkform release to the
 [Godot Asset Library](https://godotengine.org/asset-library/asset), plus what the
 `--assetlib` archive contains and why.
 
@@ -8,17 +8,17 @@ This is the checklist for shipping a release of the 2D VFX Kit to the
 
 ```bash
 ./tools/package.sh --assetlib
-# -> dist/vfx_2d-<version>-assetlib.zip
+# -> dist/sparkform-<version>-assetlib.zip
 ```
 
 The archive holds the addon only (no `demo/`, `tests/`, `cpp/` or binaries),
 laid out as AssetLib expects after extraction:
 
 ```
-addons/vfx_2d/
+addons/sparkform/
   plugin.cfg          # manifest AssetLib reads (name, description, version, script)
-  plugin.gd           # EditorPlugin: registers the VFX2D autoload
-  vfx_2d.gd           # the autoload itself
+  plugin.gd           # EditorPlugin: registers the Sparkform autoload
+  sparkform.gd           # the autoload itself
   core/ effects/      # effects and shared helpers
   README.md           # ships with the plugin: install, quick start, troubleshooting
   LICENSE             # MIT, travels with the code
@@ -30,29 +30,29 @@ script then checks the archive it just wrote, and exits non-zero if anything is
 off:
 
 ```
-Packaged dist/vfx_2d-0.5.1-assetlib.zip (88 files, 78 KiB)
+Packaged dist/sparkform-0.6.0-assetlib.zip (88 files, 78 KiB)
 Checks passed: plugin folder only, no native libraries, README + LICENSE inside.
 ```
 
-The checks are: `plugin.cfg`, `plugin.gd`, `vfx_2d.gd`, `README.md` and
+The checks are: `plugin.cfg`, `plugin.gd`, `sparkform.gd`, `README.md` and
 `LICENSE` are all present; no `.so` / `.dll` / `.dylib` / `.wasm` /
 `.gdextension` files; nothing from `tests/`, `demo/`, `cpp/`, `tools/`, `docs/`
 or `.github/`; and the archive is under 10 MiB. CI runs the same command on
 every push, so the checks cannot drift from the script.
 
 The file set is the same GDScript-only addon folder as the drop-in
-`dist/vfx_2d-<version>.zip`; only the name differs, and either one uploads fine.
+`dist/sparkform-<version>.zip`; only the name differs, and either one uploads fine.
 
 ## 2. Before you submit
 
-- [ ] `addons/vfx_2d/plugin.cfg` has the **new** version (`version="0.5.1"`).
+- [ ] `addons/sparkform/plugin.cfg` has the **new** version (`version="0.6.0"`).
 - [ ] `CHANGELOG.md` has an entry for it, with a link reference at the bottom.
 - [ ] `./tools/package.sh --assetlib` was run after the version bump.
 - [ ] The suite is green on stock 4.2/4.3/4.7.2 (CI does this on every push).
 - [ ] `godot --headless --path . res://tests/test_runner.tscn` passes locally.
 - [ ] The archive installs into an empty project: extract, enable, verify (see
       `docs/INSTALL.md`, step 3).
-- [ ] `README.md` and `LICENSE` exist **inside** `addons/vfx_2d/`.
+- [ ] `README.md` and `LICENSE` exist **inside** `addons/sparkform/`.
 
 ## 3. Submit
 
@@ -63,15 +63,15 @@ Open <https://godotengine.org/asset-library/asset/submit> and fill it in:
 | Asset type | **Plugins** |
 | Category | **2D Tools** (secondary: *Particles*, if offered) |
 | Godot version | **4.2** and newer |
-| Version | the `plugin.cfg` version, e.g. `0.5.1` |
+| Version | the `plugin.cfg` version, e.g. `0.6.0` |
 | Repository URL | `https://github.com/mccarthyah/Godot-2D-VFX-plugin` |
 | Issue tracker URL | `https://github.com/mccarthyah/Godot-2D-VFX-plugin/issues` |
 | License | **MIT** |
-| Title | `2D VFX Kit: procedural effects, no assets` |
+| Title | `Sparkform: procedural effects, no assets` |
 | Description | short paragraph: 24 effects + 8 modifiers, pooled, `chaos` knob, optional C++ streak layer, works without it |
 | Preview image | a 16:9 frame of the gallery (see below) |
 | Tags | `2d`, `vfx`, `effects`, `particles`, `procedural`, `juice` |
-| Binary upload | `dist/vfx_2d-<version>-assetlib.zip` |
+| Binary upload | `dist/sparkform-<version>-assetlib.zip` |
 
 The description field accepts light markdown. Keep the first sentence identical
 to the repo tagline so the library entry, the README and the release notes agree.
@@ -106,7 +106,7 @@ referencing it from the top of `README.md`.
 
 ## 7. What not to ship to AssetLib
 
-- `addons/vfx_2d/bin/` and `vfx_streaks.gdextension`: platform- and
+- `addons/sparkform/bin/` and `vfx_streaks.gdextension`: platform- and
   engine-version-specific; ship them in the separate `-cpp` archive instead.
 - `demo/`, `tests/`, `tools/`, `cpp/`: development material, and the demo needs
   its own `project.godot` to run.

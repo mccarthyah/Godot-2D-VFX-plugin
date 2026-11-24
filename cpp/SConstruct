@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-"""Builds the optional C++ streak field (GDExtension) for the 2D VFX Kit.
+"""Builds the optional C++ streak field (GDExtension) for Sparkform.
 
 godot-cpp must already be present in cpp/godot-cpp; tools/build_extension.sh
 fetches and builds it. Typical use:
 
     /path/to/scons platform=linux target=template_debug api_version=4.7 -j4
 
-Output goes straight into addons/vfx_2d/bin/ so the addon can load it.
+Output goes straight into addons/sparkform/bin/ so the addon can load it.
 """
 
 import os
@@ -18,7 +18,7 @@ env.Append(CPPPATH=["src/"])
 sources = Glob("src/*.cpp")
 
 repo_root = Dir("..").abspath
-out_dir = os.path.join(repo_root, "addons", "vfx_2d", "bin")
+out_dir = os.path.join(repo_root, "addons", "sparkform", "bin")
 
 suffix = "%s.%s" % (env["target"], env["arch"])
 base = os.path.join(out_dir, "libvfx_streaks.%s.%s" % (env["platform"], suffix))
@@ -31,7 +31,7 @@ if env["platform"] in suffixes:
     env["SHLIBSUFFIX"] = ""
     library = env.SharedLibrary(target=base + suffixes[env["platform"]], source=sources)
 else:
-    print("2D VFX Kit: unsupported platform '%s' for the C++ streak field." % env["platform"])
+    print("Sparkform: unsupported platform '%s' for the C++ streak field." % env["platform"])
     sys.exit(1)
 
 Default(library)
