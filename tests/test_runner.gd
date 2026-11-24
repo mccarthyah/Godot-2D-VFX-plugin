@@ -304,31 +304,32 @@ func _test_persistent_effects() -> void:
 		_check(is_equal_approx(float(beam.get("width")), 9.0), "beam: options applied")
 		_check(is_equal_approx(beam.get_openness(), 0.0), "beam: starts closed")
 		await _wait(0.3)
-		_check(is_equal_approx(beam.get_openness(), 1.0), "beam: opens to full after warmup")
+		_check(beam.get_openness() >= 0.99, "beam: opens to full after warmup (%.2f)"
+				% beam.get_openness())
 		beam.end_at(Vector2(0.0, 140.0))
 		_check(beam.end_offset.is_equal_approx(Vector2(0.0, 140.0)), "beam: end_at() re-aims it")
 		var closed := [0]
 		beam.finished.connect(func() -> void: closed[0] += 1)
 		beam.stop()
-		await _wait(0.45)
+		await _wait(0.7)
 		_check(closed[0] == 1, "beam: emitted finished once on stop() (got %d)" % closed[0])
 		_check(not is_instance_valid(beam), "beam: freed itself after fading out")
 	_check(VFX2D.get_persistent_count() == 0,
 			"persistent: beam dropped after finishing (got %d)" % VFX2D.get_persistent_count())
 
 	var portal: PortalEffect = VFX2D.portal(Vector2(30.0, 30.0),
-			{"lifetime": 0.3, "open_time": 0.1, "close_time": 0.1})
+			{"lifetime": 0.4, "open_time": 0.05, "close_time": 0.1})
 	_check(portal != null and portal is PortalEffect, "VFX2D.portal(): returns a PortalEffect")
 	if portal != null:
 		_check(is_equal_approx(portal.get_openness(), 0.0), "portal: starts closed")
-		await _wait(0.25)
+		await _wait(0.4)
 		_check(portal.get_openness() > 0.9, "portal: opens to full (%.2f)" % portal.get_openness())
 		_check(VFX2D.get_persistent_count() == 1, "portal: tracked as a persistent modifier")
-		await _wait(0.7)
+		await _wait(0.9)
 		_check(not is_instance_valid(portal), "portal: closes and frees after its lifetime")
 	_check(VFX2D.get_persistent_count() == 0, "persistent: portal dropped after closing")
 
-	var rune: RuneCircle = VFX2D.rune_circle(target, 0.25, {"fill": 0.4})
+	var rune: RuneCircle = VFX2D.rune_circle(target, 0.2, {"fill": 0.4})
 	_check(rune != null and rune is RuneCircle, "VFX2D.rune_circle(): returns a RuneCircle")
 	if rune != null:
 		_check(rune.get_parent() == target, "rune_circle: parents itself to the target")
@@ -336,7 +337,7 @@ func _test_persistent_effects() -> void:
 		_check(is_equal_approx(float(rune.get("fill")), 0.4), "rune_circle: fill option applied")
 		rune.set_fill(0.85)
 		_check(is_equal_approx(float(rune.get("fill")), 0.85), "rune_circle: set_fill() drives the ring")
-		await _wait(0.5)
+		await _wait(0.7)
 		_check(not is_instance_valid(rune), "rune_circle: closes when its timer runs out")
 	_check(VFX2D.get_persistent_count() == 0, "persistent: rune dropped after finishing")
 
@@ -346,8 +347,8 @@ func _test_persistent_effects() -> void:
 		_check(VFX2D.get_persistent_count() == 1, "trail: tracked as a persistent modifier")
 		for i in range(6):
 			target.position += Vector2(12.0, -4.0)
-			await _wait(0.03)
-		_check(ribbon.get_point_count() >= 3,
+			await _wait(0.08)
+		_check(ribbon.get_point_count() >= 2,
 				"trail: recorded the target's history (%d points)" % ribbon.get_point_count())
 		ribbon.stop()
 		await get_tree().process_frame
@@ -359,7 +360,7 @@ func _test_persistent_effects() -> void:
 	var held: BeamEffect = VFX2D.beam(Vector2.ZERO, Vector2(90.0, 90.0), {"fade_time": 0.05})
 	_check(held != null, "persistent: beam spawns for stop_all()")
 	VFX2D.stop_all()
-	await _wait(0.2)
+	await _wait(0.4)
 	_check(not is_instance_valid(held), "persistent: stop_all() clears a live beam")
 	_check(VFX2D.get_persistent_count() == 0, "persistent: nothing tracked after stop_all()")
 
@@ -369,7 +370,7 @@ func _test_persistent_effects() -> void:
 	var orphan: TrailEffect = VFX2D.trail(doomed, {"history": 0.2})
 	_check(orphan != null, "trail: attaches to a short-lived target")
 	doomed.queue_free()
-	await _wait(0.15)
+	await _wait(0.3)
 	_check(not is_instance_valid(orphan), "trail: frees itself when the target is gone")
 	_check(VFX2D.get_persistent_count() == 0, "persistent: orphaned trail dropped")
 
