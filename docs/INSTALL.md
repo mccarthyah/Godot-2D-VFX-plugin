@@ -232,6 +232,7 @@ enabled. Your autoload setting and any code are untouched; check
 | Symptom | Cause and fix |
 | --- | --- |
 | `Identifier "VFX2D" not declared` | Plugin not enabled, or autoload deleted. Enable the plugin, or add the autoload yourself (step 2) |
+| `--headless` run hangs, or parses fail, on a copy you never opened in the editor | Godot needs an import pass before it knows the project's classes: run `godot --headless --path . --import` once, or open the project in the editor first. The editor does this for you |
 | `Could not find type "VFXEffect"` on first open | Should not happen from 0.5.1 on — the addon resolves its base class by path. If you see it on an older copy, update; otherwise let the editor finish its initial scan |
 | Effects render behind sprites | They live on a `VFX2D_Layer` node at `z_index = 100`; adjust that layer or your own z-indices |
 | Nothing appears at all | Spawn positions are global — check the point is on screen, and that the effect is not culled by a `CanvasLayer`/camera setup |
