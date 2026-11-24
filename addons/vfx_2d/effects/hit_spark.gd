@@ -5,6 +5,8 @@ extends VFXEffect
 ## Use it for melee hits, bullet impacts and pickups. Spawn it with
 ## [code]VFX2D.hit_spark(position, direction)[/code].
 
+const VFXShapes := preload("../core/vfx_shapes.gd")
+
 @export_group("Sparks")
 ## Direction the sparks travel. Set through the convenience method argument.
 @export var direction: Vector2 = Vector2.UP
@@ -20,6 +22,11 @@ extends VFXEffect
 @export_range(0.0, 128.0, 0.5, "suffix:px") var streak_length: float = 26.0
 @export var flash_color: Color = Color(1.0, 1.0, 1.0)
 
+@export_group("Chaos")
+## How torn the flash and how uneven the spray is: [code]0[/code] reads as a tidy
+## symmetric hit, [code]1[/code] as an asymmetric, splintered one.
+@export_range(0.0, 1.0, 0.01) var chaos: float = 0.65
+
 @export_group("Streaks (C++)")
 ## Add the C++ streak layer when the optional GDExtension is built. Silently
 ## skipped (and the effect still plays) when it is not.
@@ -30,20 +37,37 @@ extends VFXEffect
 var _flash_alpha: float = 0.0
 var _particles: CPUParticles2D = null
 var _streaks: Node2D = null
+var _rng := RandomNumberGenerator.new()
+var _star: PackedVector2Array = PackedVector2Array()
+var _splinters: Array[Dictionary] = []
+var _flash_offset := Vector2.ZERO
 
 
 func _on_play() -> void:
 	_flash_alpha = 1.0
+	_rng.randomize()
+	_flash_offset = Vector2(_rng.randf_range(-1.0, 1.0), _rng.randf_range(-1.0, 1.0)) \
+			* flash_radius * 0.22 * chaos
+	_star = VFXShapes.star_burst(flash_radius * 0.35, flash_radius * (1.15 + chaos * 0.9),
+			_rng.randi_range(5, 8), _rng.randf_range(-PI, PI), _rng)
+	_splinters.clear()
+	for _i in range(2 + roundi(chaos * 4.0)):
+		_splinters.append({
+			"direction": Vector2.from_angle(_rng.randf_range(-PI, PI)),
+			"length": streak_length * _rng.randf_range(0.6, 1.9) * (0.6 + chaos),
+			"width": _rng.randf_range(0.8, 1.9),
+		})
 	_particles = get_node_or_null("Sparks") as CPUParticles2D
 	if _particles == null:
 		return
 	var travel: Vector2 = direction
 	if travel.length_squared() < 0.0001:
 		travel = Vector2.UP
+	travel = travel.rotated(_rng.randf_range(-0.35, 0.35) * chaos)
 	_particles.amount = maxi(spark_count, 1)
 	_particles.lifetime = maxf(duration, 0.05)
 	_particles.direction = travel.normalized()
-	_particles.spread = deg_to_rad(spread_degrees)
+	_particles.spread = deg_to_rad(spread_degrees) * (1.0 + chaos * 0.9)
 	_particles.gravity = Vector2(0.0, spark_gravity)
 	_particles.initial_velocity_min = spark_speed * 0.45
 	_particles.initial_velocity_max = spark_speed
@@ -79,7 +103,7 @@ func _emit_streaks() -> void:
 			"head_color": spark_color,
 			"tail_color": Color(spark_color, 0.0),
 			"base_width": maxf(1.0, spark_size * 0.7),
-			"turbulence": streak_turbulence,
+			"turbulence": streak_turbulence * (1.0 + chaos),
 			"drag": 2.4,
 			"gravity": spark_gravity,
 			"streak_scale": 0.03,
@@ -90,7 +114,7 @@ func _emit_streaks() -> void:
 		"origin": Vector2.ZERO,
 		"count": streak_count,
 		"direction": direction,
-		"spread": deg_to_rad(spread_degrees) * 1.4,
+		"spread": deg_to_rad(spread_degrees) * (1.4 + chaos * 0.9),
 		"speed_min": spark_speed * 0.5,
 		"speed_max": spark_speed * 1.35,
 		"lifetime_min": duration * 0.45,
@@ -105,10 +129,26 @@ func _draw() -> void:
 	if travel.length_squared() < 0.0001:
 		travel = Vector2.UP
 	travel = travel.normalized()
-	draw_circle(Vector2.ZERO, flash_radius * (0.35 + 0.65 * _flash_alpha),
+	# Torn star behind the hot core: the same flash, but never twice the same shape.
+	if _star.size() >= 6:
+		var star := PackedVector2Array()
+		star.resize(_star.size())
+		var star_scale: float = 1.0 + (1.0 - _flash_alpha) * 0.25
+		for i in range(_star.size()):
+			star[i] = _flash_offset + _star[i] * star_scale
+		draw_colored_polygon(star, Color(flash_color, flash_color.a * 0.45 * _flash_alpha))
+	draw_circle(_flash_offset, flash_radius * (0.35 + 0.65 * _flash_alpha),
 			Color(flash_color, flash_color.a * _flash_alpha))
 	var streak := streak_length * _flash_alpha
 	if streak > 0.5:
 		draw_line(-travel * streak, travel * streak,
 				Color(flash_color, 0.55 * _flash_alpha),
 				maxf(1.0, flash_radius * 0.5 * _flash_alpha), true)
+	# Splinters: short hot shards flying out of the impact at random angles.
+	for splinter in _splinters:
+		var unit: Vector2 = splinter["direction"] as Vector2
+		var reach: float = float(splinter["length"]) * _flash_alpha
+		if reach <= 0.5:
+			continue
+		draw_line(unit * flash_radius * 0.4, unit * (flash_radius * 0.4 + reach),
+				Color(flash_color, 0.4 * _flash_alpha), float(splinter["width"]), true)

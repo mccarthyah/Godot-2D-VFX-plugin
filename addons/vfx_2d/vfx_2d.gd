@@ -60,6 +60,30 @@ func lightning(from: Vector2, to: Vector2, options: Dictionary = {}) -> VFXEffec
 	return spawn(_effect_scene("lightning"), from, opts)
 
 
+## Spawns a soft smoke or dust cloud at [param at].
+func smoke_puff(at: Vector2, options: Dictionary = {}) -> VFXEffect:
+	return spawn(_effect_scene("smoke_puff"), at, options)
+
+
+## Spawns an expanding shockwave centred on [param at] — rings and cracks, no fire.
+func shockwave(at: Vector2, options: Dictionary = {}) -> VFXEffect:
+	return spawn(_effect_scene("shockwave"), at, options)
+
+
+## Spawns a muzzle flash at [param at] pointing along [param direction].
+func muzzle_flash(at: Vector2, direction: Vector2 = Vector2.RIGHT,
+		options: Dictionary = {}) -> VFXEffect:
+	var opts: Dictionary = options.duplicate()
+	opts["direction"] = direction.normalized() if direction.length_squared() > 0.0001 \
+			else Vector2.RIGHT
+	return spawn(_effect_scene("muzzle_flash"), at, opts)
+
+
+## Spawns ascending sparkles at [param at] — pickups, heals and buffs.
+func heal_sparkle(at: Vector2, options: Dictionary = {}) -> VFXEffect:
+	return spawn(_effect_scene("heal_sparkle"), at, options)
+
+
 ## Adds a cooldown ring as a child of [param target] and starts it immediately.
 ## Returns the ring so callers can inspect [member CooldownRing.progress],
 ## restart it, or cancel it.

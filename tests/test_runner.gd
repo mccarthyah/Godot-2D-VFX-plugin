@@ -15,6 +15,10 @@ const HIT_SPARK_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/hit_sp
 const EXPLOSION_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/explosion.tscn")
 const LIGHTNING_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/lightning.tscn")
 const COOLDOWN_RING_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/cooldown_ring.tscn")
+const SMOKE_PUFF_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/smoke_puff.tscn")
+const SHOCKWAVE_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/shockwave.tscn")
+const MUZZLE_FLASH_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/muzzle_flash.tscn")
+const HEAL_SPARKLE_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/heal_sparkle.tscn")
 
 var _checks: int = 0
 var _failures: int = 0
@@ -37,11 +41,17 @@ func _run_all() -> void:
 		"hit_spark": HIT_SPARK_SCENE,
 		"explosion": EXPLOSION_SCENE,
 		"lightning": LIGHTNING_SCENE,
+		"smoke_puff": SMOKE_PUFF_SCENE,
+		"shockwave": SHOCKWAVE_SCENE,
+		"muzzle_flash": MUZZLE_FLASH_SCENE,
+		"heal_sparkle": HEAL_SPARKLE_SCENE,
 	}
 	for effect_name in effects:
 		await _test_lifecycle(effect_name, effects[effect_name])
 	await _test_cooldown_ring()
 	await _test_autoload()
+	await _test_new_effects()
+	await _test_chaos_knob(effects)
 	await _test_scene_change_pooling()
 	await _test_streak_field()
 
@@ -139,8 +149,10 @@ func _test_autoload() -> void:
 				"VFX2D.explosion(): options override exported properties")
 	await _wait(0.3)
 
+	# chaos is off here on purpose: with it on, the bolt adds and drops branches
+	# per flicker (that is the feature), so only chaos=0 has an exact branch count.
 	var bolt: LightningEffect = VFX2D.lightning(Vector2(10.0, 10.0), Vector2(210.0, 60.0),
-			{"duration": 0.1, "flicker": 0.0}) as LightningEffect
+			{"duration": 0.1, "flicker": 0.0, "chaos": 0.0}) as LightningEffect
 	_check(bolt != null, "VFX2D.lightning(): returns a LightningEffect")
 	if bolt != null:
 		var points: PackedVector2Array = bolt.get_bolt_points()
@@ -150,7 +162,11 @@ func _test_autoload() -> void:
 			_check(points[points.size() - 1].is_equal_approx(Vector2(200.0, 50.0)),
 					"lightning: bolt ends at the requested endpoint")
 		_check(bolt.get_branch_points().size() == 2,
-				"lightning: default branch count honoured (%d)" % bolt.get_branch_points().size())
+				"lightning: default branch count honoured with chaos off (%d)" \
+						% bolt.get_branch_points().size())
+		_check(VFX2D.lightning(Vector2(10.0, 10.0), Vector2(210.0, 60.0),
+				{"duration": 0.1, "flicker": 0.0, "chaos": 1.0}) != null,
+				"lightning: spawns with chaos at 1.0")
 	await _wait(0.3)
 
 	# A burst larger than the pool must still be fully recycled.
@@ -162,6 +178,65 @@ func _test_autoload() -> void:
 	await get_tree().process_frame
 	_check(VFX2D.get_active_count() == 0, "VFX2D: stop_all() clears a burst")
 #endregion
+
+
+func _test_new_effects() -> void:
+	var spot := Vector2(-40.0, 24.0)
+	var smoke: VFXEffect = VFX2D.smoke_puff(spot, {"duration": 0.12})
+	_check(smoke != null, "VFX2D.smoke_puff(): returns an effect")
+	if smoke != null:
+		_check(int(smoke.call("get_puff_count")) == 9,
+				"smoke_puff: spawned its blobs (got %d)" % int(smoke.call("get_puff_count")))
+	await _wait(0.3)
+
+	var wave: VFXEffect = VFX2D.shockwave(spot, {"duration": 0.12})
+	_check(wave != null, "VFX2D.shockwave(): returns an effect")
+	if wave != null:
+		_check(int(wave.call("get_ring_point_count")) >= 32,
+				"shockwave: exposes its ring resolution")
+	await _wait(0.3)
+
+	var muzzle: VFXEffect = VFX2D.muzzle_flash(spot, Vector2.LEFT, {"duration": 0.12})
+	_check(muzzle != null, "VFX2D.muzzle_flash(): returns an effect")
+	if muzzle != null:
+		var aim: Vector2 = muzzle.get("direction")
+		_check(aim.is_equal_approx(Vector2.LEFT),
+				"muzzle_flash: aim direction applied (%s)" % aim)
+		var cone: PackedVector2Array = muzzle.call("get_cone_points")
+		_check(cone.size() >= 5, "muzzle_flash: cone built (%d points)" % cone.size())
+		_check(cone[0].is_equal_approx(Vector2.ZERO), "muzzle_flash: cone apex at the origin")
+		if cone.size() >= 3:
+			var tip: Vector2 = cone[cone.size() - 2]
+			_check(tip.x < 0.0, "muzzle_flash: cone points along the aim (%s)" % tip)
+	await _wait(0.3)
+
+	var sparkle: VFXEffect = VFX2D.heal_sparkle(spot, {"duration": 0.12, "mote_count": 12})
+	_check(sparkle != null, "VFX2D.heal_sparkle(): returns an effect")
+	if sparkle != null:
+		_check(int(sparkle.call("get_mote_count")) == 12,
+				"heal_sparkle: honours mote_count (%d)" % int(sparkle.call("get_mote_count")))
+	await _wait(0.3)
+	VFX2D.stop_all()
+	await get_tree().process_frame
+
+
+func _test_chaos_knob(effects: Dictionary) -> void:
+	for effect_name in effects:
+		var scene: PackedScene = effects[effect_name]
+		var effect: VFXEffect = scene.instantiate()
+		if effect == null:
+			_check(false, "%s: instantiates for the chaos check" % effect_name)
+			continue
+		var has_chaos: bool = false
+		for entry in effect.get_property_list():
+			if String(entry["name"]) == "chaos":
+				has_chaos = true
+				break
+		_check(has_chaos, "%s: exposes a chaos knob" % effect_name)
+		effect.set("chaos", 1.0)
+		_check(is_equal_approx(float(effect.get("chaos")), 1.0),
+				"%s: chaos can be driven to 1.0" % effect_name)
+		effect.free()
 
 
 func _test_scene_change_pooling() -> void:

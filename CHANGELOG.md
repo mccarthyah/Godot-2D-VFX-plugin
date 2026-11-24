@@ -4,6 +4,36 @@ All notable changes to the 2D VFX Kit are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-11-24
+
+### Added
+
+- **Four new effects**, each a normal `VFXEffect` scene with its own knobs:
+  - `smoke_puff` — billowing, additive-free smoke or dust (`smoke_puff.tscn`).
+  - `shockwave` — rings and radial cracks, no fire (`shockwave.tscn`).
+  - `muzzle_flash` — directional torn cone, star and spark spray
+    (`muzzle_flash.tscn`).
+  - `heal_sparkle` — ascending, twinkling motes for pickups and buffs
+    (`heal_sparkle.tscn`).
+- **`VFX2D.smoke_puff()`, `shockwave()`, `muzzle_flash()`, `heal_sparkle()`**, so
+  all eight effects spawn the same way.
+- **`chaos` on every effect** (`0.0`–`1.0`, reseeded per `play()`): torn flash
+  stars and splinters on the hit spark, lopsided lobes and ghost fronts on the
+  explosion, per-flicker branch topology and sub-branches on lightning, arc
+  wobble on the ring, and equivalent shape-level irregularity on the new four.
+- `core/vfx_shapes.gd` — shared procedural outlines (wobbling rings, jagged
+  cones, uneven stars) used by the effects. Loaded with a relative `preload`, so
+  effects still parse before the editor's class cache exists.
+
+### Changed
+
+- The gallery is now a 4×2 grid with all eight effects, keys **1**-**8** to fire
+  one cell. The demo HUD hint and README list the new effects.
+- Tests cover the new effects' lifecycles, their `VFX2D` methods and the `chaos`
+  knob on all eight (120 checks with the extension, 108 without).
+- `lightning`'s branch count is only exact when `chaos` is `0`; with chaos on it
+  varies per flicker by design, and the suite now pins that explicitly.
+
 ## [0.2.0] — 2026-11-24
 
 ### Added
@@ -89,4 +119,6 @@ out of in a few lines.
   import, headless tests, demo smoke run on Godot 4.2, 4.3 and 4.7.2.
 - **Packaging** — `tools/package.sh` builds `dist/vfx_2d-<version>.zip`.
 
+[0.3.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.3.0
+[0.2.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.2.0
 [0.1.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.1.0

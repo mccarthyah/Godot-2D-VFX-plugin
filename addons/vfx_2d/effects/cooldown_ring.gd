@@ -42,6 +42,12 @@ signal completed
 ## the same ring for several cooldowns.
 @export var free_on_complete: bool = true
 
+@export_group("Chaos")
+## Hand-drawn irregularity: the arc and ticks wobble slightly and a soft glow
+## pulses. Kept low by default because a cooldown must stay readable.
+@export_range(0.0, 1.0, 0.01) var chaos: float = 0.25
+@export var glow: bool = true
+
 ## Normalized fill, [code]0.0[/code] to [code]1.0[/code]. Assigning it updates
 ## the drawing immediately, so you can also drive the ring manually.
 var progress: float = 0.0:
@@ -54,10 +60,13 @@ var progress: float = 0.0:
 
 var _running: bool = false
 var _elapsed: float = 0.0
+var _rng := RandomNumberGenerator.new()
+var _tick_jitter: PackedFloat32Array = PackedFloat32Array()
 
 
 func _ready() -> void:
 	set_process(false)
+	_seed_chaos()
 	queue_redraw()
 
 
@@ -67,6 +76,7 @@ func start(seconds: float = -1.0) -> void:
 	if seconds > 0.0:
 		duration = seconds
 	_elapsed = 0.0
+	_seed_chaos()
 	_running = true
 	visible = true
 	progress = 1.0 if reverse else 0.0
@@ -111,21 +121,60 @@ func _finish() -> void:
 		queue_free()
 
 
+func _seed_chaos() -> void:
+	_rng.randomize()
+	_tick_jitter.clear()
+	for i in range(maxi(tick_count, 0)):
+		_tick_jitter.append(_rng.randf_range(-1.0, 1.0))
+
+
 func _draw() -> void:
 	var point_count: int = 96
+	var pulse: float = 1.0 + 0.05 * sin(_elapsed * 7.0) * chaos
 	if show_track:
-		draw_arc(Vector2.ZERO, radius, 0.0, TAU, point_count, track_color, width, true)
+		draw_polyline(_arc_points(0.0, TAU, point_count), track_color, width, true)
 	for i in range(tick_count):
-		var angle: float = start_angle + TAU * float(i) / float(tick_count)
+		var jitter: float = 0.0
+		if i < _tick_jitter.size():
+			jitter = _tick_jitter[i] * chaos * 0.06
+		var angle: float = start_angle + TAU * float(i) / float(tick_count) + jitter
 		var unit := Vector2(cos(angle), sin(angle))
-		draw_line(unit * (radius - width * 0.5), unit * (radius + width * 0.5),
+		var reach: float = radius * (1.0 + jitter * 0.5)
+		draw_line(unit * (reach - width * 0.5), unit * (reach + width * 0.5),
 				tick_color, 1.0, true)
 	var sweep: float = TAU * progress
 	if sweep <= 0.0005:
 		return
-	if clockwise:
-		draw_arc(Vector2.ZERO, radius, start_angle, start_angle + sweep, point_count,
-				fill_color, width, true)
-	else:
-		draw_arc(Vector2.ZERO, radius, start_angle - sweep, start_angle, point_count,
-				fill_color, width, true)
+	var from_angle: float = start_angle if clockwise else start_angle - sweep
+	if glow:
+		draw_polyline(_arc_points(from_angle, sweep, point_count), Color(fill_color, 0.14),
+				width * (2.2 + 0.3 * chaos), true)
+	draw_polyline(_arc_points(from_angle, sweep, point_count), fill_color, width, true)
+	_draw_head(from_angle + sweep if clockwise else from_angle)
+
+
+## Polyline arc with a little radius wobble, so the fill reads as drawn rather
+## than computed. [param phase_offset] keeps the wobble stable across frames.
+func _arc_points(from_angle: float, sweep: float, point_count: int) -> PackedVector2Array:
+	var steps: int = maxi(int(absf(sweep) / TAU * float(point_count)), 2)
+	var out := PackedVector2Array()
+	out.resize(steps + 1)
+	for i in range(steps + 1):
+		var t: float = float(i) / float(steps)
+		var angle: float = from_angle + sweep * t
+		var wobble: float = chaos * 0.035 * sin(angle * 3.0 + _elapsed * 2.0)
+		var reach: float = radius * (1.0 + wobble) * (1.0 + 0.02 * chaos * sin(_elapsed * 5.0))
+		out[i] = Vector2(cos(angle), sin(angle)) * reach
+	return out
+
+
+func _draw_head(at_angle: float) -> void:
+	if chaos <= 0.0:
+		return
+	var pulse: float = 0.6 + 0.4 * sin(_elapsed * 12.0)
+	var unit := Vector2(cos(at_angle), sin(at_angle))
+	var head: Vector2 = unit * radius
+	draw_circle(head, width * (0.45 + 0.2 * pulse), Color(fill_color.lightened(0.35),
+			(0.5 + 0.3 * pulse) * chaos))
+	draw_line(head, head + unit * width * (1.2 + chaos), Color(fill_color, 0.35 * chaos),
+			maxf(1.0, width * 0.2), true)

@@ -5,14 +5,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Procedural, asset-free 2D effects for Godot 4. Hit sparks, explosions, lightning
-bolts and cooldown rings you can call in one line — pooled, so they stay cheap
-when the screen is full of them.
+bolts, cooldown rings, smoke, shockwaves, muzzle flashes and heal sparkles — all
+callable in one line, all pooled, so they stay cheap when the screen is full of
+them. Every effect carries a `chaos` knob, so nothing looks stamped from a
+stencil.
 
 ```gdscript
 VFX2D.hit_spark(enemy.global_position, Vector2.UP)
 VFX2D.explosion(boss.global_position, {"radius": 120.0})
 VFX2D.lightning(caster.global_position, target.global_position, {"branches": 4})
 VFX2D.cooldown_ring(ability_icon, 2.5)
+
+VFX2D.smoke_puff(feet.global_position, {"radius": 70.0})        # dust, landings
+VFX2D.shockwave(impact.global_position, {"radius": 150.0})      # parries, slams
+VFX2D.muzzle_flash(barrel.global_position, aim_direction)       # gunfire
+VFX2D.heal_sparkle(player.global_position)                      # pickups, buffs
 ```
 
 There are no PNGs or audio files in this repo: every effect is drawn with
@@ -89,6 +96,16 @@ func _on_grenade_explode(at: Vector2) -> void:
     VFX2D.explosion(at, {"radius": 140.0})
     VFX2D.cooldown_ring(self, 0.6)          # optional reaction ring on any node
 
+func _on_enemy_step(at: Vector2, facing: Vector2) -> void:
+    VFX2D.smoke_puff(at, {"radius": 40.0, "rise": 0.3})
+    VFX2D.shockwave(at, {"radius": 60.0, "chaos": 0.9})
+
+func _on_shoot(muzzle: Node2D, aim: Vector2) -> void:
+    VFX2D.muzzle_flash(muzzle.global_position, aim)
+
+func _on_pickup(player: Node2D) -> void:
+    VFX2D.heal_sparkle(player.global_position, {"mote_count": 26})
+
 func _on_chain_lightning(from: Node2D, to: Node2D) -> void:
     VFX2D.lightning(from.global_position, to.global_position, {
         "branches": 3,
@@ -125,6 +142,7 @@ Bright flash plus a directional burst of sparks. Additive blended.
 | `flash_radius` | `12` | Size of the impact flash |
 | `streak_length` | `26` | Length of the directional streak |
 | `flash_color` | white | Flash tint |
+| `chaos` | `0.65` | Torn star, splinter shards, spray variance |
 
 ### Explosion — `effects/explosion.tscn`
 
@@ -140,6 +158,7 @@ Layered fireball, expanding shockwave and flying debris.
 | `debris_count` | `26` | Radial debris particles |
 | `debris_speed` | `460` | px/s |
 | `debris_size` / `debris_color` | `3` / amber | Debris look |
+| `chaos` | `0.6` | Lopsided lobes, wobbling fronts, secondary pop |
 
 ### Lightning — `effects/lightning.tscn`
 
@@ -155,6 +174,7 @@ Procedurally generated bolt with branches and flicker — no two strikes match.
 | `flicker` | `0.6` | `0` = frozen shape, `1` = fastest reshuffling |
 | `flicker_interval` | `0.05` | Base interval between reshuffles |
 | `bolt_color` / `core_color` | blue / white | Outer glow and hot core |
+| `chaos` | `0.65` | Branch count per flicker, sub-branches, stray arcs |
 
 `get_bolt_points()` and `get_branch_points()` expose the generated geometry if
 you want to hit-test or attach effects to the bolt.
@@ -184,6 +204,64 @@ Build products are gitignored; delete `addons/vfx_2d/bin/` and the generated
 `.gdextension` to return to pure GDScript. Full API, tuning notes and
 troubleshooting: [`cpp/README.md`](cpp/README.md).
 
+### Smoke puff — `effects/smoke_puff.tscn`
+
+Billowing, additive-free smoke or dust: overlapping blobs that grow, drift upward
+and dissolve. Use it for landings, dashes, footsteps, broken crates.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `radius` | `54` | Cloud size |
+| `puff_count` | `9` | Blobs in the cloud |
+| `rise` | `0.55` | Upward drift, as a fraction of `radius` |
+| `turbulence` | `0.7` | Sideways swirl |
+| `grow` | `1.5` | Extra growth while fading |
+| `inner_color` / `outer_color` | grey | Colour gradient across the cloud |
+| `chaos` | `0.65` | How torn each blob outline is |
+
+### Shockwave — `effects/shockwave.tscn`
+
+Rings and cracks, no fire: an impact wave that layers under projectiles, heavy
+landings and parries.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `radius` / `expansion` | `96` / `3.2` | Start size and reach multiplier |
+| `rings` | `2` | Staggered wavefronts |
+| `ring_width` | `6` | Front thickness, thins as it travels |
+| `cracks` / `crack_length` | `12` / `0.35` | Radial cracks around the core |
+| `ring_color` / `core_color` | pale blue / white | Tint of the front and the flash |
+| `chaos` | `0.6` | How ragged the front is |
+
+### Muzzle flash — `effects/muzzle_flash.tscn`
+
+Directional: torn cone of light, uneven star and a spark spray along `direction`.
+Belongs on the weapon, not the target.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `direction` | `Vector2.RIGHT` | Set by the convenience method |
+| `length` / `cone_degrees` | `62` / `26` | Cone size and spread |
+| `teeth` | `7` | Jaggedness of the cone edge |
+| `spark_count` / `spark_speed` | `12` / `620` | Spark spray |
+| `use_streaks` / `streak_count` | `true` / `120` | Optional C++ streak layer |
+| `chaos` | `0.7` | Ragged edge and spray variance |
+
+### Heal sparkle — `effects/heal_sparkle.tscn`
+
+Ascending, twinkling motes with a soft glow and a couple of accent stars —
+pickups, heals, level-ups.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `radius` | `46` | Spawn spread |
+| `mote_count` | `20` | Sparkles in the burst |
+| `rise` | `76` | Upward travel in pixels |
+| `twinkle` | `0.85` | Flicker strength |
+| `star_count` | `2` | Larger accent stars |
+| `sparkle_color` / `glow_color` | green / deep green | Motes and backing glow |
+| `chaos` | `0.55` | Orbit scatter and jitter |
+
 ### Cooldown ring — `effects/cooldown_ring.tscn`
 
 A modifier node, not a one-shot: it circles whatever it is parented to. Previews
@@ -199,11 +277,38 @@ in the editor (change `progress` to see the arc).
 | `tick_count` / `tick_color` | `0` | Optional segment ticks |
 | `fill_color` / `track_color` | cyan / dark | Arc and background track |
 | `free_on_complete` | `true` | Keep it `false` to reuse one ring |
+| `chaos` / `glow` | `0.25` / `true` | Arc wobble, tick jitter, pulsing glow |
 
 ```gdscript
 var ring := VFX2D.cooldown_ring($Icon, 3.0, {"reverse": true, "tick_count": 12})
 ring.completed.connect(_on_cooldown_ready)
 ```
+
+### Chaos — one knob on every effect
+
+Each effect exports `chaos` (`0.0`–`1.0`, default roughly `0.6`). It is not a
+random speed bump: it changes the *shape* of what is drawn, and it is reseeded on
+every `play()`, so a pooled effect never repeats itself.
+
+| Effect | What `chaos` moves |
+| --- | --- |
+| Hit spark | Torn star behind the flash, random splinter shards, spray rotation and spread |
+| Explosion | Lopsided fireball lobes, wobbling + ghost shockfront, secondary pop offset |
+| Lightning | Branch count per flicker, sub-branches, stray arcs, jaggedness |
+| Cooldown ring | Arc wobble, tick jitter, pulsing glow and a spark at the arc head |
+| Smoke puff | Blob outline tearing and swirl |
+| Shockwave | Front raggedness, crack reach |
+| Muzzle flash | Cone edge tearing, star rotation, spray spread |
+| Heal sparkle | Orbit scatter, mote jitter |
+
+```gdscript
+VFX2D.hit_spark(at, dir, {"chaos": 0.0})   # tidy, symmetric, readable
+VFX2D.hit_spark(at, dir, {"chaos": 1.0})   # splintered and lopsided
+```
+
+The knob is honest about direction: `0` is a clean shape, `1` is the wildest the
+effect gets. Ring defaults to `0.25` on purpose — a cooldown still has to be
+readable.
 
 ## API reference
 
@@ -214,6 +319,10 @@ ring.completed.connect(_on_cooldown_ready)
 | `hit_spark(at, direction := Vector2.UP, options := {})` | `VFXEffect` | Spawn a hit spark |
 | `explosion(at, options := {})` | `VFXEffect` | Spawn an explosion |
 | `lightning(from, to, options := {})` | `VFXEffect` | Spawn a bolt between two points |
+| `smoke_puff(at, options := {})` | `VFXEffect` | Spawn a smoke/dust cloud |
+| `shockwave(at, options := {})` | `VFXEffect` | Spawn an impact wave |
+| `muzzle_flash(at, direction := Vector2.RIGHT, options := {})` | `VFXEffect` | Spawn a directional flash |
+| `heal_sparkle(at, options := {})` | `VFXEffect` | Spawn ascending sparkles |
 | `cooldown_ring(target, seconds := 1.0, options := {})` | `CooldownRing` | Parent and start a ring |
 | `spawn(scene, at, options := {})` | `VFXEffect` | Spawn any custom `VFXEffect` scene |
 | `stop_all()` | `void` | Stop and recycle everything |
@@ -266,6 +375,7 @@ scene):
 
 - **Left click** — hit spark at the cursor
 - **1 / 2 / 3 / 4** — hit spark, explosion, lightning, cooldown ring
+- **5 / 6 / 7 / 8** — smoke puff, shockwave, muzzle flash, heal sparkle
 - **Space** — toggle the idle auto-demo
 - **C** — clear all running effects
 - **G** — the effect gallery
@@ -274,9 +384,9 @@ The HUD shows FPS and the live active-effect count.
 
 ### Gallery: every effect at once
 
-`demo/gallery.tscn` is the "just show me all of them" scene: a 2×2 grid with one
-labelled cell per effect, each firing on its own timer so you can judge them side
-by side while tuning.
+`demo/gallery.tscn` is the "just show me all of them" scene: a 4×2 grid with one
+labelled cell per effect, each firing on its own timer so you can judge all eight
+side by side while tuning.
 
 ```bash
 godot --path . res://demo/gallery.tscn   # or open demo/gallery.tscn and press F6
@@ -291,7 +401,7 @@ addon archive, there is no `demo/` in it, which is why the gallery appears
 - **Space** — pause/resume the timers
 - **R** — fire all four immediately
 - **C** — clear running effects
-- **1-4 or click a cell** — fire that single effect
+- **1-8 or click a cell** — fire that single effect
 - **Esc** — back to the interactive demo
 
 The header shows FPS, the live active count, and whether the optional C++ streak
@@ -325,8 +435,9 @@ The separate [`GDExtension` workflow](.github/workflows/gdextension.yml) builds
 the C++ streak field against stock Godot 4.7.2, then runs the same suite and
 **fails if the extension silently failed to load** — the C++ tests print
 `cpp-streak-field: available|absent`, and the workflow asserts which one ran.
-Same suite, both paths: **66 checks** with the extension, **54** without, zero
-engine errors either way.
+Same suite, both paths: **120 checks** with the extension, **108** without, zero
+engine errors either way. Every effect — all eight — is run through its full
+lifecycle, and each one's `chaos` knob is exercised.
 
 ## Repository layout
 
@@ -336,10 +447,15 @@ addons/vfx_2d/
   plugin.gd                  # Registers the VFX2D autoload
   vfx_2d.gd                  # Autoload: spawn API + pooling
   core/vfx_effect.gd         # VFXEffect base class
+  core/vfx_shapes.gd         # Procedural outlines shared by the effects
   effects/hit_spark.*        # Effect scenes + scripts
   effects/explosion.*
   effects/lightning.*
   effects/cooldown_ring.*
+  effects/smoke_puff.*
+  effects/shockwave.*
+  effects/muzzle_flash.*
+  effects/heal_sparkle.*
 cpp/                         # Optional C++ streak field (GDExtension)
   src/vfx_streak_field.*     # Particle integration + multiline draw
   src/register_types.cpp     # Class registration / entry point

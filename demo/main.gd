@@ -1,9 +1,9 @@
 extends Node2D
 ## Interactive sandbox for the 2D VFX Kit.
 ##
-## Left click anywhere to pop a hit spark, use the buttons (or keys 1-4) to fire
+## Left click anywhere to pop a hit spark, use the buttons (or keys 1-8) to fire
 ## each effect, and press Space to toggle the idle auto-demo. Press G (or the
-## "Effect gallery" button) for demo/gallery.tscn, which shows all four side by
+## "Effect gallery" button) for demo/gallery.tscn, which shows all eight side by
 ## side on a labelled grid.
 
 const GRID_STEP: float = 64.0
@@ -12,6 +12,10 @@ const TARGET_RADIUS: float = 46.0
 const SPARK_SPOT := Vector2(380.0, 300.0)
 const EXPLOSION_SPOT := Vector2(620.0, 300.0)
 const LIGHTNING_FROM := Vector2(280.0, 120.0)
+const SMOKE_FEET := Vector2(160.0, 560.0)
+const SHOCKWAVE_SPOT := Vector2(760.0, 300.0)
+const MUZZLE_ORIGIN := Vector2(520.0, 560.0)
+const HEAL_SPOT := Vector2(930.0, 460.0)
 const AUTO_DEMO_INTERVAL: float = 1.2
 const GALLERY_SCENE: String = "res://demo/gallery.tscn"
 
@@ -71,6 +75,14 @@ func _unhandled_input(event: InputEvent) -> void:
 				_on_spawn_lightning()
 			KEY_4:
 				_on_start_cooldown_ring()
+			KEY_5:
+				_on_smoke_puff()
+			KEY_6:
+				_on_shockwave()
+			KEY_7:
+				_on_muzzle_flash()
+			KEY_8:
+				_on_heal_sparkle()
 			KEY_C:
 				VFX2D.stop_all()
 			KEY_G:
@@ -129,6 +141,23 @@ func _on_spawn_lightning() -> void:
 	VFX2D.lightning(LIGHTNING_FROM, target, {"branches": 3, "duration": 0.35})
 
 
+func _on_smoke_puff() -> void:
+	VFX2D.smoke_puff(SMOKE_FEET + Vector2(_rng.randf_range(-40.0, 40.0), 0.0))
+
+
+func _on_shockwave() -> void:
+	VFX2D.shockwave(SHOCKWAVE_SPOT, {"radius": 90.0})
+
+
+func _on_muzzle_flash() -> void:
+	var aim: Vector2 = _mouse_position - MUZZLE_ORIGIN
+	VFX2D.muzzle_flash(MUZZLE_ORIGIN, aim)
+
+
+func _on_heal_sparkle() -> void:
+	VFX2D.heal_sparkle(HEAL_SPOT)
+
+
 func _open_gallery() -> void:
 	if ResourceLoader.exists(GALLERY_SCENE):
 		get_tree().change_scene_to_file(GALLERY_SCENE)
@@ -176,7 +205,7 @@ func _build_hud() -> void:
 	column.add_child(title)
 
 	var hint := Label.new()
-	hint.text = "Click: hit spark   ·   1/2/3/4: effects   ·   Space: auto demo   ·   C: clear"
+	hint.text = "Click: hit spark   ·   1-8: effects   ·   Space: auto demo   ·   C: clear"
 	if ResourceLoader.exists(GALLERY_SCENE):
 		hint.text += "   ·   G: effect gallery"
 	hint.add_theme_color_override("font_color", Color(0.65, 0.78, 0.9))
@@ -189,6 +218,14 @@ func _build_hud() -> void:
 	buttons.add_child(_make_button("Explosion", _on_spawn_explosion))
 	buttons.add_child(_make_button("Lightning", _on_spawn_lightning))
 	buttons.add_child(_make_button("Cooldown ring", _on_start_cooldown_ring))
+
+	var more := HBoxContainer.new()
+	more.add_theme_constant_override("separation", 8)
+	column.add_child(more)
+	more.add_child(_make_button("Smoke", _on_smoke_puff))
+	more.add_child(_make_button("Shockwave", _on_shockwave))
+	more.add_child(_make_button("Muzzle flash", _on_muzzle_flash))
+	more.add_child(_make_button("Heal sparkle", _on_heal_sparkle))
 	if ResourceLoader.exists(GALLERY_SCENE):
 		buttons.add_child(_make_button("Effect gallery", _open_gallery))
 
