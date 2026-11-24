@@ -1,7 +1,7 @@
 extends Node2D
 ## Visual gallery for every effect in the kit, split into themed pages so only a
-## few effects run at once. Sixteen effects firing together is a stress test, not
-## a gallery: each page here runs up to four cells on their own timers, which
+## few effects run at once. Twenty-four effects firing together is a stress test,
+## not a gallery: each page here runs up to four cells on their own timers, which
 ## keeps the frame rate honest while you compare shapes and colors.
 ##
 ## Run it on its own with [code]godot --path . res://demo/gallery.tscn[/code], or
@@ -150,6 +150,82 @@ const PAGES := [
 		],
 	},
 	{
+		"title": "Elemental",
+		"note": "cold, corrosive and chained damage",
+		"cells": [
+			{
+				"effect": "frost_burst",
+				"title": "1 · Frost burst",
+				"note": "16 shards · angular ice + glints",
+				"accent": Color(0.66, 0.9, 1.0),
+				"interval": 1.6,
+				"phase": 0.15,
+			},
+			{
+				"effect": "acid_splash",
+				"title": "2 · Acid splash",
+				"note": "12 bubbles · pop on a delay",
+				"accent": Color(0.58, 0.92, 0.32),
+				"interval": 1.9,
+				"phase": 0.6,
+			},
+			{
+				"effect": "chain_lightning",
+				"title": "3 · Chain lightning",
+				"note": "3 hops · dims as it chains",
+				"accent": Color(0.6, 0.8, 1.0),
+				"interval": 1.5,
+				"phase": 1.0,
+			},
+			{
+				"effect": "vortex",
+				"title": "4 · Vortex",
+				"note": "pull field · motes spiral in",
+				"accent": Color(0.55, 0.62, 1.0),
+				"interval": 2.6,
+				"phase": 1.3,
+			},
+		],
+	},
+	{
+		"title": "Reactive",
+		"note": "movement, ground hits and links",
+		"cells": [
+			{
+				"effect": "blink",
+				"title": "1 · Blink",
+				"note": "collapse · streak · arrival",
+				"accent": Color(0.62, 0.88, 1.0),
+				"interval": 1.8,
+				"phase": 0.2,
+			},
+			{
+				"effect": "impact_crack",
+				"title": "2 · Impact crack",
+				"note": "9 cracks · dust + flat flash",
+				"accent": Color(0.95, 0.78, 0.5),
+				"interval": 1.7,
+				"phase": 0.7,
+			},
+			{
+				"effect": "shield_bubble",
+				"title": "3 · Shield bubble",
+				"note": "hex lattice · flashes when hit",
+				"accent": Color(0.55, 0.85, 1.0),
+				"interval": 3.0,
+				"phase": 1.1,
+			},
+			{
+				"effect": "tether",
+				"title": "4 · Tether",
+				"note": "sagging chain · travelling pulses",
+				"accent": Color(0.7, 0.85, 1.0),
+				"interval": 2.4,
+				"phase": 1.5,
+			},
+		],
+	},
+	{
 		"title": "Motion",
 		"note": "flow, water and sustained shapes",
 		"cells": [
@@ -198,6 +274,11 @@ var _clock: float = 0.0
 var _ring_target: Node2D = null
 var _rune_target: Node2D = null
 var _trail_flyer: Node2D = null
+var _shield_target: Node2D = null
+var _tether_a: Node2D = null
+var _tether_b: Node2D = null
+var _shield: ShieldBubble = null
+var _hit_clock: float = 0.0
 var _persistent: Dictionary = {}
 
 
@@ -212,6 +293,15 @@ func _ready() -> void:
 	_trail_flyer = Node2D.new()
 	_trail_flyer.name = "TrailFlyer"
 	add_child(_trail_flyer)
+	_shield_target = Node2D.new()
+	_shield_target.name = "ShieldTarget"
+	add_child(_shield_target)
+	_tether_a = Node2D.new()
+	_tether_a.name = "TetherA"
+	add_child(_tether_a)
+	_tether_b = Node2D.new()
+	_tether_b.name = "TetherB"
+	add_child(_tether_b)
 	_reset_timers()
 
 
@@ -224,6 +314,7 @@ func _process(delta: float) -> void:
 			_flashes[index] = maxf(0.0, _flashes[index] - delta * 2.0)
 	if not _paused:
 		_advance_timers(delta)
+	_update_shield_hits(delta)
 	queue_redraw()
 
 
@@ -348,6 +439,8 @@ func _advance_timers(delta: float) -> void:
 func _clear_effects() -> void:
 	VFX2D.stop_all()
 	_persistent.clear()
+	_shield = null
+	_hit_clock = 0.0
 	for index in _flashes.size():
 		_flashes[index] = 0.0
 
@@ -444,6 +537,57 @@ func _fire(index: int) -> void:
 			if is_instance_valid(_trail_flyer):
 				_persistent[index] = VFX2D.trail(_trail_flyer,
 						{"history": 0.55, "width_start": 7.0, "mote_count": 9})
+		"frost_burst":
+			VFX2D.frost_burst(center, {"shard_count": 14, "speed": 260.0})
+		"acid_splash":
+			VFX2D.acid_splash(center + Vector2(0.0, 30.0),
+					{"bubble_count": 10, "splat_radius": 34.0})
+		"chain_lightning":
+			var first: Vector2 = center + Vector2(-span * 0.26, -30.0)
+			VFX2D.chain(first, [
+				center + Vector2(span * 0.05, 26.0),
+				center + Vector2(span * 0.28, -22.0),
+			], {"duration": 0.45})
+		"vortex":
+			_stop_persistent(index)
+			_persistent[index] = VFX2D.vortex(center,
+					{"radius": 62.0, "lifetime": 1.6})
+		"blink":
+			VFX2D.blink(center + Vector2(-span * 0.3, 30.0),
+					center + Vector2(span * 0.3, -30.0))
+		"impact_crack":
+			VFX2D.impact_crack(center + Vector2(0.0, 34.0),
+					{"radius": 96.0, "crack_count": 8})
+		"shield_bubble":
+			_stop_persistent(index)
+			_shield = null
+			if is_instance_valid(_shield_target):
+				_shield_target.position = center
+				var bubble: ShieldBubble = VFX2D.shield(_shield_target,
+						{"radius": 56.0, "lifetime": 1.8, "hex_size": 11.0})
+				if bubble != null:
+					_shield = bubble
+					bubble.hit(center + Vector2(40.0, -18.0))
+					_persistent[index] = bubble
+		"tether":
+			_stop_persistent(index)
+			if is_instance_valid(_tether_a) and is_instance_valid(_tether_b):
+				_tether_a.position = center + Vector2(-span * 0.3, 18.0)
+				_tether_b.position = center + Vector2(span * 0.3, -18.0)
+				_persistent[index] = VFX2D.tether(_tether_a, _tether_b,
+						{"sag": 26.0, "link_count": 12})
+
+
+func _update_shield_hits(delta: float) -> void:
+	if _shield == null or not is_instance_valid(_shield):
+		return
+	_hit_clock += delta
+	if _hit_clock < 0.45:
+		return
+	_hit_clock = 0.0
+	var angle: float = _rng.randf_range(-PI, PI)
+	_shield.hit(_shield.global_position
+			+ Vector2(cos(angle), sin(angle)) * _rng.randf_range(30.0, 52.0))
 
 
 func _stop_persistent(index: int) -> void:

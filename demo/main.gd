@@ -3,10 +3,12 @@ extends Node2D
 ##
 ## Left click anywhere to pop a hit spark, use the buttons (or keys 1-8) to fire
 ## the one-shots, and press Space to toggle the idle auto-demo. Keys 9 and 0 add
-## the slash arc and debris burst, R/I the ripple and implosion, and B/P/U/T
-## toggle the persistent modifiers: beam, portal, rune circle and trail. Press G
-## (or the "Effect gallery" button) for demo/gallery.tscn, which shows all sixteen
-## effects as labelled cells across four themed pages, so only a few run at once.
+## the slash arc and debris burst, R/I the ripple and implosion, F/L/X/K/M the
+## frost burst, chain lightning, acid splash, impact crack and blink, and
+## B/P/U/T/H/V/N toggle the persistent modifiers: beam, portal, rune circle,
+## trail, shield bubble, tether and vortex. Press G (or the "Effect gallery"
+## button) for demo/gallery.tscn, which shows all twenty-four effects as labelled
+## cells across six themed pages, so only a few run at once.
 
 const GRID_STEP: float = 64.0
 const TARGET_POSITION := Vector2(930.0, 460.0)
@@ -22,6 +24,9 @@ const SLASH_SPOT := Vector2(380.0, 470.0)
 const DEBRIS_SPOT := Vector2(620.0, 470.0)
 const RIPPLE_SPOT := Vector2(760.0, 470.0)
 const IMPLOSION_SPOT := Vector2(480.0, 180.0)
+const FROST_SPOT := Vector2(300.0, 560.0)
+const ACID_SPOT := Vector2(460.0, 560.0)
+const CRACK_SPOT := Vector2(700.0, 560.0)
 const AUTO_DEMO_INTERVAL: float = 1.2
 const GALLERY_SCENE: String = "res://demo/gallery.tscn"
 
@@ -37,6 +42,9 @@ var _beam: BeamEffect = null
 var _portal: PortalEffect = null
 var _rune: RuneCircle = null
 var _trail: TrailEffect = null
+var _shield: ShieldBubble = null
+var _tether: Tether = null
+var _vortex: Vortex = null
 var _cast_clock: float = 0.0
 
 
@@ -118,6 +126,22 @@ func _unhandled_input(event: InputEvent) -> void:
 				_on_toggle_rune()
 			KEY_T:
 				_on_toggle_trail()
+			KEY_F:
+				_on_frost_burst()
+			KEY_L:
+				_on_chain_lightning()
+			KEY_X:
+				_on_acid_splash()
+			KEY_K:
+				_on_impact_crack()
+			KEY_M:
+				_on_blink()
+			KEY_H:
+				_on_toggle_shield()
+			KEY_V:
+				_on_toggle_tether()
+			KEY_N:
+				_on_toggle_vortex()
 			KEY_C:
 				VFX2D.stop_all()
 			KEY_G:
@@ -210,6 +234,57 @@ func _on_implosion() -> void:
 	VFX2D.implosion(IMPLOSION_SPOT)
 
 
+func _on_frost_burst() -> void:
+	VFX2D.frost_burst(FROST_SPOT, {"shard_count": 18})
+
+
+func _on_chain_lightning() -> void:
+	VFX2D.chain(LIGHTNING_FROM, [_mouse_position,
+			TARGET_POSITION + Vector2(-60.0, 40.0)], {"duration": 0.5})
+
+
+func _on_acid_splash() -> void:
+	VFX2D.acid_splash(ACID_SPOT)
+
+
+func _on_impact_crack() -> void:
+	VFX2D.impact_crack(CRACK_SPOT, {"radius": 170.0})
+
+
+func _on_blink() -> void:
+	if not is_instance_valid(_flyer):
+		return
+	VFX2D.blink(_flyer.global_position, _mouse_position)
+	_flyer.position = _mouse_position
+
+
+func _on_toggle_shield() -> void:
+	if is_instance_valid(_shield):
+		_shield.stop()
+		_shield = null
+		return
+	_shield = VFX2D.shield(_ring_target, {"radius": 74.0})
+	if _shield != null:
+		_shield.hit(_mouse_position)
+
+
+func _on_toggle_tether() -> void:
+	if is_instance_valid(_tether):
+		_tether.stop()
+		_tether = null
+		return
+	if is_instance_valid(_flyer):
+		_tether = VFX2D.tether(_ring_target, _flyer, {"sag": 60.0})
+
+
+func _on_toggle_vortex() -> void:
+	if is_instance_valid(_vortex):
+		_vortex.stop()
+		_vortex = null
+		return
+	_vortex = VFX2D.vortex(_mouse_position, {"radius": 120.0})
+
+
 func _on_toggle_beam() -> void:
 	if is_instance_valid(_beam):
 		_beam.stop()
@@ -299,13 +374,13 @@ func _build_hud() -> void:
 	panel.add_child(column)
 
 	var title := Label.new()
-	title.text = "2D VFX Kit — v0.4 demo"
+	title.text = "2D VFX Kit — v0.5 demo"
 	title.add_theme_font_size_override("font_size", 22)
 	column.add_child(title)
 
 	var hint := Label.new()
-	hint.text = ("Click: hit spark   ·   1-0, R, I: one-shots"
-			+ "   ·   B P U T: beam, portal, rune, trail"
+	hint.text = ("Click: hit spark   ·   1-0, R, I, F, L, X, K, M: one-shots"
+			+ "   ·   B P U T H V N: persistent"
 			+ "   ·   Space: auto demo   ·   C: clear")
 	if ResourceLoader.exists(GALLERY_SCENE):
 		hint.text += "   ·   G: effect gallery"
@@ -343,6 +418,22 @@ func _build_hud() -> void:
 	persistent.add_child(_make_button("Portal", _on_toggle_portal))
 	persistent.add_child(_make_button("Rune circle", _on_toggle_rune))
 	persistent.add_child(_make_button("Trail", _on_toggle_trail))
+
+	var elemental := HBoxContainer.new()
+	elemental.add_theme_constant_override("separation", 8)
+	column.add_child(elemental)
+	elemental.add_child(_make_button("Frost burst", _on_frost_burst))
+	elemental.add_child(_make_button("Acid splash", _on_acid_splash))
+	elemental.add_child(_make_button("Chain lightning", _on_chain_lightning))
+	elemental.add_child(_make_button("Impact crack", _on_impact_crack))
+
+	var more_modifiers := HBoxContainer.new()
+	more_modifiers.add_theme_constant_override("separation", 8)
+	column.add_child(more_modifiers)
+	more_modifiers.add_child(_make_button("Blink", _on_blink))
+	more_modifiers.add_child(_make_button("Shield", _on_toggle_shield))
+	more_modifiers.add_child(_make_button("Tether", _on_toggle_tether))
+	more_modifiers.add_child(_make_button("Vortex", _on_toggle_vortex))
 	if ResourceLoader.exists(GALLERY_SCENE):
 		buttons.add_child(_make_button("Effect gallery", _open_gallery))
 

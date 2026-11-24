@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 extends Node
 ## Global spawner and recycler for the 2D VFX Kit.
 ##
@@ -10,6 +11,8 @@ extends Node
 ## VFX2D.explosion(boss.global_position, {"radius": 120.0})
 ## VFX2D.lightning(caster.global_position, target.global_position, {"branches": 4})
 ## VFX2D.cooldown_ring(ability_icon_node, 2.5)
+## VFX2D.chain(caster.global_position, [a.global_position, b.global_position])
+## VFX2D.vortex(charge_point, {"radius": 120.0})
 ## [/codeblock]
 ##
 ## Effects are parented to a dedicated [code]VFX2D_Layer[/code] node under the
@@ -107,6 +110,99 @@ func ripple(at: Vector2, options: Dictionary = {}) -> VFXEffect:
 ## Spawns an inward collapse at [param at] — the reverse of an explosion.
 func implosion(at: Vector2, options: Dictionary = {}) -> VFXEffect:
 	return spawn(_effect_scene("implosion"), at, options)
+
+
+## Chains a bolt through [param from] and every point in [param targets], one hop
+## per target. Order matters: each hop is revealed after the previous one.
+func chain(from: Vector2, targets: Array, options: Dictionary = {}) -> ChainLightningEffect:
+	if targets.is_empty():
+		push_warning("VFX2D.chain(): no targets, falling back to a lightning bolt")
+		return null
+	var opts: Dictionary = options.duplicate()
+	var points := PackedVector2Array()
+	points.append(Vector2.ZERO)
+	for target in targets:
+		var point: Vector2 = target if target is Vector2 else from
+		points.append(point - from)
+	opts["points"] = points
+	return spawn(_effect_scene("chain_lightning"), from, opts) as ChainLightningEffect
+
+
+## Teleports visually from [param from] to [param to]: collapse, streak, burst.
+func blink(from: Vector2, to: Vector2, options: Dictionary = {}) -> BlinkEffect:
+	var opts: Dictionary = options.duplicate()
+	opts["destination"] = to - from
+	return spawn(_effect_scene("blink"), from, opts) as BlinkEffect
+
+
+## Spawns angular ice shards at [param at].
+func frost_burst(at: Vector2, options: Dictionary = {}) -> FrostBurstEffect:
+	return spawn(_effect_scene("frost_burst"), at, options) as FrostBurstEffect
+
+
+## Spawns a sticky acid splat with popping bubbles at [param at].
+func acid_splash(at: Vector2, options: Dictionary = {}) -> AcidSplashEffect:
+	return spawn(_effect_scene("acid_splash"), at, options) as AcidSplashEffect
+
+
+## Spawns ground-aligned cracks at [param at]. Pass [code]{"surface": Vector2.UP}[/code]
+## for a ceiling hit.
+func impact_crack(at: Vector2, options: Dictionary = {}) -> ImpactCrackEffect:
+	return spawn(_effect_scene("impact_crack"), at, options) as ImpactCrackEffect
+
+
+## Wraps [param target] in a reactive bubble. Call [method ShieldBubble.hit] with
+## an impact point, or [method ShieldBubble.stop] to drop it.
+func shield(target: Node2D, options: Dictionary = {}) -> ShieldBubble:
+	if not is_instance_valid(target):
+		push_error("VFX2D.shield(): target node is not valid")
+		return null
+	var scene: PackedScene = _effect_scene("shield_bubble")
+	if scene == null:
+		return null
+	var bubble := scene.instantiate() as ShieldBubble
+	if bubble == null:
+		push_error("VFX2D.shield(): the root of shield_bubble.tscn must be a ShieldBubble")
+		return null
+	bubble.position = Vector2.ZERO
+	target.add_child(bubble)
+	_apply_options(bubble, options)
+	_register_persistent(bubble)
+	bubble.start()
+	return bubble
+
+
+## Links two nodes with a sagging energy chain.
+func tether(from: Node2D, to: Node2D, options: Dictionary = {}) -> Tether:
+	if not is_instance_valid(from) or not is_instance_valid(to):
+		push_error("VFX2D.tether(): both nodes must be valid")
+		return null
+	var scene: PackedScene = _effect_scene("tether")
+	if scene == null:
+		return null
+	var link := scene.instantiate() as Tether
+	if link == null:
+		push_error("VFX2D.tether(): the root of tether.tscn must be a Tether")
+		return null
+	_attach_persistent(link, options)
+	link.set_targets(from, to)
+	link.start()
+	return link
+
+
+## Opens a pull field at [param at]: motes spiral in and recycle at the centre.
+func vortex(at: Vector2, options: Dictionary = {}) -> Vortex:
+	var scene: PackedScene = _effect_scene("vortex")
+	if scene == null:
+		return null
+	var field := scene.instantiate() as Vortex
+	if field == null:
+		push_error("VFX2D.vortex(): the root of vortex.tscn must be a Vortex")
+		return null
+	field.position = at
+	_attach_persistent(field, options)
+	field.start()
+	return field
 
 
 ## Creates a persistent beam from [param from] to [param to]. Keep the returned

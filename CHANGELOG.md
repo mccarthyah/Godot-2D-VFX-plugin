@@ -4,6 +4,46 @@ All notable changes to the 2D VFX Kit are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] — 2026-11-24
+
+### Added
+
+- **Five more one-shot effects**, all pooled `VFXEffect` scenes:
+  - `frost_burst` — angular ice shards, cold flash and a crystalline shimmer
+    (`frost_burst.tscn`).
+  - `acid_splash` — bubbles that rise and pop on a delay, each pop throwing
+    droplets, over a sticky splat (`acid_splash.tscn`).
+  - `impact_crack` — ground-aligned jagged cracks, dust and a flat flash;
+    `surface` decides which way they fan (`impact_crack.tscn`).
+  - `chain_lightning` — a bolt that hops through an array of targets, one jagged
+    segment per hop, dimmer each time (`chain_lightning.tscn`).
+  - `blink` — two-point teleport: collapse at the source, streak, burst at the
+    destination (`blink.tscn`).
+- **Three reactive modifiers**, extending the persistent category:
+  - `shield_bubble` (`ShieldBubble`) — hex lattice over a dome; `hit(world_point)`
+    flashes and ripples where it is struck, `stop()` closes it.
+  - `tether` (`Tether`) — sagging energy chain between two nodes with pulses
+    running along it; `set_targets()` re-aims, and it frees itself when either end
+    disappears.
+  - `vortex` (`Vortex`) — pull field: motes spawn on the rim, spiral in and
+    recycle; also sprays a ring of C++ streaks on start when the extension is
+    loaded.
+- **`VFX2D.frost_burst()`, `acid_splash()`, `impact_crack()`, `chain()`,
+  `blink()`, `shield()`, `tether()`, `vortex()`**, plus `chaos` on all eight.
+
+### Changed
+
+- The gallery has **six pages**: Impacts, Combat, Magic, **Elemental**, **Reactive**
+  and Motion — twenty-four effects, still only four cells running at a time. The
+  shield cell flashes itself on a timer so the reactive part is visible.
+- The demo adds keys **F** (frost burst), **L** (chain lightning), **X** (acid
+  splash), **K** (impact crack), **M** (blink) and **H / V / N** to toggle the
+  shield, tether and vortex, each with a HUD button.
+- Tests cover the new effects' lifecycles and geometry plus the reactive hooks:
+  shield `hit()`/open/close, tether sampling, target loss and `stop()`, vortex
+  mote count and fade. **330 checks** with the extension, **318** without.
+- Version bumped to `0.5.0`.
+
 ## [0.4.1] — 2026-11-24
 
 ### Changed
@@ -182,6 +222,7 @@ out of in a few lines.
   import, headless tests, demo smoke run on Godot 4.2, 4.3 and 4.7.2.
 - **Packaging** — `tools/package.sh` builds `dist/vfx_2d-<version>.zip`.
 
+[0.5.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.5.0
 [0.4.1]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.4.1
 [0.4.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.4.0
 [0.3.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.3.0

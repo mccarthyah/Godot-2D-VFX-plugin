@@ -4,13 +4,14 @@
 [![Godot 4.2+](https://img.shields.io/badge/Godot-4.2%2B-478cbf)](https://godotengine.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Procedural, asset-free 2D effects for Godot 4. Sixteen effects: hit sparks,
-explosions, lightning bolts, cooldown rings, smoke, shockwaves, muzzle flashes,
-heal sparkles, slash arcs, debris bursts, ripples and implosions — plus four
-persistent modifiers (rune circles, portals, beams and trails) that live until
-you stop them. One-shots are pooled, so they stay cheap when the screen is full
-of them. Every effect carries a `chaos` knob, so nothing looks stamped from a
-stencil.
+Procedural, asset-free 2D effects for Godot 4. Twenty-four effects: hit sparks,
+explosions, lightning bolts and chains, cooldown rings, smoke, shockwaves, muzzle
+flashes, heal sparkles, slash arcs, debris bursts, ripples, implosions, frost
+bursts, acid splashes, ground cracks and blink streaks — plus seven persistent
+modifiers (rune circles, portals, beams, trails, shield bubbles, tethers and
+vortex fields) that live until you stop them. One-shots are pooled, so they stay
+cheap when the screen is full of them. Every effect carries a `chaos` knob, so
+nothing looks stamped from a stencil.
 
 ```gdscript
 VFX2D.hit_spark(enemy.global_position, Vector2.UP)
@@ -28,9 +29,19 @@ VFX2D.debris_burst(crate.global_position)                       # broken objects
 VFX2D.ripple(water_point, {"radius": 130.0})                     # splashes, sonar
 VFX2D.implosion(vortex.global_position)                         # charging attacks
 
+VFX2D.frost_burst(hit_point)                                     # ice shards
+VFX2D.acid_splash(puddle)                                        # corrosive goo
+VFX2D.impact_crack(floor_point, {"surface": Vector2.UP})          # ground slam
+VFX2D.chain(caster.global_position, [a.global_position, b.global_position])
+VFX2D.blink(from_point, to_point)                                # teleport
+
 var beam := VFX2D.beam(turret.global_position, aim_point)        # sustained laser
 var rune := VFX2D.rune_circle(caster, 2.5)                       # cast bar
 rune.set_fill(0.6)                                               # driven per frame
+var bubble := VFX2D.shield(player, {"radius": 72.0})             # reactive shell
+bubble.hit(enemy.global_position)
+var leash := VFX2D.tether(player, enemy)                         # sagging chain
+var pull := VFX2D.vortex(charge_point, {"radius": 120.0})        # pull field
 beam.stop()
 ```
 
@@ -347,6 +358,77 @@ vacuum pulls.
 | `mote_color` / `core_color` | violet / white | Motes and pinch |
 | `chaos` | `0.55` | Spiral variance, mote jitter, release scatter |
 
+### Frost burst — `effects/frost_burst.tscn`
+
+Hard-edged ice: angular shards thrown outward, a cold flash, then a slow
+crystalline shimmer as they fall. Deliberately sharp next to the round explosion.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `shard_count` | `16` | Shards thrown |
+| `shard_size` | `15` | Base shard radius |
+| `speed` / `gravity` | `340` / `420` | Launch speed and fall |
+| `drag` | `1.4` | Air resistance |
+| `spin_speed` | `5.5` | Tumble rate (rad/s) |
+| `shimmer` | `0.6` | Specular glint flicker |
+| `chaos` | `0.5` | Shard shape, size and scatter |
+
+### Acid splash — `effects/acid_splash.tscn`
+
+Sticky acid: bubbles rise out of a splat and pop on a delay, each pop throwing
+droplets, while the puddle drips. Drawn without an additive material.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `splat_radius` / `splat_squash` | `26` / `0.4` | Puddle shape |
+| `bubble_count` | `12` | Bubbles over the lifetime |
+| `bubble_size` / `rise_speed` | `5` / `90` | Bubble look and lift |
+| `pop_delay` | `0.45` | Randomised lifetime before a pop |
+| `pop_droplets` | `3` | Droplets per pop |
+| `chaos` | `0.55` | Sizes, pop timing, droplet spread |
+
+### Impact crack — `effects/impact_crack.tscn`
+
+Ground-aligned slam: jagged cracks race outward, dust puffs up between them and a
+flat flash marks the hit. Set `surface` to the surface direction (default
+`Vector2.RIGHT`, so cracks fan along the floor); use `Vector2.UP` for a ceiling.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `radius` | `150` | Crack reach |
+| `crack_count` | `9` | Radial cracks |
+| `segment_count` / `wander` | `6` / `0.45` | How rough the paths are |
+| `surface` | `Vector2.RIGHT` | Axis the cracks spread around |
+| `dust_count` / `dust_rise` | `8` / `70` | Dust puffs |
+| `chaos` | `0.5` | Crack paths, kinks, dust scatter |
+
+### Chain lightning — `effects/chain_lightning.tscn`
+
+A bolt that hops between several points: one jagged segment per hop, revealed in
+order and dimmer each time. Spawn it with an array of targets.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `points` | origin + one target | Hops, relative to the spawn point |
+| `segments` | `13` | Points per hop |
+| `hop_delay` | `0.06` | Stagger between hops |
+| `falloff` | `0.78` | Brightness per hop |
+| `jaggedness` / `flicker` | `14` / `0.05` | Bolt wobble and re-jag rate |
+| `chaos` | `0.5` | Per-hop wobble, timing, flash scatter |
+
+### Blink — `effects/blink.tscn`
+
+Two-point teleport: the source collapses, a stretched streak snaps across the
+gap, then a ring and spark burst open at the destination.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `destination` | `(220, 0)` | Endpoint, relative to the spawn point |
+| `warp` | `0.22` | Fraction of the lifetime spent collapsing |
+| `streak_width` | `9` | Width of the jump streak |
+| `spark_count` | `8` | Sparks at the arrival burst |
+| `chaos` | `0.5` | Streak drift, ring timing, spark scatter |
+
 ### Cooldown ring — `effects/cooldown_ring.tscn`
 
 A modifier node, not a one-shot: it circles whatever it is parented to. Previews
@@ -369,11 +451,11 @@ var ring := VFX2D.cooldown_ring($Icon, 3.0, {"reverse": true, "tick_count": 12})
 ring.completed.connect(_on_cooldown_ready)
 ```
 
-### Persistent modifiers — `rune_circle`, `portal`, `beam`, `trail`
+### Persistent modifiers — runes, portals, beams, trails, shields, tethers, vortexes
 
-The one-shots are fire-and-forget. These four are *attached*: they stay
-alive across frames until you stop them, and they return the node so you can
-keep driving it.
+The one-shots are fire-and-forget. These seven are *attached*: they stay alive
+across frames until you stop them, and they return the node so you can keep
+driving it.
 
 ```gdscript
 var beam := VFX2D.beam(turret.global_position, target.global_position)
@@ -387,6 +469,14 @@ var rune := VFX2D.rune_circle(caster, 2.5)   # child of caster, casts for 2.5 s
 rune.set_fill(cast_progress)                  # 0..1 = cast bar
 
 var trail := VFX2D.trail(bullet, {"history": 0.3})
+
+var bubble := VFX2D.shield(player, {"radius": 72.0})   # reactive: call hit()
+bubble.hit(enemy.global_position)
+
+var leash := VFX2D.tether(player, enemy)               # chain between two nodes
+leash.set_targets(player, other_enemy)
+
+var pull := VFX2D.vortex(charge_point, {"strength": 260.0})
 ```
 
 Every modifier emits `finished` once and frees itself (unless
@@ -400,9 +490,14 @@ itself, so a despawned projectile never leaves a ribbon hanging.
 | `PortalEffect` | `VFX2D.portal(at, options)` | `width` `58`, `height` `78`, `rim_width` `4`, `spin_speed` `1.8`, `shimmer_count` `14`, `open_time` `0.3`, `close_time` `0.35`, `lifetime` `0` |
 | `BeamEffect` | `VFX2D.beam(from, to, options)` | `width` `6`, `glow_width` `20`, `pulse_speed` `900`, `pulse_spacing` `120`, `wobble` `0.35`, `warmup` `0.12`, `fade_time` `0.22`, `lifetime` `0` |
 | `TrailEffect` | `VFX2D.trail(target, options)` | `history` `0.35` s, `width_start` `8`, `width_end` `0.8`, `mote_count` `6` |
+| `ShieldBubble` | `VFX2D.shield(target, options)` | `radius` `64`, `hex_size` `13`, `rim_width` `2.5`, `hit_flash` `0.3`, `lifetime` `0` — call `hit(world_point)` on impacts |
+| `Tether` | `VFX2D.tether(from, to, options)` | `sag` `42`, `link_count` `16`, `thickness` `2.5`, `pulse_speed` `1.4` — `set_targets()` re-aims |
+| `Vortex` | `VFX2D.vortex(at, options)` | `radius` `96`, `strength` `210` px/s, `spin` `3.4` rad/s, `mote_count` `26`, `lifetime` `0` — sprays C++ streaks on start when the extension is loaded |
 
-All four export `chaos` (`rune_circle` `0.25`, `portal` `0.45`, `beam` `0.45`,
-`trail` `0.4`) and the usual colour exports.
+All seven export `chaos` (`rune_circle` `0.25`, `portal` `0.45`, `beam` `0.45`,
+`trail` `0.4`, `shield_bubble` `0.3`, `tether` `0.4`, `vortex` `0.45`) and the
+usual colour exports. `shield.hit()` and `tether.set_targets()` are the two
+"gameplay can talk back" entry points.
 
 ### Chaos — one knob on every effect
 
@@ -428,6 +523,14 @@ every `play()`, so a pooled effect never repeats itself.
 | Portal | Rim wobble, shimmer scatter, breathing |
 | Beam | Line jitter along the length, pulse spacing |
 | Trail | Ribbon jitter, mote scatter |
+| Frost burst | Shard shape, size and launch scatter |
+| Acid splash | Bubble sizes, pop timing, droplet spread |
+| Impact crack | Crack paths, kinks, dust scatter |
+| Chain lightning | Per-hop wobble, hop timing, flash scatter |
+| Blink | Streak drift, arrival timing, spark scatter |
+| Shield bubble | Lattice jitter and hit ripple strength |
+| Tether | Sag variance, link sway, pulse spacing |
+| Vortex | Mote speed, spiral variance, arc wobble |
 
 ```gdscript
 VFX2D.hit_spark(at, dir, {"chaos": 0.0})   # tidy, symmetric, readable
@@ -460,10 +563,18 @@ readable.
 | `portal(at, options := {})` | `PortalEffect` | Open a portal |
 | `rune_circle(target, seconds := 0.0, options := {})` | `RuneCircle` | Cast circle; `seconds` `0` = until stopped |
 | `trail(target, options := {})` | `TrailEffect` | Ribbon that follows a node |
+| `frost_burst(at, options := {})` | `FrostBurstEffect` | Spawn angular ice shards |
+| `acid_splash(at, options := {})` | `AcidSplashEffect` | Spawn popping acid bubbles |
+| `impact_crack(at, options := {})` | `ImpactCrackEffect` | Spawn ground-aligned cracks |
+| `chain(from, targets, options := {})` | `ChainLightningEffect` | Bolt that hops target to target |
+| `blink(from, to, options := {})` | `BlinkEffect` | Teleport: collapse, streak, burst |
+| `shield(target, options := {})` | `ShieldBubble` | Reactive bubble; call `hit()` |
+| `tether(from, to, options := {})` | `Tether` | Sagging chain between two nodes |
+| `vortex(at, options := {})` | `Vortex` | Pull field that recycles motes |
 | `spawn(scene, at, options := {})` | `VFXEffect` | Spawn any custom `VFXEffect` scene |
 | `stop_all()` | `void` | Stop and recycle everything |
 | `get_active_count()` | `int` | One-shots currently running |
-| `get_persistent_count()` | `int` | Live beams, portals, runes and trails |
+| `get_persistent_count()` | `int` | Live modifiers (beams, portals, runes, trails, shields, tethers, vortexes) |
 
 Signals: `effect_spawned(effect)`, `effect_finished(effect)`.
 
@@ -517,7 +628,8 @@ scene):
 - **5 / 6 / 7 / 8** — smoke puff, shockwave, muzzle flash, heal sparkle
 - **9 / 0** — slash arc, debris burst
 - **R / I** — ripple, implosion
-- **B / P / U / T** — toggle a beam, portal, rune circle or trail
+- **F / L / X / K / M** — frost burst, chain lightning, acid splash, impact crack, blink
+- **B / P / U / T / H / V / N** — toggle a beam, portal, rune circle, trail, shield, tether or vortex
 - **Space** — toggle the idle auto-demo
 - **C** — clear all running effects
 - **G** — the effect gallery
@@ -529,18 +641,20 @@ keyboard-only.
 ### Gallery: every effect, four themed pages
 
 `demo/gallery.tscn` is the "just show me all of them" scene, paged so it stays
-readable and cheap: **Impacts**, **Combat**, **Magic** and **Motion**, four
-labelled cells per page, each firing on its own timer. Sixteen effects firing at
-once is a stress test — on a laptop it drops frames and the smaller shapes get
-lost — so the gallery only ever runs a few at a time, which also makes the FPS
-counter mean something while you tune.
+readable and cheap: six themed pages, four labelled cells per page, each firing
+on its own timer. Twenty-four effects firing at once is a stress test — on a
+laptop it drops frames and the smaller shapes get lost — so the gallery only ever
+runs a few at a time, which also makes the FPS counter mean something while you
+tune.
 
 | Page | Effects |
 | --- | --- |
 | 1 · Impacts | hit spark, explosion, debris burst, shockwave |
 | 2 · Combat | slash arc, muzzle flash, lightning, cooldown ring |
 | 3 · Magic | heal sparkle, rune circle, portal, implosion |
-| 4 · Motion | smoke puff, ripple, beam, trail |
+| 4 · Elemental | frost burst, acid splash, chain lightning, vortex |
+| 5 · Reactive | blink, impact crack, shield bubble, tether |
+| 6 · Motion | smoke puff, ripple, beam, trail |
 
 The trail cell has a small flyer orbiting inside it, so the ribbon has something
 to follow. Switching pages clears whatever was running, so a beam or portal never
@@ -600,8 +714,8 @@ The separate [`GDExtension` workflow](.github/workflows/gdextension.yml) builds
 the C++ streak field against stock Godot 4.7.2, then runs the same suite and
 **fails if the extension silently failed to load** — the C++ tests print
 `cpp-streak-field: available|absent`, and the workflow asserts which one ran.
-Same suite, both paths: **231 checks** with the extension, **219** without, zero
-engine errors either way. Every one-shot — all eleven — is run through its full
+Same suite, both paths: **330 checks** with the extension, **318** without, zero
+engine errors either way. Every one-shot — all sixteen — is run through its full
 lifecycle, and every effect (one-shots and modifiers) has its `chaos` knob
 exercised.
 
@@ -630,13 +744,21 @@ addons/vfx_2d/
   effects/portal.*
   effects/beam.*
   effects/trail.*
+  effects/frost_burst.*      # one-shots added in 0.5.0
+  effects/acid_splash.*
+  effects/impact_crack.*
+  effects/chain_lightning.*
+  effects/blink.*
+  effects/shield_bubble.*    # reactive modifiers
+  effects/tether.*
+  effects/vortex.*
 cpp/                         # Optional C++ streak field (GDExtension)
   src/vfx_streak_field.*     # Particle integration + multiline draw
   src/register_types.cpp     # Class registration / entry point
   SConstruct                 # Builds into addons/vfx_2d/bin/
 tools/build_extension.sh     # Fetches godot-cpp, builds, writes .gdextension
 demo/                        # Interactive sandbox + effect gallery
-  gallery.tscn               # All sixteen effects on four themed pages
+  gallery.tscn               # All twenty-four effects on six themed pages
 tests/test_runner.tscn       # Headless test suite
 tools/package.sh             # Builds dist/vfx_2d-<version>.zip
 ```

@@ -27,6 +27,15 @@ const BEAM_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/beam.tscn")
 const PORTAL_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/portal.tscn")
 const RUNE_CIRCLE_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/rune_circle.tscn")
 const TRAIL_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/trail.tscn")
+const CHAIN_LIGHTNING_SCENE: PackedScene = \
+		preload("res://addons/vfx_2d/effects/chain_lightning.tscn")
+const BLINK_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/blink.tscn")
+const FROST_BURST_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/frost_burst.tscn")
+const ACID_SPLASH_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/acid_splash.tscn")
+const IMPACT_CRACK_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/impact_crack.tscn")
+const SHIELD_BUBBLE_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/shield_bubble.tscn")
+const TETHER_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/tether.tscn")
+const VORTEX_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/vortex.tscn")
 
 var _checks: int = 0
 var _failures: int = 0
@@ -57,6 +66,11 @@ func _run_all() -> void:
 		"debris_burst": DEBRIS_BURST_SCENE,
 		"ripple": RIPPLE_SCENE,
 		"implosion": IMPLOSION_SCENE,
+		"frost_burst": FROST_BURST_SCENE,
+		"acid_splash": ACID_SPLASH_SCENE,
+		"impact_crack": IMPACT_CRACK_SCENE,
+		"chain_lightning": CHAIN_LIGHTNING_SCENE,
+		"blink": BLINK_SCENE,
 	}
 	for effect_name in effects:
 		await _test_lifecycle(effect_name, effects[effect_name])
@@ -67,6 +81,8 @@ func _run_all() -> void:
 	await _test_persistent_effects()
 	await _test_persistent_chaos()
 	await _test_gallery_pages()
+	await _test_v050_effects()
+	await _test_reactive_modifiers()
 	await _test_chaos_knob(effects)
 	await _test_scene_change_pooling()
 	await _test_streak_field()
@@ -388,6 +404,9 @@ func _test_persistent_chaos() -> void:
 		"portal": PORTAL_SCENE,
 		"rune_circle": RUNE_CIRCLE_SCENE,
 		"trail": TRAIL_SCENE,
+		"shield_bubble": SHIELD_BUBBLE_SCENE,
+		"tether": TETHER_SCENE,
+		"vortex": VORTEX_SCENE,
 	}
 	for effect_name in persistent:
 		var node: Node = (persistent[effect_name] as PackedScene).instantiate()
@@ -400,6 +419,143 @@ func _test_persistent_chaos() -> void:
 		_check(is_equal_approx(float(node.get("chaos")), 1.0),
 				"%s: chaos can be driven to 1.0" % effect_name)
 		node.free()
+
+
+func _test_v050_effects() -> void:
+	var spot := Vector2(20.0, 45.0)
+
+	var frost: FrostBurstEffect = VFX2D.frost_burst(spot,
+			{"duration": 0.12, "shard_count": 9}) as FrostBurstEffect
+	_check(frost != null and frost is FrostBurstEffect, "VFX2D.frost_burst(): returns one")
+	if frost != null:
+		_check(frost.get_shard_count() == 9,
+				"frost_burst: honours shard_count (got %d)" % frost.get_shard_count())
+	await _wait(0.3)
+
+	var acid: AcidSplashEffect = VFX2D.acid_splash(spot,
+			{"duration": 0.5, "bubble_count": 6, "pop_delay": 0.1}) as AcidSplashEffect
+	_check(acid != null and acid is AcidSplashEffect, "VFX2D.acid_splash(): returns one")
+	if acid != null:
+		_check(acid.get_bubble_count() == 6,
+				"acid_splash: honours bubble_count (got %d)" % acid.get_bubble_count())
+		await _wait(0.35)
+		_check(acid.get_pop_count() > 0,
+				"acid_splash: bubbles pop over time (%d)" % acid.get_pop_count())
+	await _wait(0.4)
+
+	var crack: ImpactCrackEffect = VFX2D.impact_crack(spot,
+			{"duration": 0.12, "crack_count": 7, "surface": Vector2.UP}) as ImpactCrackEffect
+	_check(crack != null and crack is ImpactCrackEffect, "VFX2D.impact_crack(): returns one")
+	if crack != null:
+		_check(crack.get_crack_count() == 7,
+				"impact_crack: honours crack_count (got %d)" % crack.get_crack_count())
+		_check(crack.get_first_crack().size() >= 3, "impact_crack: crack has geometry")
+		_check((crack.get("surface") as Vector2).is_equal_approx(Vector2.UP),
+				"impact_crack: surface direction applied")
+	await _wait(0.3)
+
+	var chain: ChainLightningEffect = VFX2D.chain(spot,
+			[Vector2(140.0, 60.0), Vector2(260.0, 20.0)],
+			{"duration": 0.12}) as ChainLightningEffect
+	_check(chain != null and chain is ChainLightningEffect, "VFX2D.chain(): returns one")
+	if chain != null:
+		_check(chain.get_hop_count() == 2,
+				"chain_lightning: one hop per target (got %d)" % chain.get_hop_count())
+		var hop: PackedVector2Array = chain.get_first_hop()
+		_check(hop.size() >= 3, "chain_lightning: first hop has geometry (%d)" % hop.size())
+		if hop.size() >= 2:
+			_check(hop[0].is_equal_approx(Vector2.ZERO), "chain_lightning: starts at the origin")
+			# Points are relative to the spawn position, so the endpoint is the
+			# target minus the chain's origin (20, 45).
+			_check(hop[hop.size() - 1].is_equal_approx(Vector2(120.0, 15.0)),
+					"chain_lightning: first hop ends at the first target (%s)"
+							% hop[hop.size() - 1])
+	await _wait(0.3)
+
+	var blink: BlinkEffect = VFX2D.blink(spot, Vector2(220.0, 145.0),
+			{"duration": 0.12}) as BlinkEffect
+	_check(blink != null and blink is BlinkEffect, "VFX2D.blink(): returns one")
+	if blink != null:
+		_check(blink.get_destination().is_equal_approx(Vector2(200.0, 100.0)),
+				"blink: destination is relative to the source (%s)" % blink.get_destination())
+	await _wait(0.3)
+	VFX2D.stop_all()
+	await get_tree().process_frame
+
+
+func _test_reactive_modifiers() -> void:
+	VFX2D.stop_all()
+	await get_tree().process_frame
+	var holder := Node2D.new()
+	holder.position = Vector2(80.0, 80.0)
+	add_child(holder)
+	var other := Node2D.new()
+	other.position = Vector2(260.0, 180.0)
+	add_child(other)
+
+	var bubble: ShieldBubble = VFX2D.shield(holder, {"radius": 60.0})
+	_check(bubble != null and bubble is ShieldBubble, "VFX2D.shield(): returns a ShieldBubble")
+	if bubble != null:
+		_check(bubble.get_parent() == holder, "shield: parents itself to the target")
+		_check(bubble.get_hex_count() > 0,
+				"shield: built its lattice (%d cells)" % bubble.get_hex_count())
+		_check(is_equal_approx(bubble.get_openness(), 0.0), "shield: starts closed")
+		await _wait(0.3)
+		_check(bubble.get_openness() > 0.9, "shield: opens to full (%.2f)" % bubble.get_openness())
+		bubble.hit(Vector2(130.0, 80.0))
+		_check(bubble.get_hit_count() == 1, "shield: hit() registers an impact")
+		_check(is_equal_approx(bubble.get_openness(), 1.0)
+				or bubble.get_openness() > 0.9, "shield: stays up while hit")
+		var closed := [0]
+		bubble.finished.connect(func() -> void: closed[0] += 1)
+		bubble.stop()
+		await _wait(0.7)
+		_check(closed[0] == 1, "shield: emitted finished once (got %d)" % closed[0])
+		_check(not is_instance_valid(bubble), "shield: freed itself after closing")
+	_check(VFX2D.get_persistent_count() == 0, "shield: dropped from the persistent list")
+
+	var link: Tether = VFX2D.tether(holder, other, {"link_count": 12})
+	_check(link != null and link is Tether, "VFX2D.tether(): returns a Tether")
+	if link != null:
+		_check(link.has_ends(), "tether: keeps both ends")
+		var points: PackedVector2Array = link.get_chain_points()
+		_check(points.size() >= 4, "tether: sampled the chain (%d points)" % points.size())
+		if points.size() >= 2:
+			_check(points[0].is_equal_approx(link.to_local(holder.global_position)),
+					"tether: chain starts at the first node (%s)" % points[0])
+		_check(link.get_link_count() == 12, "tether: honours link_count")
+		await _wait(0.3)
+		_check(link.get_openness() > 0.9, "tether: opens to full")
+		link.stop()
+		await _wait(0.7)
+		_check(not is_instance_valid(link), "tether: stop() frees the chain")
+	_check(VFX2D.get_persistent_count() == 0, "tether: dropped from the persistent list")
+
+	var field: Vortex = VFX2D.vortex(Vector2(200.0, 120.0),
+			{"radius": 80.0, "mote_count": 18})
+	_check(field != null and field is Vortex, "VFX2D.vortex(): returns a Vortex")
+	if field != null:
+		_check(field.get_mote_count() == 18,
+				"vortex: honours mote_count (got %d)" % field.get_mote_count())
+		await _wait(0.35)
+		_check(field.get_openness() > 0.9, "vortex: opens to full")
+		field.stop()
+		await _wait(0.8)
+		_check(not is_instance_valid(field), "vortex: stop() frees the field")
+	_check(VFX2D.get_persistent_count() == 0, "vortex: dropped from the persistent list")
+
+	# A tether must let go when one of its ends leaves the tree.
+	var doomed := Node2D.new()
+	add_child(doomed)
+	var doomed_link: Tether = VFX2D.tether(holder, doomed)
+	_check(doomed_link != null, "tether: attaches to a second node")
+	doomed.queue_free()
+	await _wait(0.3)
+	_check(not is_instance_valid(doomed_link), "tether: frees itself when an end is gone")
+
+	if is_instance_valid(holder):
+		holder.queue_free()
+	await get_tree().process_frame
 
 
 func _test_gallery_pages() -> void:
