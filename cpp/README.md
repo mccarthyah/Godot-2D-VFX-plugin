@@ -149,3 +149,4 @@ single draw call. Passing per-vertex colours trips a
 | `compatibility_minimum` mismatch | Engine older than the targeted API; rebuild with `--api 4.6` |
 | `non-existent interface function: get_godot_version` | godot-cpp and engine interfaces disagree — rebuild with `--godot <that engine>`, or the engine was built without a matching GDExtension interface |
 | Nothing visible, no errors | `additive = true` on a light background, or `tail_color` alpha not `0` |
+| `godot --headless --path . --import` segfaults (exit 134) *after* importing | Engine bug in 4.7.2: the `--import` teardown crashes as soon as any extension class is registered. The import and `.godot/global_script_class_cache.cfg` are already written, and a normal editor quit is unaffected — treat the exit code as harmless in scripts |
