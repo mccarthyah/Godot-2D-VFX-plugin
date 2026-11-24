@@ -23,3 +23,9 @@ mono_crash.*.json
 *.exe
 # Uncomment if your project does not version PCK files as runtime dependencies.
 # *.pck
+
+# Build output from tools/package.sh
+dist/
+
+# macOS
+.DS_Store

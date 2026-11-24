@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  headless-tests:
+    name: Godot ${{ matrix.godot }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        godot: ["4.3-stable", "4.4-stable"]
+    env:
+      GODOT_VERSION: ${{ matrix.godot }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Install stock Godot headless
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/godot"
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          echo "Downloading $url"
+          curl -fsSL "$url" -o /tmp/godot.zip
+          unzip -q -o /tmp/godot.zip -d "$HOME/godot"
+          bin="$(find "$HOME/godot" -maxdepth 2 -type f -name 'Godot_v*' | head -n 1)"
+          chmod +x "$bin"
+          echo "GODOT_BIN=$bin" >> "$GITHUB_ENV"
+          "$bin" --version
+
+      - name: Import project
+        run: |
+          set -euo pipefail
+          if "$GODOT_BIN" --help 2>&1 | grep -q -- '--import'; then
+            "$GODOT_BIN" --headless --path . --import
+          else
+            "$GODOT_BIN" --headless --path . --editor --quit
+          fi
+
+      - name: Run headless test suite
+        run: |
+          set -o pipefail
+          "$GODOT_BIN" --headless --path . res://tests/test_runner.tscn 2>&1 | tee /tmp/tests.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load" /tmp/tests.log; then
+            echo "::error::GDScript errors were reported during the test run"
+            exit 1
+          fi
+
+      - name: Demo smoke run
+        run: |
+          set -o pipefail
+          "$GODOT_BIN" --headless --path . --fixed-fps 60 --quit-after 300 2>&1 | tee /tmp/demo.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load" /tmp/demo.log; then
+            echo "::error::GDScript errors were reported while running the demo scene"
+            exit 1
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-${{ matrix.godot }}-logs
+          path: |
+            /tmp/tests.log
+            /tmp/demo.log
+          if-no-files-found: ignore
