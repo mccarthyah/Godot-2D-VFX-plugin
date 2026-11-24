@@ -51,19 +51,35 @@ jobs:
         run: |
           set -o pipefail
           "$GODOT_BIN" --headless --path . res://tests/test_runner.tscn 2>&1 | tee /tmp/tests.log
+          # Surface the offending log lines as annotations: the step log itself is
+          # not always retrievable from a restricted network.
+          report_log() {
+            local shown=0
+            while IFS= read -r line; do
+              shown=$((shown + 1))
+              if [ "${shown}" -gt 8 ]; then
+                break
+              fi
+              line="${line//%/%25}"
+              echo "::error title=2D VFX Kit (Godot ${GODOT_VERSION})::${line}"
+            done
+          }
           if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/tests.log; then
             echo "::error::GDScript errors were reported during the test run"
+            grep -E "VFX TESTS|SCRIPT ERROR|Parse Error|ERROR:|at: " /tmp/tests.log | tail -n 8 | report_log
             exit 1
           fi
           # A green job must mean the suite really ran: require its PASS summary
           # and a plausible check count, so a silently skipped run cannot pass.
           if ! grep -q "\[VFX TESTS\] PASS" /tmp/tests.log; then
             echo "::error::The test suite did not report a PASS summary"
+            grep -E "VFX TESTS|SCRIPT ERROR|Parse Error|ERROR:" /tmp/tests.log | tail -n 8 | report_log
             exit 1
           fi
           checks="$(grep -oE '[0-9]+ checks' /tmp/tests.log | tail -n 1 | cut -d' ' -f 1)"
           if [ -z "${checks}" ] || [ "${checks}" -lt 200 ]; then
             echo "::error::Expected at least 200 checks, got '${checks}'"
+            grep -E "VFX TESTS|SCRIPT ERROR|Parse Error|ERROR:" /tmp/tests.log | tail -n 8 | report_log
             exit 1
           fi
           summary="$(grep -E "\[VFX TESTS\] (PASS|FAIL)" /tmp/tests.log | tail -n 1)"
