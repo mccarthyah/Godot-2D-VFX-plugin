@@ -4,10 +4,12 @@
 [![Godot 4.2+](https://img.shields.io/badge/Godot-4.2%2B-478cbf)](https://godotengine.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Procedural, asset-free 2D effects for Godot 4. Hit sparks, explosions, lightning
-bolts, cooldown rings, smoke, shockwaves, muzzle flashes and heal sparkles — all
-callable in one line, all pooled, so they stay cheap when the screen is full of
-them. Every effect carries a `chaos` knob, so nothing looks stamped from a
+Procedural, asset-free 2D effects for Godot 4. Sixteen effects: hit sparks,
+explosions, lightning bolts, cooldown rings, smoke, shockwaves, muzzle flashes,
+heal sparkles, slash arcs, debris bursts, ripples and implosions — plus four
+persistent modifiers (rune circles, portals, beams and trails) that live until
+you stop them. One-shots are pooled, so they stay cheap when the screen is full
+of them. Every effect carries a `chaos` knob, so nothing looks stamped from a
 stencil.
 
 ```gdscript
@@ -20,6 +22,16 @@ VFX2D.smoke_puff(feet.global_position, {"radius": 70.0})        # dust, landings
 VFX2D.shockwave(impact.global_position, {"radius": 150.0})      # parries, slams
 VFX2D.muzzle_flash(barrel.global_position, aim_direction)       # gunfire
 VFX2D.heal_sparkle(player.global_position)                      # pickups, buffs
+
+VFX2D.slash_arc(hero.global_position, facing)                   # sword swings
+VFX2D.debris_burst(crate.global_position)                       # broken objects
+VFX2D.ripple(water_point, {"radius": 130.0})                     # splashes, sonar
+VFX2D.implosion(vortex.global_position)                         # charging attacks
+
+var beam := VFX2D.beam(turret.global_position, aim_point)        # sustained laser
+var rune := VFX2D.rune_circle(caster, 2.5)                       # cast bar
+rune.set_fill(0.6)                                               # driven per frame
+beam.stop()
 ```
 
 There are no PNGs or audio files in this repo: every effect is drawn with
@@ -262,6 +274,79 @@ pickups, heals, level-ups.
 | `sparkle_color` / `glow_color` | green / deep green | Motes and backing glow |
 | `chaos` | `0.55` | Orbit scatter and jitter |
 
+### Slash arc — `effects/slash_arc.tscn`
+
+A tapered melee crescent that sweeps through its arc over `sweep` of the
+duration, shedding sparkles along the cut. Point it anywhere with `direction`.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `direction` | `Vector2.RIGHT` | Centre of the swing (set by the spawn call) |
+| `radius` | `82` | Reach of the blade |
+| `arc_degrees` | `120` | Total swing angle |
+| `thickness` | `10` | Crescent width |
+| `trail` | `0.45` | Fraction of the arc visible at once |
+| `sweep` | `0.45` | Fraction of `duration` the blade takes to travel |
+| `sparkle_count` | `10` | Sparks shed along the edge |
+| `core_color` / `edge_color` | white / pale blue | Blade and glow |
+| `chaos` | `0.55` | Edge tearing and sparkle scatter |
+
+```gdscript
+VFX2D.slash_arc(hero.global_position, aim_direction, {"arc_degrees": 160.0, "radius": 96.0})
+```
+
+### Debris burst — `effects/debris_burst.tscn`
+
+Solid chunks, not sparks: each one is a drawn polygon with its own velocity,
+spin, gravity and drag, so the pieces arc, tumble and fall. Draws without an
+additive material — broken things are opaque.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `chunk_count` | `14` | Pieces thrown |
+| `chunk_size` | `6` | Base radius of a chunk |
+| `speed` | `380` | Launch speed (px/s) |
+| `gravity` | `900` | Downward acceleration |
+| `drag` | `1.2` | Air resistance |
+| `spin_speed` | `7` | Rotation (rad/s) |
+| `upward_bias` | `1.2` | How much of the burst goes up |
+| `chunk_color` / `chunk_color_dark` | stone / shadow | Chunk shading |
+| `chaos` | `0.55` | Size, shape and launch scatter |
+
+### Ripple — `effects/ripple.tscn`
+
+Flattened, wobbling rings plus a few droplets — water splashes, sonar pings,
+footsteps in puddles, shield rebounds.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `radius` | `96` | Final ring reach |
+| `rings` | `3` | Concentric rings, staggered in time |
+| `ring_width` | `2.5` | Stroke width |
+| `squash` | `0.45` | Vertical flattening (the 2.5D look) |
+| `wobble` | `0.3` | Ring outline irregularity |
+| `droplets` | `10` | Flecks thrown outward |
+| `droplet_speed` | `320` | Droplet launch speed |
+| `ring_color` / `droplet_color` | cyan / white | Water palette |
+| `chaos` | `0.5` | Wobble, ring timing and droplet spread |
+
+### Implosion — `effects/implosion.tscn`
+
+The reverse of an explosion: motes spiral inward along streaks, pinch into a
+small flash, then release a short outward puff. Charging attacks, black holes,
+vacuum pulls.
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `radius` | `110` | Where motes start |
+| `mote_count` | `26` | Inward motes |
+| `spiral` | `1.15` | Radians of swirl on the way in |
+| `converge` | `1.8` | Curve of the inward motion (higher = later snap) |
+| `streak_length` | `8` | Motion-blur length |
+| `pinch_size` | `0.14` | Size of the pinch flash, as a fraction of `radius` |
+| `mote_color` / `core_color` | violet / white | Motes and pinch |
+| `chaos` | `0.55` | Spiral variance, mote jitter, release scatter |
+
 ### Cooldown ring — `effects/cooldown_ring.tscn`
 
 A modifier node, not a one-shot: it circles whatever it is parented to. Previews
@@ -284,6 +369,41 @@ var ring := VFX2D.cooldown_ring($Icon, 3.0, {"reverse": true, "tick_count": 12})
 ring.completed.connect(_on_cooldown_ready)
 ```
 
+### Persistent modifiers — `rune_circle`, `portal`, `beam`, `trail`
+
+The one-shots are fire-and-forget. These four are *attached*: they stay
+alive across frames until you stop them, and they return the node so you can
+keep driving it.
+
+```gdscript
+var beam := VFX2D.beam(turret.global_position, target.global_position)
+beam.end_at(target.global_position)      # re-aim each frame
+beam.stop()                              # fade out, then free
+
+var portal := VFX2D.portal(door.global_position, {"lifetime": 8.0})
+portal.stop()                            # play the closing animation now
+
+var rune := VFX2D.rune_circle(caster, 2.5)   # child of caster, casts for 2.5 s
+rune.set_fill(cast_progress)                  # 0..1 = cast bar
+
+var trail := VFX2D.trail(bullet, {"history": 0.3})
+```
+
+Every modifier emits `finished` once and frees itself (unless
+`free_on_finish = false`). They are tracked by `VFX2D.get_persistent_count()`
+and torn down by `VFX2D.stop_all()`. A trail whose target leaves the tree frees
+itself, so a despawned projectile never leaves a ribbon hanging.
+
+| Class | Spawner | Key properties |
+| --- | --- | --- |
+| `RuneCircle` | `VFX2D.rune_circle(target, seconds, options)` | `radius` `54`, `segments` `12`, `spin_speed` `0.7`, `fill` `0`, `tick_length` `9`, `pulse` `0.35`, `lifetime` `0` (`0` = until stopped) |
+| `PortalEffect` | `VFX2D.portal(at, options)` | `width` `58`, `height` `78`, `rim_width` `4`, `spin_speed` `1.8`, `shimmer_count` `14`, `open_time` `0.3`, `close_time` `0.35`, `lifetime` `0` |
+| `BeamEffect` | `VFX2D.beam(from, to, options)` | `width` `6`, `glow_width` `20`, `pulse_speed` `900`, `pulse_spacing` `120`, `wobble` `0.35`, `warmup` `0.12`, `fade_time` `0.22`, `lifetime` `0` |
+| `TrailEffect` | `VFX2D.trail(target, options)` | `history` `0.35` s, `width_start` `8`, `width_end` `0.8`, `mote_count` `6` |
+
+All four export `chaos` (`rune_circle` `0.25`, `portal` `0.45`, `beam` `0.45`,
+`trail` `0.4`) and the usual colour exports.
+
 ### Chaos — one knob on every effect
 
 Each effect exports `chaos` (`0.0`–`1.0`, default roughly `0.6`). It is not a
@@ -300,6 +420,14 @@ every `play()`, so a pooled effect never repeats itself.
 | Shockwave | Front raggedness, crack reach |
 | Muzzle flash | Cone edge tearing, star rotation, spray spread |
 | Heal sparkle | Orbit scatter, mote jitter |
+| Slash arc | Edge tearing, sparkle scatter, arc wobble |
+| Debris burst | Chunk shape, size and launch scatter |
+| Ripple | Ring wobble, ring timing, droplet spread |
+| Implosion | Spiral variance, mote jitter, release scatter |
+| Rune circle | Glyph jitter, tick length variance, pulse drift |
+| Portal | Rim wobble, shimmer scatter, breathing |
+| Beam | Line jitter along the length, pulse spacing |
+| Trail | Ribbon jitter, mote scatter |
 
 ```gdscript
 VFX2D.hit_spark(at, dir, {"chaos": 0.0})   # tidy, symmetric, readable
@@ -323,10 +451,19 @@ readable.
 | `shockwave(at, options := {})` | `VFXEffect` | Spawn an impact wave |
 | `muzzle_flash(at, direction := Vector2.RIGHT, options := {})` | `VFXEffect` | Spawn a directional flash |
 | `heal_sparkle(at, options := {})` | `VFXEffect` | Spawn ascending sparkles |
+| `slash_arc(at, direction := Vector2.RIGHT, options := {})` | `VFXEffect` | Spawn a melee crescent |
+| `debris_burst(at, options := {})` | `VFXEffect` | Spawn falling debris chunks |
+| `ripple(at, options := {})` | `VFXEffect` | Spawn a flattened ripple |
+| `implosion(at, options := {})` | `VFXEffect` | Spawn an inward collapse |
 | `cooldown_ring(target, seconds := 1.0, options := {})` | `CooldownRing` | Parent and start a ring |
+| `beam(from, to, options := {})` | `BeamEffect` | Start a sustained beam |
+| `portal(at, options := {})` | `PortalEffect` | Open a portal |
+| `rune_circle(target, seconds := 0.0, options := {})` | `RuneCircle` | Cast circle; `seconds` `0` = until stopped |
+| `trail(target, options := {})` | `TrailEffect` | Ribbon that follows a node |
 | `spawn(scene, at, options := {})` | `VFXEffect` | Spawn any custom `VFXEffect` scene |
 | `stop_all()` | `void` | Stop and recycle everything |
-| `get_active_count()` | `int` | Effects currently running |
+| `get_active_count()` | `int` | One-shots currently running |
+| `get_persistent_count()` | `int` | Live beams, portals, runes and trails |
 
 Signals: `effect_spawned(effect)`, `effect_finished(effect)`.
 
@@ -362,7 +499,9 @@ pooling for free.
   the same instance — no `instantiate()` in the hot path.
 - If more than `max_active_effects` effects are running, the oldest is stopped to
   keep the frame budget predictable.
-- Cooldown rings are not pooled: they are long-lived child nodes, not one-shots.
+- Modifiers are not pooled: cooldown rings, runes, portals, beams and trails are
+  long-lived nodes. They are tracked separately so `stop_all()` can clear them
+  too, and they drop out of that list when they free themselves.
 - The pool follows the scene. Because effects live under the current scene's
   `VFX2D_Layer`, a `change_scene_*` frees them all; the next spawn drops those
   dead references (an earlier build tried to reuse one and raised *"Trying to
@@ -376,17 +515,23 @@ scene):
 - **Left click** — hit spark at the cursor
 - **1 / 2 / 3 / 4** — hit spark, explosion, lightning, cooldown ring
 - **5 / 6 / 7 / 8** — smoke puff, shockwave, muzzle flash, heal sparkle
+- **9 / 0** — slash arc, debris burst
+- **R / I** — ripple, implosion
+- **B / P / U / T** — toggle a beam, portal, rune circle or trail
 - **Space** — toggle the idle auto-demo
 - **C** — clear all running effects
 - **G** — the effect gallery
 
-The HUD shows FPS and the live active-effect count.
+The HUD shows FPS, the live active-effect count and how many persistent modifiers
+are attached. Every new effect also has a button in the HUD, so nothing here is
+keyboard-only.
 
 ### Gallery: every effect at once
 
-`demo/gallery.tscn` is the "just show me all of them" scene: a 4×2 grid with one
-labelled cell per effect, each firing on its own timer so you can judge all eight
-side by side while tuning.
+`demo/gallery.tscn` is the "just show me all of them" scene: a 4×4 grid with one
+labelled cell per effect — all sixteen — each firing on its own timer so you can
+judge them side by side while tuning. The trail cell has a small flyer orbiting
+inside it, so the ribbon has something to follow.
 
 ```bash
 godot --path . res://demo/gallery.tscn   # or open demo/gallery.tscn and press F6
@@ -399,14 +544,15 @@ addon archive, there is no `demo/` in it, which is why the gallery appears
 "missing": use the repo or the `-project.zip` archive instead.
 
 - **Space** — pause/resume the timers
-- **R** — fire all four immediately
-- **C** — clear running effects
-- **1-8 or click a cell** — fire that single effect
+- **R** — fire everything immediately
+- **C** — clear running effects (one-shots and modifiers)
+- **1-0, Q W E R T Y or click a cell** — fire that single cell
 - **Esc** — back to the interactive demo
 
-The header shows FPS, the live active count, and whether the optional C++ streak
-layer is loaded, so you can A/B density by raising `streak_count` on an effect and
-watching the frame rate. CI smoke-runs the gallery on every supported engine.
+The header shows FPS, the live active count, the persistent-modifier count, and
+whether the optional C++ streak layer is loaded, so you can A/B density by raising
+`streak_count` on an effect and watching the frame rate. CI smoke-runs the
+gallery on every supported engine.
 
 ## Tests and CI
 
@@ -418,8 +564,11 @@ godot --headless --path . res://tests/test_runner.tscn
 
 It covers: effect lifecycles and replay, `finished` being emitted exactly once,
 cooldown fill/drain behaviour, option overrides, pool reuse of the same instance,
-burst handling, `stop_all()`, and lightning endpoint geometry. The process exits
-non-zero on failure, which is what CI uses.
+burst handling, `stop_all()`, lightning endpoint geometry, per-effect geometry for
+the newer effects, and the persistent modifiers — `beam()` opening, re-aiming and
+fading, `portal()` open → hold → close, `rune_circle()` fill and self-close,
+`trail()` history recording and self-cleanup when its target dies. The process
+exits non-zero on failure, which is what CI uses.
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) downloads **stock**
 Godot 4.2, 4.3 and 4.7.2 Linux builds, imports the project, runs the test scene,
@@ -435,9 +584,10 @@ The separate [`GDExtension` workflow](.github/workflows/gdextension.yml) builds
 the C++ streak field against stock Godot 4.7.2, then runs the same suite and
 **fails if the extension silently failed to load** — the C++ tests print
 `cpp-streak-field: available|absent`, and the workflow asserts which one ran.
-Same suite, both paths: **120 checks** with the extension, **108** without, zero
-engine errors either way. Every effect — all eight — is run through its full
-lifecycle, and each one's `chaos` knob is exercised.
+Same suite, both paths: **216 checks** with the extension, **204** without, zero
+engine errors either way. Every one-shot — all eleven — is run through its full
+lifecycle, and every effect (one-shots and modifiers) has its `chaos` knob
+exercised.
 
 ## Repository layout
 
@@ -456,13 +606,21 @@ addons/vfx_2d/
   effects/shockwave.*
   effects/muzzle_flash.*
   effects/heal_sparkle.*
+  effects/slash_arc.*        # one-shots added in 0.4.0
+  effects/debris_burst.*
+  effects/ripple.*
+  effects/implosion.*
+  effects/rune_circle.*      # persistent modifiers
+  effects/portal.*
+  effects/beam.*
+  effects/trail.*
 cpp/                         # Optional C++ streak field (GDExtension)
   src/vfx_streak_field.*     # Particle integration + multiline draw
   src/register_types.cpp     # Class registration / entry point
   SConstruct                 # Builds into addons/vfx_2d/bin/
 tools/build_extension.sh     # Fetches godot-cpp, builds, writes .gdextension
 demo/                        # Interactive sandbox + effect gallery
-  gallery.tscn               # All four effects, side by side, on timers
+  gallery.tscn               # All sixteen effects, side by side, on timers
 tests/test_runner.tscn       # Headless test suite
 tools/package.sh             # Builds dist/vfx_2d-<version>.zip
 ```

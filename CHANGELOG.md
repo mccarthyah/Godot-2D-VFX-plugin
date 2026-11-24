@@ -4,6 +4,51 @@ All notable changes to the 2D VFX Kit are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] — 2026-11-24
+
+### Added
+
+- **Four more one-shot effects**, each a normal pooled `VFXEffect` scene:
+  - `slash_arc` — a tapered melee crescent that sweeps through its arc and sheds
+    sparkles (`slash_arc.tscn`).
+  - `debris_burst` — solid chunks with their own velocity, spin, gravity and
+    drag, drawn without an additive material (`debris_burst.tscn`).
+  - `ripple` — flattened, wobbling rings plus droplets (`ripple.tscn`).
+  - `implosion` — motes spiral inward, pinch into a flash, then release
+    (`implosion.tscn`).
+- **`VFX2D.slash_arc()`, `debris_burst()`, `ripple()`, `implosion()`**, so every
+  one-shot spawns the same way.
+- **Persistent modifiers**, a new category: nodes that live until you stop them,
+  returned by the spawner so you can keep driving them.
+  - `rune_circle` (`RuneCircle`) — rotating cast circle with a progressive
+    `fill` that doubles as a cast bar (`start(seconds)`, `set_fill()`, `stop()`).
+  - `portal` (`PortalEffect`) — oval gateway with `open_time` / hold / `close_time`
+    and an `lifetime` escape hatch (`get_openness()`).
+  - `beam` (`BeamEffect`) — sustained laser: core, glow, travelling pulses and
+    flaring ends (`end_at()`, `stop()`).
+  - `trail` (`TrailEffect`) — ribbon history emitter for projectiles and dashes,
+    recording the target's global positions so it never inherits its rotation
+    (`attach_to()`, `stop()`).
+- **`VFX2D.beam()`, `portal()`, `rune_circle()`, `trail()`** plus
+  `VFX2D.get_persistent_count()`. `stop_all()` now clears modifiers too, and a
+  trail frees itself when its target leaves the tree, so despawns leave no
+  ribbon behind.
+- **`chaos` on every new effect**, one-shots and modifiers alike.
+
+### Changed
+
+- The gallery is now a 4×4 grid with all sixteen effects; keys **1**-**0** and
+  **Q W E R T Y** (or a click) fire a single cell, and the trail cell contains a
+  small orbiting flyer for the ribbon to follow. The header also reports the
+  persistent-modifier count.
+- The demo adds keys **9** / **0** (slash arc, debris burst), **R** / **I**
+  (ripple, implosion) and **B** / **P** / **U** / **T** to toggle a beam, portal,
+  rune circle and trail, with a HUD button for every one of them.
+- Tests grew to **216 checks** with the extension and **204** without: lifecycle
+  and replay for the new one-shots, per-effect geometry, and start/stop/`finished`
+  coverage for all four modifiers.
+- Version bumped to `0.4.0`.
+
 ## [0.3.0] — 2026-11-24
 
 ### Added
@@ -119,6 +164,7 @@ out of in a few lines.
   import, headless tests, demo smoke run on Godot 4.2, 4.3 and 4.7.2.
 - **Packaging** — `tools/package.sh` builds `dist/vfx_2d-<version>.zip`.
 
+[0.4.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.4.0
 [0.3.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.3.0
 [0.2.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.2.0
 [0.1.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.1.0

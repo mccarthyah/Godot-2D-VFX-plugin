@@ -2,9 +2,11 @@ extends Node2D
 ## Interactive sandbox for the 2D VFX Kit.
 ##
 ## Left click anywhere to pop a hit spark, use the buttons (or keys 1-8) to fire
-## each effect, and press Space to toggle the idle auto-demo. Press G (or the
-## "Effect gallery" button) for demo/gallery.tscn, which shows all eight side by
-## side on a labelled grid.
+## the one-shots, and press Space to toggle the idle auto-demo. Keys 9 and 0 add
+## the slash arc and debris burst, R/I the ripple and implosion, and B/P/U/T
+## toggle the persistent modifiers: beam, portal, rune circle and trail. Press G
+## (or the "Effect gallery" button) for demo/gallery.tscn, which shows all sixteen
+## side by side on a labelled grid.
 
 const GRID_STEP: float = 64.0
 const TARGET_POSITION := Vector2(930.0, 460.0)
@@ -16,6 +18,10 @@ const SMOKE_FEET := Vector2(160.0, 560.0)
 const SHOCKWAVE_SPOT := Vector2(760.0, 300.0)
 const MUZZLE_ORIGIN := Vector2(520.0, 560.0)
 const HEAL_SPOT := Vector2(930.0, 460.0)
+const SLASH_SPOT := Vector2(380.0, 470.0)
+const DEBRIS_SPOT := Vector2(620.0, 470.0)
+const RIPPLE_SPOT := Vector2(760.0, 470.0)
+const IMPLOSION_SPOT := Vector2(480.0, 180.0)
 const AUTO_DEMO_INTERVAL: float = 1.2
 const GALLERY_SCENE: String = "res://demo/gallery.tscn"
 
@@ -26,6 +32,12 @@ var _ring_target: Node2D = null
 var _ring: CooldownRing = null
 var _auto_demo: bool = true
 var _auto_demo_clock: float = 0.0
+var _flyer: Node2D = null
+var _beam: BeamEffect = null
+var _portal: PortalEffect = null
+var _rune: RuneCircle = null
+var _trail: TrailEffect = null
+var _cast_clock: float = 0.0
 
 
 func _ready() -> void:
@@ -35,6 +47,10 @@ func _ready() -> void:
 	_ring_target.name = "CooldownTarget"
 	_ring_target.position = TARGET_POSITION
 	add_child(_ring_target)
+	_flyer = Node2D.new()
+	_flyer.name = "Flyer"
+	_flyer.position = Vector2(280.0, 420.0)
+	add_child(_flyer)
 	_build_hud()
 
 
@@ -45,10 +61,13 @@ func _process(delta: float) -> void:
 			_auto_demo_clock = 0.0
 			var spot := Vector2(_rng.randf_range(280.0, 1020.0), _rng.randf_range(220.0, 560.0))
 			VFX2D.hit_spark(spot, Vector2.from_angle(_rng.randf_range(-PI, PI)))
+	_update_persistent(delta)
 	if _status_label != null:
-		_status_label.text = "FPS %d   ·   active %d   ·   auto demo %s   ·   C++ streaks %s" % [
+		_status_label.text = ("FPS %d   ·   active %d   ·   persistent %d"
+				+ "   ·   auto demo %s   ·   C++ streaks %s") % [
 			Engine.get_frames_per_second(),
 			VFX2D.get_active_count(),
+			VFX2D.get_persistent_count(),
 			"on" if _auto_demo else "off",
 			"on" if VFXStreaks.is_available() else "off",
 		]
@@ -83,6 +102,22 @@ func _unhandled_input(event: InputEvent) -> void:
 				_on_muzzle_flash()
 			KEY_8:
 				_on_heal_sparkle()
+			KEY_9:
+				_on_slash_arc()
+			KEY_0:
+				_on_debris_burst()
+			KEY_R:
+				_on_ripple()
+			KEY_I:
+				_on_implosion()
+			KEY_B:
+				_on_toggle_beam()
+			KEY_P:
+				_on_toggle_portal()
+			KEY_U:
+				_on_toggle_rune()
+			KEY_T:
+				_on_toggle_trail()
 			KEY_C:
 				VFX2D.stop_all()
 			KEY_G:
@@ -158,6 +193,70 @@ func _on_heal_sparkle() -> void:
 	VFX2D.heal_sparkle(HEAL_SPOT)
 
 
+func _on_slash_arc() -> void:
+	var aim: Vector2 = _mouse_position - SLASH_SPOT
+	VFX2D.slash_arc(SLASH_SPOT, aim)
+
+
+func _on_debris_burst() -> void:
+	VFX2D.debris_burst(DEBRIS_SPOT)
+
+
+func _on_ripple() -> void:
+	VFX2D.ripple(RIPPLE_SPOT)
+
+
+func _on_implosion() -> void:
+	VFX2D.implosion(IMPLOSION_SPOT)
+
+
+func _on_toggle_beam() -> void:
+	if is_instance_valid(_beam):
+		_beam.stop()
+		_beam = null
+		return
+	_beam = VFX2D.beam(MUZZLE_ORIGIN, _mouse_position, {"width": 7.0})
+
+
+func _on_toggle_portal() -> void:
+	if is_instance_valid(_portal):
+		_portal.stop()
+		_portal = null
+		return
+	_portal = VFX2D.portal(TARGET_POSITION, {"width": 70.0, "height": 94.0})
+
+
+func _on_toggle_rune() -> void:
+	if is_instance_valid(_rune):
+		_rune.stop()
+		_rune = null
+		return
+	_cast_clock = 0.0
+	_rune = VFX2D.rune_circle(_ring_target, 0.0, {"radius": 62.0, "segments": 14})
+
+
+func _on_toggle_trail() -> void:
+	if is_instance_valid(_trail):
+		_trail.stop()
+		_trail = null
+		return
+	if is_instance_valid(_flyer):
+		_trail = VFX2D.trail(_flyer, {"history": 0.4})
+
+
+## Keeps the live persistent modifiers pointed at the right places.
+func _update_persistent(delta: float) -> void:
+	if is_instance_valid(_beam):
+		_beam.end_at(_mouse_position - _beam.global_position)
+	if is_instance_valid(_rune):
+		_cast_clock += delta
+		_rune.set_fill(clampf(_cast_clock / 2.5, 0.0, 1.0))
+	if is_instance_valid(_flyer):
+		var t: float = float(Time.get_ticks_msec()) * 0.001
+		_flyer.position = Vector2(300.0, 430.0) \
+				+ Vector2(sin(t * 1.7) * 150.0, cos(t * 2.3) * 90.0)
+
+
 func _open_gallery() -> void:
 	if ResourceLoader.exists(GALLERY_SCENE):
 		get_tree().change_scene_to_file(GALLERY_SCENE)
@@ -200,12 +299,14 @@ func _build_hud() -> void:
 	panel.add_child(column)
 
 	var title := Label.new()
-	title.text = "2D VFX Kit — v0.1 demo"
+	title.text = "2D VFX Kit — v0.4 demo"
 	title.add_theme_font_size_override("font_size", 22)
 	column.add_child(title)
 
 	var hint := Label.new()
-	hint.text = "Click: hit spark   ·   1-8: effects   ·   Space: auto demo   ·   C: clear"
+	hint.text = ("Click: hit spark   ·   1-0, R, I: one-shots"
+			+ "   ·   B P U T: beam, portal, rune, trail"
+			+ "   ·   Space: auto demo   ·   C: clear")
 	if ResourceLoader.exists(GALLERY_SCENE):
 		hint.text += "   ·   G: effect gallery"
 	hint.add_theme_color_override("font_color", Color(0.65, 0.78, 0.9))
@@ -226,6 +327,22 @@ func _build_hud() -> void:
 	more.add_child(_make_button("Shockwave", _on_shockwave))
 	more.add_child(_make_button("Muzzle flash", _on_muzzle_flash))
 	more.add_child(_make_button("Heal sparkle", _on_heal_sparkle))
+
+	var one_shots := HBoxContainer.new()
+	one_shots.add_theme_constant_override("separation", 8)
+	column.add_child(one_shots)
+	one_shots.add_child(_make_button("Slash arc", _on_slash_arc))
+	one_shots.add_child(_make_button("Debris burst", _on_debris_burst))
+	one_shots.add_child(_make_button("Ripple", _on_ripple))
+	one_shots.add_child(_make_button("Implosion", _on_implosion))
+
+	var persistent := HBoxContainer.new()
+	persistent.add_theme_constant_override("separation", 8)
+	column.add_child(persistent)
+	persistent.add_child(_make_button("Beam", _on_toggle_beam))
+	persistent.add_child(_make_button("Portal", _on_toggle_portal))
+	persistent.add_child(_make_button("Rune circle", _on_toggle_rune))
+	persistent.add_child(_make_button("Trail", _on_toggle_trail))
 	if ResourceLoader.exists(GALLERY_SCENE):
 		buttons.add_child(_make_button("Effect gallery", _open_gallery))
 

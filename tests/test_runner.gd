@@ -19,6 +19,14 @@ const SMOKE_PUFF_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/smoke
 const SHOCKWAVE_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/shockwave.tscn")
 const MUZZLE_FLASH_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/muzzle_flash.tscn")
 const HEAL_SPARKLE_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/heal_sparkle.tscn")
+const SLASH_ARC_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/slash_arc.tscn")
+const DEBRIS_BURST_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/debris_burst.tscn")
+const RIPPLE_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/ripple.tscn")
+const IMPLOSION_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/implosion.tscn")
+const BEAM_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/beam.tscn")
+const PORTAL_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/portal.tscn")
+const RUNE_CIRCLE_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/rune_circle.tscn")
+const TRAIL_SCENE: PackedScene = preload("res://addons/vfx_2d/effects/trail.tscn")
 
 var _checks: int = 0
 var _failures: int = 0
@@ -45,12 +53,19 @@ func _run_all() -> void:
 		"shockwave": SHOCKWAVE_SCENE,
 		"muzzle_flash": MUZZLE_FLASH_SCENE,
 		"heal_sparkle": HEAL_SPARKLE_SCENE,
+		"slash_arc": SLASH_ARC_SCENE,
+		"debris_burst": DEBRIS_BURST_SCENE,
+		"ripple": RIPPLE_SCENE,
+		"implosion": IMPLOSION_SCENE,
 	}
 	for effect_name in effects:
 		await _test_lifecycle(effect_name, effects[effect_name])
 	await _test_cooldown_ring()
 	await _test_autoload()
 	await _test_new_effects()
+	await _test_v040_effects()
+	await _test_persistent_effects()
+	await _test_persistent_chaos()
 	await _test_chaos_knob(effects)
 	await _test_scene_change_pooling()
 	await _test_streak_field()
@@ -218,6 +233,169 @@ func _test_new_effects() -> void:
 	await _wait(0.3)
 	VFX2D.stop_all()
 	await get_tree().process_frame
+
+
+func _test_v040_effects() -> void:
+	var spot := Vector2(-60.0, 18.0)
+	var slash: SlashArcEffect = VFX2D.slash_arc(spot, Vector2.LEFT,
+			{"duration": 0.12}) as SlashArcEffect
+	_check(slash != null, "VFX2D.slash_arc(): returns a SlashArcEffect")
+	# The crescent is built while drawing, so give the frame a chance to run.
+	await get_tree().process_frame
+	if slash != null:
+		var aim: Vector2 = slash.get("direction")
+		_check(aim.is_equal_approx(Vector2.LEFT),
+				"slash_arc: direction applied (%s)" % aim)
+		var band: PackedVector2Array = slash.get_band_points()
+		_check(band.size() >= 6, "slash_arc: crescent band built (%d points)" % band.size())
+		if band.size() >= 3:
+			var reach := 0.0
+			for offset in band:
+				reach = maxf(reach, offset.length())
+			_check(reach > 20.0, "slash_arc: band has real reach (%.1f)" % reach)
+	await _wait(0.3)
+
+	var debris: DebrisBurstEffect = VFX2D.debris_burst(spot, {"duration": 0.12}) as DebrisBurstEffect
+	_check(debris != null, "VFX2D.debris_burst(): returns a DebrisBurstEffect")
+	if debris != null:
+		_check(debris.get_chunk_count() == 14,
+				"debris_burst: default chunk count (got %d)" % debris.get_chunk_count())
+		_check(float(debris.get("gravity")) > 0.0, "debris_burst: chunks fall under gravity")
+	var chunky: DebrisBurstEffect = VFX2D.debris_burst(spot,
+			{"duration": 0.1, "chunk_count": 5, "gravity": 0.0}) as DebrisBurstEffect
+	if chunky != null:
+		_check(chunky.get_chunk_count() == 5, "debris_burst: honours chunk_count")
+	await _wait(0.3)
+
+	var splash: RippleEffect = VFX2D.ripple(spot, {"duration": 0.12}) as RippleEffect
+	_check(splash != null, "VFX2D.ripple(): returns a RippleEffect")
+	if splash != null:
+		_check(splash.get_ring_count() == 3,
+				"ripple: default ring count (got %d)" % splash.get_ring_count())
+	await _wait(0.3)
+
+	var collapse: ImplosionEffect = VFX2D.implosion(spot, {"duration": 0.12}) as ImplosionEffect
+	_check(collapse != null, "VFX2D.implosion(): returns an ImplosionEffect")
+	if collapse != null:
+		_check(collapse.get_mote_count() > 0,
+				"implosion: spawned motes (got %d)" % collapse.get_mote_count())
+	await _wait(0.3)
+	VFX2D.stop_all()
+	await get_tree().process_frame
+
+
+func _test_persistent_effects() -> void:
+	VFX2D.stop_all()
+	await get_tree().process_frame
+	_check(VFX2D.get_persistent_count() == 0, "persistent: nothing tracked before spawning")
+
+	var target := Node2D.new()
+	target.position = Vector2(60.0, 60.0)
+	add_child(target)
+
+	var beam: BeamEffect = VFX2D.beam(Vector2.ZERO, Vector2(200.0, 0.0), {"width": 9.0})
+	_check(beam != null and beam is BeamEffect, "VFX2D.beam(): returns a BeamEffect")
+	if beam != null:
+		_check(beam.is_inside_tree(), "beam: added to the VFX layer")
+		_check(beam.get_parent() != null and beam.get_parent().name == VFX2D.container_node_name,
+				"beam: lives under the VFX2D layer")
+		_check(beam.end_offset.is_equal_approx(Vector2(200.0, 0.0)),
+				"beam: endpoint from the spawn call")
+		_check(is_equal_approx(float(beam.get("width")), 9.0), "beam: options applied")
+		_check(is_equal_approx(beam.get_openness(), 0.0), "beam: starts closed")
+		await _wait(0.3)
+		_check(is_equal_approx(beam.get_openness(), 1.0), "beam: opens to full after warmup")
+		beam.end_at(Vector2(0.0, 140.0))
+		_check(beam.end_offset.is_equal_approx(Vector2(0.0, 140.0)), "beam: end_at() re-aims it")
+		var closed := [0]
+		beam.finished.connect(func() -> void: closed[0] += 1)
+		beam.stop()
+		await _wait(0.45)
+		_check(closed[0] == 1, "beam: emitted finished once on stop() (got %d)" % closed[0])
+		_check(not is_instance_valid(beam), "beam: freed itself after fading out")
+	_check(VFX2D.get_persistent_count() == 0,
+			"persistent: beam dropped after finishing (got %d)" % VFX2D.get_persistent_count())
+
+	var portal: PortalEffect = VFX2D.portal(Vector2(30.0, 30.0),
+			{"lifetime": 0.3, "open_time": 0.1, "close_time": 0.1})
+	_check(portal != null and portal is PortalEffect, "VFX2D.portal(): returns a PortalEffect")
+	if portal != null:
+		_check(is_equal_approx(portal.get_openness(), 0.0), "portal: starts closed")
+		await _wait(0.25)
+		_check(portal.get_openness() > 0.9, "portal: opens to full (%.2f)" % portal.get_openness())
+		_check(VFX2D.get_persistent_count() == 1, "portal: tracked as a persistent modifier")
+		await _wait(0.7)
+		_check(not is_instance_valid(portal), "portal: closes and frees after its lifetime")
+	_check(VFX2D.get_persistent_count() == 0, "persistent: portal dropped after closing")
+
+	var rune: RuneCircle = VFX2D.rune_circle(target, 0.25, {"fill": 0.4})
+	_check(rune != null and rune is RuneCircle, "VFX2D.rune_circle(): returns a RuneCircle")
+	if rune != null:
+		_check(rune.get_parent() == target, "rune_circle: parents itself to the target")
+		_check(rune.is_running(), "rune_circle: running after start()")
+		_check(is_equal_approx(float(rune.get("fill")), 0.4), "rune_circle: fill option applied")
+		rune.set_fill(0.85)
+		_check(is_equal_approx(float(rune.get("fill")), 0.85), "rune_circle: set_fill() drives the ring")
+		await _wait(0.5)
+		_check(not is_instance_valid(rune), "rune_circle: closes when its timer runs out")
+	_check(VFX2D.get_persistent_count() == 0, "persistent: rune dropped after finishing")
+
+	var ribbon: TrailEffect = VFX2D.trail(target, {"history": 0.3})
+	_check(ribbon != null and ribbon is TrailEffect, "VFX2D.trail(): returns a TrailEffect")
+	if ribbon != null:
+		_check(VFX2D.get_persistent_count() == 1, "trail: tracked as a persistent modifier")
+		for i in range(6):
+			target.position += Vector2(12.0, -4.0)
+			await _wait(0.03)
+		_check(ribbon.get_point_count() >= 3,
+				"trail: recorded the target's history (%d points)" % ribbon.get_point_count())
+		ribbon.stop()
+		await get_tree().process_frame
+		_check(not is_instance_valid(ribbon), "trail: stop() frees the ribbon")
+	_check(VFX2D.get_persistent_count() == 0,
+			"persistent: trail dropped after stop() (got %d)" % VFX2D.get_persistent_count())
+
+	# A beam in flight must go away with stop_all(), like any other effect.
+	var held: BeamEffect = VFX2D.beam(Vector2.ZERO, Vector2(90.0, 90.0), {"fade_time": 0.05})
+	_check(held != null, "persistent: beam spawns for stop_all()")
+	VFX2D.stop_all()
+	await _wait(0.2)
+	_check(not is_instance_valid(held), "persistent: stop_all() clears a live beam")
+	_check(VFX2D.get_persistent_count() == 0, "persistent: nothing tracked after stop_all()")
+
+	# A trail whose target leaves the tree must not linger or error.
+	var doomed := Node2D.new()
+	add_child(doomed)
+	var orphan: TrailEffect = VFX2D.trail(doomed, {"history": 0.2})
+	_check(orphan != null, "trail: attaches to a short-lived target")
+	doomed.queue_free()
+	await _wait(0.15)
+	_check(not is_instance_valid(orphan), "trail: frees itself when the target is gone")
+	_check(VFX2D.get_persistent_count() == 0, "persistent: orphaned trail dropped")
+
+	if is_instance_valid(target):
+		target.queue_free()
+	await get_tree().process_frame
+
+
+func _test_persistent_chaos() -> void:
+	var persistent := {
+		"beam": BEAM_SCENE,
+		"portal": PORTAL_SCENE,
+		"rune_circle": RUNE_CIRCLE_SCENE,
+		"trail": TRAIL_SCENE,
+	}
+	for effect_name in persistent:
+		var node: Node = (persistent[effect_name] as PackedScene).instantiate()
+		_check(node != null, "%s: persistent scene instantiates" % effect_name)
+		if node == null:
+			continue
+		var has_chaos: bool = node.get("chaos") != null
+		_check(has_chaos, "%s: exposes a chaos knob" % effect_name)
+		node.set("chaos", 1.0)
+		_check(is_equal_approx(float(node.get("chaos")), 1.0),
+				"%s: chaos can be driven to 1.0" % effect_name)
+		node.free()
 
 
 func _test_chaos_knob(effects: Dictionary) -> void:

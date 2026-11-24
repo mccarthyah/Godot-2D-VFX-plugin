@@ -33,6 +33,7 @@ signal effect_finished(effect: VFXEffect)
 
 var _scenes: Dictionary = {}
 var _free_instances: Dictionary = {}
+var _persistent: Array[Node] = []
 var _active: Array[VFXEffect] = []
 var _layer: Node2D = null
 
@@ -82,6 +83,106 @@ func muzzle_flash(at: Vector2, direction: Vector2 = Vector2.RIGHT,
 ## Spawns ascending sparkles at [param at] — pickups, heals and buffs.
 func heal_sparkle(at: Vector2, options: Dictionary = {}) -> VFXEffect:
 	return spawn(_effect_scene("heal_sparkle"), at, options)
+
+
+## Spawns a melee crescent at [param at] centred on [param direction].
+func slash_arc(at: Vector2, direction: Vector2 = Vector2.RIGHT,
+		options: Dictionary = {}) -> VFXEffect:
+	var opts: Dictionary = options.duplicate()
+	if direction.length_squared() > 0.0001:
+		opts["direction"] = direction.normalized()
+	return spawn(_effect_scene("slash_arc"), at, opts)
+
+
+## Spawns solid debris chunks at [param at].
+func debris_burst(at: Vector2, options: Dictionary = {}) -> VFXEffect:
+	return spawn(_effect_scene("debris_burst"), at, options)
+
+
+## Spawns a flattened water/sonar ripple at [param at].
+func ripple(at: Vector2, options: Dictionary = {}) -> VFXEffect:
+	return spawn(_effect_scene("ripple"), at, options)
+
+
+## Spawns an inward collapse at [param at] — the reverse of an explosion.
+func implosion(at: Vector2, options: Dictionary = {}) -> VFXEffect:
+	return spawn(_effect_scene("implosion"), at, options)
+
+
+## Creates a persistent beam from [param from] to [param to]. Keep the returned
+## node to re-aim it with [method BeamEffect.end_at] or end it with
+## [method BeamEffect.stop].
+func beam(from: Vector2, to: Vector2, options: Dictionary = {}) -> BeamEffect:
+	var scene: PackedScene = _effect_scene("beam")
+	if scene == null:
+		return null
+	var effect := scene.instantiate() as BeamEffect
+	if effect == null:
+		push_error("VFX2D.beam(): the root of beam.tscn must be a BeamEffect")
+		return null
+	effect.position = from
+	effect.end_offset = to - from
+	_attach_persistent(effect, options)
+	effect.start()
+	return effect
+
+
+## Opens a persistent portal at [param at]. Call [method PortalEffect.stop] on the
+## returned node to play the closing animation.
+func portal(at: Vector2, options: Dictionary = {}) -> PortalEffect:
+	var scene: PackedScene = _effect_scene("portal")
+	if scene == null:
+		return null
+	var effect := scene.instantiate() as PortalEffect
+	if effect == null:
+		push_error("VFX2D.portal(): the root of portal.tscn must be a PortalEffect")
+		return null
+	effect.position = at
+	_attach_persistent(effect, options)
+	effect.start()
+	return effect
+
+
+## Adds a cast circle as a child of [param target]. [param seconds] sets how long
+## it runs before closing on its own ([code]0[/code] runs until stopped).
+func rune_circle(target: Node2D, seconds: float = 0.0,
+		options: Dictionary = {}) -> RuneCircle:
+	if not is_instance_valid(target):
+		push_error("VFX2D.rune_circle(): target node is not valid")
+		return null
+	var scene: PackedScene = _effect_scene("rune_circle")
+	if scene == null:
+		return null
+	var rune := scene.instantiate() as RuneCircle
+	if rune == null:
+		push_error("VFX2D.rune_circle(): the root of rune_circle.tscn must be a RuneCircle")
+		return null
+	rune.position = Vector2.ZERO
+	target.add_child(rune)
+	_apply_options(rune, options)
+	_register_persistent(rune)
+	rune.start(seconds)
+	return rune
+
+
+## Attaches a ribbon trail to [param target]. It frees itself when the target
+## leaves the tree, or earlier with [method TrailEffect.stop].
+func trail(target: Node2D, options: Dictionary = {}) -> TrailEffect:
+	if not is_instance_valid(target):
+		push_error("VFX2D.trail(): target node is not valid")
+		return null
+	var scene: PackedScene = _effect_scene("trail")
+	if scene == null:
+		return null
+	var ribbon := scene.instantiate() as TrailEffect
+	if ribbon == null:
+		push_error("VFX2D.trail(): the root of trail.tscn must be a TrailEffect")
+		return null
+	_get_layer().add_child(ribbon)
+	_apply_options(ribbon, options)
+	_register_persistent(ribbon)
+	ribbon.attach_to(target)
+	return ribbon
 
 
 ## Adds a cooldown ring as a child of [param target] and starts it immediately.
@@ -146,6 +247,18 @@ func stop_all() -> void:
 	for effect in running:
 		if is_instance_valid(effect):
 			effect.stop()
+	_prune_persistent()
+	var persistent: Array = _persistent.duplicate()
+	_persistent.clear()
+	for node in persistent:
+		if is_instance_valid(node) and node.has_method("stop"):
+			node.stop()
+
+
+## Number of persistent modifiers (beams, portals, runes, trails) still live.
+func get_persistent_count() -> int:
+	_prune_persistent()
+	return _persistent.size()
 
 
 ## Number of effects currently running.
@@ -190,6 +303,7 @@ func _get_layer() -> Node2D:
 	# effect with it. Drop those dead references before building a new layer.
 	_prune_active()
 	_prune_pools()
+	_prune_persistent()
 	_layer = Node2D.new()
 	_layer.name = container_node_name
 	_layer.z_index = 100
@@ -246,6 +360,24 @@ func _trim_active() -> void:
 		var effect: VFXEffect = oldest as VFXEffect
 		if effect != null:
 			effect.stop()
+
+
+func _attach_persistent(effect: Node, options: Dictionary) -> void:
+	_get_layer().add_child(effect)
+	_apply_options(effect, options)
+	_register_persistent(effect)
+
+
+func _register_persistent(effect: Node) -> void:
+	_prune_persistent()
+	_persistent.append(effect)
+
+
+## Forgets persistent modifiers that were freed with their scene.
+func _prune_persistent() -> void:
+	for index in range(_persistent.size() - 1, -1, -1):
+		if not is_instance_valid(_persistent[index]):
+			_persistent.remove_at(index)
 
 
 ## Forgets active effects that were freed with their scene.

@@ -98,8 +98,8 @@ jobs:
             exit 1
           fi
           checks="$(grep -oE '[0-9]+ checks' /tmp/tests.log | tail -n 1 | cut -d' ' -f 1)"
-          if [ -z "${checks}" ] || [ "${checks}" -lt 115 ]; then
-            echo "::error::Expected at least 115 checks with the extension loaded, got '${checks}'"
+          if [ -z "${checks}" ] || [ "${checks}" -lt 212 ]; then
+            echo "::error::Expected at least 212 checks with the extension loaded, got '${checks}'"
             exit 1
           fi
           summary="$(grep -E "\[VFX TESTS\] (PASS|FAIL)" /tmp/tests.log | tail -n 1)"
