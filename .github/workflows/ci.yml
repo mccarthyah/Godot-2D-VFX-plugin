@@ -69,12 +69,12 @@ jobs:
           }
           if [ "${suite_status}" -ne 0 ]; then
             echo "::error::The suite exited with status ${suite_status}"
-            grep -E "VFX TESTS|SCRIPT ERROR|Parse Error|ERROR:|at: " /tmp/tests.log | tail -n 8 | report_log
+            grep -E "FAIL|SCRIPT ERROR|Parse Error|ERROR:|at: " /tmp/tests.log | tail -n 8 | report_log
             exit 1
           fi
           if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/tests.log; then
             echo "::error::GDScript errors were reported during the test run"
-            grep -E "VFX TESTS|SCRIPT ERROR|Parse Error|ERROR:|at: " /tmp/tests.log | tail -n 8 | report_log
+            grep -E "FAIL|SCRIPT ERROR|Parse Error|ERROR:|at: " /tmp/tests.log | tail -n 8 | report_log
             exit 1
           fi
           # A green job must mean the suite really ran: require its PASS summary
