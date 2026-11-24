@@ -51,14 +51,15 @@ jobs:
           cat addons/vfx_2d/vfx_streaks.gdextension
           ls -la addons/vfx_2d/bin/
 
-      - name: Import project
+      - name: Import project and register the extension
         run: |
           set -euo pipefail
           # Godot 4.7.2 segfaults while tearing down `--import` as soon as any
-          # extension class is registered (reproducible with a bare
-          # `class Foo : Node`), but the import and the global class cache are
-          # finished by then. A normal editor quit exits cleanly. So: tolerate
-          # that one failure mode, then assert the cache really was written.
+          # extension class is registered: a bare `class Foo : Node` reproduces
+          # it, and it happens after the import has written both caches (an
+          # ordinary editor quit exits cleanly). Tolerate that one exit code,
+          # then assert the files a successful import must produce — those are
+          # what actually make the extension load.
           set +e
           "$GODOT_BIN" --headless --path . --import > /tmp/import.log 2>&1
           status=$?
@@ -68,16 +69,16 @@ jobs:
             grep -E "SCRIPT ERROR|Parse Error|Failed to load" /tmp/import.log
             exit 1
           fi
-          if [ ! -f .godot/global_script_class_cache.cfg ]; then
-            echo "::error::Import did not write the global class cache"
-            exit 1
-          fi
-          if ! grep -q "VFXStreaks" .godot/global_script_class_cache.cfg; then
-            echo "::error::Import did not register the addon classes"
+          test -f .godot/global_script_class_cache.cfg
+          grep -q "VFXStreaks" .godot/global_script_class_cache.cfg
+          test -f .godot/extension_list.cfg
+          if ! grep -q "vfx_streaks.gdextension" .godot/extension_list.cfg; then
+            echo "::error::The extension was not registered for loading"
+            cat .godot/extension_list.cfg
             exit 1
           fi
           if [ "$status" -ne 0 ]; then
-            echo "::warning title=Import teardown::--import exited ${status}; the class cache was written before the crash"
+            echo "::warning title=Import teardown::--import exited ${status}. Import had already written the class cache and extension list, so this is the known 4.7.2 teardown crash, not a failure to import."
           fi
 
       - name: Run test suite with the extension loaded
