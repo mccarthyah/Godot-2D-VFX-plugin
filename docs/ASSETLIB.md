@@ -11,8 +11,8 @@ This is the checklist for shipping a release of the 2D VFX Kit to the
 # -> dist/vfx_2d-<version>-assetlib.zip
 ```
 
-That archive is the addon only (no `demo/`, `tests/`, `cpp/` or binaries), and
-it is laid out the way AssetLib expects after extraction:
+The archive holds the addon only (no `demo/`, `tests/`, `cpp/` or binaries),
+laid out as AssetLib expects after extraction:
 
 ```
 addons/vfx_2d/
@@ -37,12 +37,11 @@ Checks passed: plugin folder only, no native libraries, README + LICENSE inside.
 The checks are: `plugin.cfg`, `plugin.gd`, `vfx_2d.gd`, `README.md` and
 `LICENSE` are all present; no `.so` / `.dll` / `.dylib` / `.wasm` /
 `.gdextension` files; nothing from `tests/`, `demo/`, `cpp/`, `tools/`, `docs/`
-or `.github/`; and the archive is under 10 MiB. Run it in CI (it is) rather than
-trusting a remembered checklist.
+or `.github/`; and the archive is under 10 MiB. CI runs the same command on
+every push, so the checks cannot drift from the script.
 
 The file set is the same GDScript-only addon folder as the drop-in
-`dist/vfx_2d-<version>.zip`; the `-assetlib` name marks it as the one that has
-been validated for submission, and uploading either works.
+`dist/vfx_2d-<version>.zip`; only the name differs, and either one uploads fine.
 
 ## 2. Before you submit
 

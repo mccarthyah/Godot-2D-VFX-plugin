@@ -2,7 +2,7 @@ extends Node2D
 ## Visual gallery for every effect in the kit, split into themed pages so only a
 ## few effects run at once. Twenty-four effects firing together is a stress test,
 ## not a gallery: each page here runs up to four cells on their own timers, which
-## keeps the frame rate honest while you compare shapes and colors.
+## keeps the frame rate steady while you compare shapes and colours.
 ##
 ## Run it on its own with [code]godot --path . res://demo/gallery.tscn[/code], or
 ## open the scene in the editor and press F6. Unlike the interactive demo there is

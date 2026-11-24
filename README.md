@@ -547,8 +547,8 @@ VFX2D.hit_spark(at, dir, {"chaos": 0.0})   # tidy, symmetric, readable
 VFX2D.hit_spark(at, dir, {"chaos": 1.0})   # splintered and lopsided
 ```
 
-The knob is honest about direction: `0` is a clean shape, `1` is the wildest the
-effect gets. Ring defaults to `0.25` on purpose, so a cooldown stays readable.
+`0` gives a clean shape, `1` gives the wildest the effect gets. The cooldown ring
+defaults to `0.25`, so it stays readable.
 
 ## API reference
 
