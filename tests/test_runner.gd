@@ -42,6 +42,7 @@ func _run_all() -> void:
 		await _test_lifecycle(effect_name, effects[effect_name])
 	await _test_cooldown_ring()
 	await _test_autoload()
+	await _test_streak_field()
 
 
 #region Tests
@@ -159,6 +160,71 @@ func _test_autoload() -> void:
 	VFX2D.stop_all()
 	await get_tree().process_frame
 	_check(VFX2D.get_active_count() == 0, "VFX2D: stop_all() clears a burst")
+#endregion
+
+
+#region C++ streak field (optional)
+
+func _test_streak_field() -> void:
+	if not VFXStreaks.is_available():
+		print("[VFX TESTS] cpp-streak-field: absent (pure GDScript fallback active)")
+		return
+	print("[VFX TESTS] cpp-streak-field: available")
+
+	var field := VFXStreaks.create(self, {"seed": 4242, "max_particles": 2048})
+	_check(field != null, "cpp: VFXStreakField2D instantiates")
+	if field == null:
+		return
+	_check(field.get_class() == "VFXStreakField2D", "cpp: node reports its native class")
+	_check(int(field.call("get_alive_count")) == 0, "cpp: field starts empty")
+
+	VFXStreaks.burst(field, {
+		"origin": Vector2(10.0, 20.0),
+		"count": 512,
+		"direction": Vector2.RIGHT,
+		"spread": 0.6,
+		"speed_min": 200.0,
+		"speed_max": 400.0,
+		"lifetime_min": 0.2,
+		"lifetime_max": 0.3,
+	})
+	var spawned := int(field.call("get_alive_count"))
+	_check(spawned == 512, "cpp: burst spawned 512 particles (got %d)" % spawned)
+
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var drawn := int(field.call("get_drawn_segment_count"))
+	_check(drawn > 0, "cpp: submitted streak segments to the renderer (%d)" % drawn)
+	var alive_after_draw := int(field.call("get_alive_count"))
+	_check(drawn == alive_after_draw * 2,
+			"cpp: two segments per live particle, head->mid->tail (got %d)" % drawn)
+
+	await _wait(0.6)
+	_check(int(field.call("get_alive_count")) == 0, "cpp: particles expire with their lifetime")
+	_check(int(field.call("get_drawn_segment_count")) == 0,
+			"cpp: nothing drawn once the field is empty")
+
+	field.set("max_particles", 64)
+	VFXStreaks.burst(field, {"count": 500, "lifetime_min": 1.0, "lifetime_max": 1.0})
+	var capped := int(field.call("get_alive_count"))
+	_check(capped <= 64, "cpp: honours max_particles (%d/64)" % capped)
+	VFXStreaks.clear(field)
+	_check(int(field.call("get_alive_count")) == 0, "cpp: clear() empties the field")
+	field.queue_free()
+	await get_tree().process_frame
+
+	# The bundled GDScript effects must attach the streak layer by themselves.
+	var spark := VFX2D.hit_spark(Vector2(100.0, 100.0), Vector2.UP, {"duration": 0.3})
+	await get_tree().process_frame
+	var found := false
+	if spark != null:
+		for child in spark.get_children():
+			if child.get_class() == "VFXStreakField2D":
+				found = true
+				var alive := int(child.call("get_alive_count"))
+				_check(alive > 0, "cpp: hit spark emitted streaks (%d particles)" % alive)
+	_check(found, "cpp: hit spark attached a streak field")
+	VFX2D.stop_all()
 
 #endregion
 

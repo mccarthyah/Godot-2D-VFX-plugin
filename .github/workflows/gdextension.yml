@@ -1,0 +1,90 @@
+name: GDExtension
+
+# Builds the optional C++ streak field against stock Godot and runs the suite
+# with the extension loaded, so the "available" branch of the tests is covered
+# as well as the pure-GDScript fallback covered by ci.yml.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: gdextension-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: C++ streak field (Godot ${{ env.GODOT_VERSION }})
+    runs-on: ubuntu-latest
+    env:
+      GODOT_VERSION: 4.7.2-stable
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Install scons
+        run: |
+          python3 -m pip install --upgrade pip scons
+
+      - name: Install stock Godot headless
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/godot"
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          curl -fsSL "$url" -o /tmp/godot.zip
+          unzip -q -o /tmp/godot.zip -d "$HOME/godot"
+          bin="$(find "$HOME/godot" -maxdepth 2 -type f -name 'Godot_v*' | head -n 1)"
+          chmod +x "$bin"
+          echo "GODOT_BIN=$bin" >> "$GITHUB_ENV"
+          "$bin" --version
+
+      - name: Build godot-cpp and the extension
+        run: |
+          set -euo pipefail
+          ./tools/build_extension.sh --godot "$GODOT_BIN" --jobs 4
+
+      - name: Show the generated descriptor
+        run: |
+          cat addons/vfx_2d/vfx_streaks.gdextension
+          ls -la addons/vfx_2d/bin/
+
+      - name: Import project
+        run: |
+          set -euo pipefail
+          "$GODOT_BIN" --headless --path . --import
+
+      - name: Run test suite with the extension loaded
+        run: |
+          set -o pipefail
+          "$GODOT_BIN" --headless --path . res://tests/test_runner.tscn 2>&1 | tee /tmp/tests.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/tests.log; then
+            echo "::error::GDScript or engine errors were reported during the test run"
+            exit 1
+          fi
+          if ! grep -q "cpp-streak-field: available" /tmp/tests.log; then
+            echo "::error::The extension did not load — the C++ tests were skipped"
+            exit 1
+          fi
+          if ! grep -q "\[VFX TESTS\] PASS" /tmp/tests.log; then
+            echo "::error::The test suite did not report a PASS summary"
+            exit 1
+          fi
+          checks="$(grep -oE '[0-9]+ checks' /tmp/tests.log | tail -n 1 | cut -d' ' -f 1)"
+          if [ -z "${checks}" ] || [ "${checks}" -lt 55 ]; then
+            echo "::error::Expected at least 55 checks with the extension loaded, got '${checks}'"
+            exit 1
+          fi
+          summary="$(grep -E "\[VFX TESTS\] (PASS|FAIL)" /tmp/tests.log | tail -n 1)"
+          echo "::notice title=2D VFX Kit C++ (Godot ${GODOT_VERSION})::${summary}"
+          echo "checks reported: ${checks}"
+
+      - name: Demo smoke run with the extension
+        run: |
+          set -o pipefail
+          "$GODOT_BIN" --headless --path . --fixed-fps 60 --quit-after 300 2>&1 | tee /tmp/demo.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/demo.log; then
+            echo "::error::Errors were reported while running the demo with the extension"
+            exit 1
+          fi

@@ -1,0 +1,14 @@
+{
+  "enabled_classes": [
+    "Node",
+    "Node2D",
+    "CanvasItem",
+    "CanvasItemMaterial",
+    "Material",
+    "Resource",
+    "RenderingServer",
+    "OS",
+    "Engine",
+    "MainLoop"
+  ]
+}

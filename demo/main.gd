@@ -39,10 +39,11 @@ func _process(delta: float) -> void:
 			var spot := Vector2(_rng.randf_range(280.0, 1020.0), _rng.randf_range(220.0, 560.0))
 			VFX2D.hit_spark(spot, Vector2.from_angle(_rng.randf_range(-PI, PI)))
 	if _status_label != null:
-		_status_label.text = "FPS %d   ·   active effects %d   ·   auto demo %s" % [
+		_status_label.text = "FPS %d   ·   active %d   ·   auto demo %s   ·   C++ streaks %s" % [
 			Engine.get_frames_per_second(),
 			VFX2D.get_active_count(),
 			"on" if _auto_demo else "off",
+			"on" if VFXStreaks.is_available() else "off",
 		]
 
 

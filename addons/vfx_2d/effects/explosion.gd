@@ -22,8 +22,15 @@ extends VFXEffect
 @export_range(0.5, 32.0, 0.5, "suffix:px") var debris_size: float = 3.0
 @export var debris_color: Color = Color(1.0, 0.74, 0.32)
 
+@export_group("Streaks (C++)")
+## Add the C++ streak layer when the optional GDExtension is built.
+@export var use_streaks: bool = true
+@export_range(0, 8192, 1) var streak_count: int = 260
+@export_range(0.0, 2.0, 0.01) var streak_turbulence: float = 0.35
+
 var _progress: float = 0.0
 var _debris: CPUParticles2D = null
+var _streaks: Node2D = null
 
 
 func _on_play() -> void:
@@ -51,6 +58,7 @@ func _on_play() -> void:
 	_debris.color_ramp = ramp
 	_debris.restart()
 	_debris.emitting = true
+	_emit_streaks()
 
 
 func _on_update(progress_value: float, _delta: float) -> void:
@@ -60,6 +68,34 @@ func _on_update(progress_value: float, _delta: float) -> void:
 func _on_stop() -> void:
 	if _debris != null:
 		_debris.emitting = false
+	VFXStreaks.clear(_streaks)
+
+func _emit_streaks() -> void:
+	if not use_streaks or not VFXStreaks.is_available():
+		return
+	if _streaks == null or not is_instance_valid(_streaks):
+		_streaks = VFXStreaks.create(self, {
+			"head_color": core_color,
+			"tail_color": Color(edge_color, 0.0),
+			"base_width": maxf(1.0, debris_size * 0.8),
+			"turbulence": streak_turbulence,
+			"drag": 1.6,
+			"gravity": 520.0,
+			"streak_scale": 0.045,
+			"max_particles": 4096,
+		})
+	if _streaks == null:
+		return
+	VFXStreaks.burst(_streaks, {
+		"origin": Vector2.ZERO,
+		"count": streak_count,
+		"direction": Vector2.UP,
+		"spread": TAU,
+		"speed_min": debris_speed * 0.25,
+		"speed_max": debris_speed * 1.15,
+		"lifetime_min": duration * 0.35,
+		"lifetime_max": duration * 0.85,
+	})
 
 
 func _draw() -> void:

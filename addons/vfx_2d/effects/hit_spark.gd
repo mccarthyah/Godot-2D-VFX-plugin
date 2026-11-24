@@ -20,8 +20,16 @@ extends VFXEffect
 @export_range(0.0, 128.0, 0.5, "suffix:px") var streak_length: float = 26.0
 @export var flash_color: Color = Color(1.0, 1.0, 1.0)
 
+@export_group("Streaks (C++)")
+## Add the C++ streak layer when the optional GDExtension is built. Silently
+## skipped (and the effect still plays) when it is not.
+@export var use_streaks: bool = true
+@export_range(0, 4096, 1) var streak_count: int = 60
+@export_range(0.0, 2.0, 0.01) var streak_turbulence: float = 0.15
+
 var _flash_alpha: float = 0.0
 var _particles: CPUParticles2D = null
+var _streaks: Node2D = null
 
 
 func _on_play() -> void:
@@ -50,6 +58,7 @@ func _on_play() -> void:
 	_particles.color_ramp = ramp
 	_particles.restart()
 	_particles.emitting = true
+	_emit_streaks()
 
 
 func _on_update(progress_value: float, _delta: float) -> void:
@@ -60,6 +69,33 @@ func _on_stop() -> void:
 	_flash_alpha = 0.0
 	if _particles != null:
 		_particles.emitting = false
+	VFXStreaks.clear(_streaks)
+
+func _emit_streaks() -> void:
+	if not use_streaks or not VFXStreaks.is_available():
+		return
+	if _streaks == null or not is_instance_valid(_streaks):
+		_streaks = VFXStreaks.create(self, {
+			"head_color": spark_color,
+			"tail_color": Color(spark_color, 0.0),
+			"base_width": maxf(1.0, spark_size * 0.7),
+			"turbulence": streak_turbulence,
+			"drag": 2.4,
+			"gravity": spark_gravity,
+			"streak_scale": 0.03,
+		})
+	if _streaks == null:
+		return
+	VFXStreaks.burst(_streaks, {
+		"origin": Vector2.ZERO,
+		"count": streak_count,
+		"direction": direction,
+		"spread": deg_to_rad(spread_degrees) * 1.4,
+		"speed_min": spark_speed * 0.5,
+		"speed_max": spark_speed * 1.35,
+		"lifetime_min": duration * 0.45,
+		"lifetime_max": duration * 0.9,
+	})
 
 
 func _draw() -> void:

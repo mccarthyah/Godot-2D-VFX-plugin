@@ -19,6 +19,10 @@ There are no PNGs or audio files in this repo: every effect is drawn with
 `_draw()` and `CPUParticles2D`, so it works at any resolution and nothing needs
 importing.
 
+An **optional C++ extension** (`VFXStreakField2D`) adds thousands of
+velocity-aligned spark streaks in a single draw call. It is off by default, the
+addon detects it at runtime, and everything above still works without it.
+
 ---
 
 ## Why another VFX addon?
@@ -148,6 +152,31 @@ Procedurally generated bolt with branches and flicker — no two strikes match.
 `get_bolt_points()` and `get_branch_points()` expose the generated geometry if
 you want to hit-test or attach effects to the bolt.
 
+### C++ streak field — optional GDExtension
+
+GDScript stops scaling when a burst needs to be hundreds of streaks thick. The
+extension integrates particles in C++ and submits them as one
+`canvas_item_add_multiline` call:
+
+```bash
+pip install scons
+./tools/build_extension.sh                    # ~1 min with the bundled build profile
+./tools/build_extension.sh --godot <engine>   # bind a specific engine build exactly
+```
+
+Hit sparks and explosions pick it up automatically (`use_streaks`,
+`streak_count`, `streak_turbulence`), or you can drive it directly:
+
+```gdscript
+if VFXStreaks.is_available():
+    var field := VFXStreaks.create(self, {"head_color": Color.ORANGE, "turbulence": 0.4})
+    VFXStreaks.burst(field, {"count": 800, "spread": TAU, "speed_max": 900.0})
+```
+
+Build products are gitignored; delete `addons/vfx_2d/bin/` and the generated
+`.gdextension` to return to pure GDScript. Full API, tuning notes and
+troubleshooting: [`cpp/README.md`](cpp/README.md).
+
 ### Cooldown ring — `effects/cooldown_ring.tscn`
 
 A modifier node, not a one-shot: it circles whatever it is parented to. Previews
@@ -254,6 +283,13 @@ effect during the suite — the procedural geometry (arcs, polylines, layered
 discs) is exercised, not just the timing and pooling logic. What CI cannot judge
 is how it *looks*; that needs the demo on a real display.
 
+The separate [`GDExtension` workflow](.github/workflows/gdextension.yml) builds
+the C++ streak field against stock Godot 4.7.2, then runs the same suite and
+**fails if the extension silently failed to load** — the C++ tests print
+`cpp-streak-field: available|absent`, and the workflow asserts which one ran.
+Same suite, both paths: **58 checks** with the extension, **46** without, zero
+engine errors either way.
+
 ## Repository layout
 
 ```
@@ -266,6 +302,11 @@ addons/vfx_2d/
   effects/explosion.*
   effects/lightning.*
   effects/cooldown_ring.*
+cpp/                         # Optional C++ streak field (GDExtension)
+  src/vfx_streak_field.*     # Particle integration + multiline draw
+  src/register_types.cpp     # Class registration / entry point
+  SConstruct                 # Builds into addons/vfx_2d/bin/
+tools/build_extension.sh     # Fetches godot-cpp, builds, writes .gdextension
 demo/                        # Interactive sandbox scene
 tests/test_runner.tscn       # Headless test suite
 tools/package.sh             # Builds dist/vfx_2d-<version>.zip
