@@ -52,10 +52,21 @@ if ! command -v scons >/dev/null 2>&1; then
     fi
 fi
 
-# 1. godot-cpp, fetched once and reused.
+# 1. godot-cpp, fetched once and reused. A raw commit SHA cannot be passed to
+# `git clone --branch`, so pins are fetched explicitly.
 if [ ! -d cpp/godot-cpp ]; then
-    echo "==> Fetching godot-cpp (${godot_cpp_ref})"
-    git clone --depth 1 --branch "$godot_cpp_ref" https://github.com/godotengine/godot-cpp.git cpp/godot-cpp
+    godot_cpp_url="https://github.com/godotengine/godot-cpp.git"
+    if [[ "$godot_cpp_ref" =~ ^[0-9a-f]{7,40}$ ]]; then
+        echo "==> Fetching godot-cpp commit ${godot_cpp_ref}"
+        mkdir -p cpp/godot-cpp
+        git -C cpp/godot-cpp init -q
+        git -C cpp/godot-cpp remote add origin "$godot_cpp_url"
+        git -C cpp/godot-cpp fetch -q --depth 1 origin "$godot_cpp_ref"
+        git -C cpp/godot-cpp checkout -q FETCH_HEAD
+    else
+        echo "==> Cloning godot-cpp (${godot_cpp_ref})"
+        git clone --depth 1 --branch "$godot_cpp_ref" "$godot_cpp_url" cpp/godot-cpp
+    fi
 fi
 echo "==> godot-cpp $(git -C cpp/godot-cpp rev-parse --short HEAD)"
 
