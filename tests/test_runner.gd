@@ -351,7 +351,9 @@ func _test_persistent_effects() -> void:
 		_check(ribbon.get_point_count() >= 2,
 				"trail: recorded the target's history (%d points)" % ribbon.get_point_count())
 		ribbon.stop()
-		await get_tree().process_frame
+		# queue_free() is processed at the end of the frame, and 4.2/4.3 take a
+		# frame longer than 4.7 to get there: wait on time, not on one frame.
+		await _wait(0.2)
 		_check(not is_instance_valid(ribbon), "trail: stop() frees the ribbon")
 	_check(VFX2D.get_persistent_count() == 0,
 			"persistent: trail dropped after stop() (got %d)" % VFX2D.get_persistent_count())
