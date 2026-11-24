@@ -16,7 +16,8 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: C++ streak field (Godot ${{ env.GODOT_VERSION }})
+    # Note: the `env` context is not available in jobs.<id>.name.
+    name: C++ streak field
     runs-on: ubuntu-latest
     env:
       GODOT_VERSION: 4.7.2-stable
