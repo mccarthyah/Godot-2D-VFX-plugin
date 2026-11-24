@@ -227,21 +227,37 @@ jobs:
       - name: Enable the plugin, then run without the repo
         run: |
           set -euo pipefail
-          "$GODOT_BIN" --headless --path "$INSTALL_PROJECT" --editor --quit 2>&1 | tee /tmp/install_editor.log
-          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/install_editor.log; then
-            echo "::error::Enabling the plugin raised errors"
+
+          # Anything error-ish in a log becomes its own annotation, so a failing
+          # run is readable from the API without downloading logs.
+          report_errors() {
+              local log="$1" label="$2" found=0 line
+              while IFS= read -r line; do
+                  found=1
+                  echo "::error title=${label}::${line}"
+              done < <(grep -nE 'SCRIPT ERROR|Parse Error|Failed to load|ERROR:' "$log" || true)
+              return "$found"
+          }
+
+          "$GODOT_BIN" --headless --path "$INSTALL_PROJECT" --editor --quit > /tmp/install_editor.log 2>&1 || true
+          tail -n 40 /tmp/install_editor.log
+          if ! report_errors /tmp/install_editor.log "Plugin enable log"; then
+            echo "::error title=Plugin enable::Enabling the plugin raised errors"
             exit 1
           fi
+
           # Portability guard: the stored autoload must be a res:// path so the
           # same project.godot still opens on 4.2, whatever wrote it.
           if ! grep -q '^VFX2D="\*res://addons/vfx_2d/vfx_2d.gd"' "$INSTALL_PROJECT/project.godot"; then
-            echo "::error::The plugin did not persist a res:// autoload entry"
+            echo "::error title=Autoload::The plugin did not persist a res:// autoload entry"
             grep -A3 '\[autoload\]' "$INSTALL_PROJECT/project.godot" || true
             exit 1
           fi
-          "$GODOT_BIN" --headless --path "$INSTALL_PROJECT" 2>&1 | tee /tmp/install_run.log
-          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/install_run.log; then
-            echo "::error::The installed plugin raised errors at runtime"
+
+          "$GODOT_BIN" --headless --path "$INSTALL_PROJECT" > /tmp/install_run.log 2>&1 || true
+          tail -n 40 /tmp/install_run.log
+          if ! report_errors /tmp/install_run.log "Plugin run log"; then
+            echo "::error title=Plugin run::The installed plugin raised errors at runtime"
             exit 1
           fi
           grep -q "\[INSTALL CHECK\] active=1" /tmp/install_run.log
