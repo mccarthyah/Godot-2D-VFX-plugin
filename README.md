@@ -78,19 +78,28 @@ built for **game feel plumbing**:
 
 ### Option A — drop the folder in
 
+The short version (full instructions, including the verification snippet and
+troubleshooting table, live in [`docs/INSTALL.md`](docs/INSTALL.md)):
+
 Copy `addons/vfx_2d/` from this repo into your project's `addons/` folder, then
 enable **2D VFX Kit** in *Project → Project Settings → Plugins*. The plugin
 registers the `VFX2D` autoload for you (unless your project already defines one).
 
-### Option B — release archive
+### Option B — release archive (or AssetLib)
 
 Grab `vfx_2d-<version>.zip` from the releases page and extract it into your
-project root. It already contains the `addons/vfx_2d/` path. That archive is
+project root. It already contains the `addons/vfx_2d/` path; that archive is
 addon-only — no demo scenes.
 
 Want the demo and the effect gallery too? Take **`vfx_2d-<version>-project.zip`**:
 it is the complete runnable project (`project.godot`, `addons/`, `demo/`,
 `tests/`). Open it in Godot, press **F5** for the demo, then **G** for the gallery.
+
+Installing from the Godot AssetLib works the same way. That entry is built with
+`./tools/package.sh --assetlib`, which packs the addon folder — README and
+licence included, no demo, no binaries — and then checks the archive before
+handing it over. The submission checklist lives in
+[`docs/ASSETLIB.md`](docs/ASSETLIB.md).
 
 ### Option C — build the archives yourself
 
@@ -98,6 +107,7 @@ it is the complete runnable project (`project.godot`, `addons/`, `demo/`,
 ./tools/package.sh              # -> dist/vfx_2d-<version>.zip          (addon)
                                 # -> dist/vfx_2d-<version>-project.zip  (demo + gallery)
 ./tools/package.sh --addon-only # skip the project archive
+./tools/package.sh --assetlib   # -> dist/vfx_2d-<version>-assetlib.zip, validated
 ```
 
 ### Using it without the editor plugin

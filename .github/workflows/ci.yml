@@ -150,3 +150,99 @@ jobs:
             /tmp/demo.log
             /tmp/gallery.log
           if-no-files-found: ignore
+
+
+  plugin-install:
+    name: Packaged plugin (Godot ${{ matrix.godot }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor is the interesting one: it has no idea what a uid:// is, so a
+        # project.godot written by 4.7 must still resolve here.
+        godot: ["4.2-stable", "4.7.2-stable"]
+    env:
+      GODOT_VERSION: ${{ matrix.godot }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Install stock Godot headless
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/godot"
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          curl -fsSL "$url" -o /tmp/godot.zip
+          unzip -q -o /tmp/godot.zip -d "$HOME/godot"
+          bin="$(find "$HOME/godot" -maxdepth 2 -type f -name 'Godot_v*' | head -n 1)"
+          chmod +x "$bin"
+          echo "GODOT_BIN=$bin" >> "$GITHUB_ENV"
+          "$bin" --version
+
+      - name: Build the AssetLib archive
+        run: ./tools/package.sh --assetlib
+
+      - name: Install it into an empty project
+        run: |
+          set -euo pipefail
+          project="$RUNNER_TEMP/install_check"
+          mkdir -p "$project"
+          unzip -q dist/vfx_2d-*-assetlib.zip -d "$project"
+          test -f "$project/addons/vfx_2d/plugin.cfg"
+          test -f "$project/addons/vfx_2d/README.md"
+          test -f "$project/addons/vfx_2d/LICENSE"
+          cat > "$project/project.godot" <<'EOF'
+          config_version=5
+
+          [application]
+
+          config/name="VFX plugin install check"
+          run/main_scene="res://install_check.tscn"
+          config/features=PackedStringArray("4.2", "GL Compatibility")
+
+          [editor_plugins]
+
+          enabled=PackedStringArray("res://addons/vfx_2d/plugin.cfg")
+          EOF
+          cat > "$project/install_check.gd" <<'EOF'
+          extends Node
+
+          func _ready() -> void:
+              VFX2D.hit_spark(Vector2(40.0, 40.0), Vector2.UP)
+              print("[INSTALL CHECK] active=%d" % VFX2D.get_active_count())
+              await get_tree().create_timer(0.3).timeout
+              print("[INSTALL CHECK] autoload=", VFX2D.get_script().resource_path)
+              get_tree().quit(0)
+          EOF
+          cat > "$project/install_check.tscn" <<'EOF'
+          [gd_scene load_steps=2 format=3]
+
+          [ext_resource type="Script" path="res://install_check.gd" id="1_check"]
+
+          [node name="InstallCheck" type="Node"]
+          script = ExtResource("1_check")
+          EOF
+          echo "INSTALL_PROJECT=$project" >> "$GITHUB_ENV"
+
+      - name: Enable the plugin, then run without the repo
+        run: |
+          set -euo pipefail
+          "$GODOT_BIN" --headless --path "$INSTALL_PROJECT" --editor --quit 2>&1 | tee /tmp/install_editor.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/install_editor.log; then
+            echo "::error::Enabling the plugin raised errors"
+            exit 1
+          fi
+          # Portability guard: the stored autoload must be a res:// path so the
+          # same project.godot still opens on 4.2, whatever wrote it.
+          if ! grep -q '^VFX2D="\*res://addons/vfx_2d/vfx_2d.gd"' "$INSTALL_PROJECT/project.godot"; then
+            echo "::error::The plugin did not persist a res:// autoload entry"
+            grep -A3 '\[autoload\]' "$INSTALL_PROJECT/project.godot" || true
+            exit 1
+          fi
+          "$GODOT_BIN" --headless --path "$INSTALL_PROJECT" 2>&1 | tee /tmp/install_run.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/install_run.log; then
+            echo "::error::The installed plugin raised errors at runtime"
+            exit 1
+          fi
+          grep -q "\[INSTALL CHECK\] active=1" /tmp/install_run.log
+          grep -q "\[INSTALL CHECK\] autoload=res://addons/vfx_2d/vfx_2d.gd" /tmp/install_run.log

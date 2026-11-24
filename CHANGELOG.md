@@ -4,6 +4,39 @@ All notable changes to the 2D VFX Kit are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] — 2026-11-24
+
+### Added
+
+- **`docs/INSTALL.md`** — the full install and usage guide: three ways to install,
+  enabling the plugin, a copy-paste verification snippet, the whole effect
+  catalogue with calls, options/`chaos`, the optional C++ layer, updating,
+  removing, and a troubleshooting table.
+- **`docs/ASSETLIB.md`** — how to publish the kit on Godot AssetLib: archive
+  layout, the submission form field by field, the preview image, and what must
+  *not* ship.
+- **`addons/vfx_2d/README.md` and `addons/vfx_2d/LICENSE`** — the addon now
+  carries its own instructions and licence, so an installed copy is
+  self-explanatory without the repository.
+- **`./tools/package.sh --assetlib`** — builds
+  `dist/vfx_2d-<version>-assetlib.zip` (addon + its docs, no demo, no tests, no
+  binaries), the shape AssetLib expects.
+- **A CI job that installs the packaged plugin into an empty project** on Godot
+  4.2 and 4.7.2, enables it, and runs a scene against it — packaging is now
+  tested, not assumed.
+
+### Fixed
+
+- **The editor plugin no longer removes the `VFX2D` autoload on exit.** It added
+  the autoload and then stripped it again when the editor closed, so a project
+  that relied on the plugin simply had no `VFX2D` at runtime — the classic
+  "works in the editor, broken in the export". Enabling the plugin now registers
+  the autoload, saves `project.godot` immediately, and leaves it alone
+  afterwards. Disable the plugin to drop the editor hooks; delete the autoload
+  entry yourself if you want it gone.
+- The stored autoload is rewritten to a `res://` path, because Godot 4.4+ records
+  new autoloads as `uid://` references that 4.2 and 4.3 cannot resolve.
+
 ## [0.5.0] — 2026-11-24
 
 ### Added
@@ -222,6 +255,7 @@ out of in a few lines.
   import, headless tests, demo smoke run on Godot 4.2, 4.3 and 4.7.2.
 - **Packaging** — `tools/package.sh` builds `dist/vfx_2d-<version>.zip`.
 
+[0.5.1]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.5.1
 [0.5.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.5.0
 [0.4.1]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.4.1
 [0.4.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.4.0
