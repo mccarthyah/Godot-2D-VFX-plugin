@@ -81,7 +81,10 @@ if [ -n "$godot_bin" ]; then
         --dump-gdextension-interface --dump-gdextension-interface-json >/dev/null 2>&1 )
     if [ -f "$gdext_dir/extension_api.json" ] && [ -f "$gdext_dir/gdextension_interface.json" ] \
         && [ -f "$gdext_dir/gdextension_interface.h" ]; then
-        api_args=(gdextension_dir="$gdext_dir")
+        # gdextension_dir alone is not enough: the dump writes
+        # extension_api.json, while scons looks for extension_api-4-7.json and
+        # bails with "'api_version' must be provided". Point it at the file.
+        api_args=(custom_api_file="$gdext_dir/extension_api.json" gdextension_dir="$gdext_dir")
     else
         echo "warning: incomplete API dump from that build; using api_version=$api_version" >&2
         api_args=(api_version="$api_version")
