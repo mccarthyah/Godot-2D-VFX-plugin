@@ -1,5 +1,5 @@
 class_name ShockwaveEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Bare impact wave: irregular rings rushing outward with radial cracks and a
 ## short core flash. No fire or debris, so it layers cleanly under projectiles,
 ## heavy landings and parries.

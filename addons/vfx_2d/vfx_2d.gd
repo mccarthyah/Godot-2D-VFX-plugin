@@ -24,6 +24,13 @@ signal effect_spawned(effect: VFXEffect)
 ## Emitted when an effect finishes, whether it ran to completion or was stopped.
 signal effect_finished(effect: VFXEffect)
 
+## The effect base class, preloaded by path. Godot only fills in global
+## [code]class_name[/code] lookups after it has scanned the project, so on a
+## freshly installed copy (Godot 4.2 in particular) a plain [code]VFXEffect[/code]
+## type hint fails to resolve and the autoload will not load. A preload does not
+## need the cache.
+const VFXEffect := preload("res://addons/vfx_2d/core/vfx_effect.gd")
+
 @export_group("Pooling")
 ## Maximum number of idle instances kept per effect scene. Finished effects
 ## beyond this budget are freed instead of pooled.

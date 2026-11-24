@@ -11,6 +11,8 @@ extends Node2D
 
 signal finished
 
+const VFXStreaks := preload("../core/vfx_streaks.gd")
+
 @export_group("Field")
 @export_range(8.0, 512.0, 1.0, "suffix:px") var radius: float = 96.0
 ## Inward speed at the rim, in pixels per second.

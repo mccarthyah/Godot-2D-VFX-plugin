@@ -1,5 +1,5 @@
 class_name RippleEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Flattened, wobbling rings plus droplets — water splashes, sonar pulses and
 ## portal footsteps. Reads as a surface rather than a blast.
 ##

@@ -1,5 +1,5 @@
 class_name ImplosionEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## The reverse of an explosion: streaks spiral inward, accelerate, and vanish into
 ## a bright pinch. Use it for charge-ups, absorbs, vacuum pulls and dark magic.
 ##

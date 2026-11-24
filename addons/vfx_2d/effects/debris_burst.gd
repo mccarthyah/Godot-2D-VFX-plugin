@@ -1,5 +1,5 @@
 class_name DebrisBurstEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Solid chunks instead of sparks: drawn shards with their own shape, spin and
 ## weight, so a broken crate or defeated enemy throws pieces rather than dust.
 ##

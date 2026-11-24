@@ -1,5 +1,5 @@
 class_name FrostBurstEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Angular ice: hard-edged shards thrown outward, a cold flash, then a slow
 ## crystalline shimmer as they fall. Deliberately sharp next to the round
 ## explosion, so the two read as different damage types.

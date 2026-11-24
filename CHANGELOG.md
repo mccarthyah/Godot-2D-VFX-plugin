@@ -36,6 +36,12 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   entry yourself if you want it gone.
 - The stored autoload is rewritten to a `res://` path, because Godot 4.4+ records
   new autoloads as `uid://` references that 4.2 and 4.3 cannot resolve.
+- **No more "Could not find type `VFXEffect`" on a freshly installed copy.** The
+  effects now extend the base class by path and `vfx_2d.gd` preloads it, instead
+  of relying on global `class_name` lookups that are not resolvable until Godot
+  has finished scanning the project — Godot 4.2 parses the addon before that
+  cache exists and printed a wall of parse errors on the first open of a brand
+  new project. Caught by the new packaged-plugin CI job.
 
 ## [0.5.0] — 2026-11-24
 

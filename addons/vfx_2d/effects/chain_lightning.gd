@@ -1,5 +1,5 @@
 class_name ChainLightningEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## A bolt that hops between several points: each hop is its own jagged segment,
 ## revealed one after another, dimmer than the last. Use it for chained hits,
 ## fork attacks and multi-target shocks.

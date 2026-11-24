@@ -1,5 +1,5 @@
 class_name AcidSplashEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Sticky acid: bubbles rise out of a splat and pop on a delay, each pop throwing
 ## a few droplets, while the puddle drips. Non-additive on purpose — acid is a
 ## substance, not light.

@@ -1,5 +1,5 @@
 class_name HealSparkleEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Ascending sparkles for pickups, heals, buffs and level-ups: motes drift up and
 ## outward, twinkle, and fade into a soft glow.
 ##

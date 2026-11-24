@@ -1,5 +1,5 @@
 class_name MuzzleFlashEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Directional gun/muzzle flash: torn cone of light, uneven star and a spray of
 ## sparks. Fires along [member direction], so it belongs on the weapon, not on
 ## the target.
@@ -8,6 +8,7 @@ extends VFXEffect
 ## [code]VFX2D.muzzle_flash(barrel_position, aim_direction, {"length": 90.0})[/code].
 
 const VFXShapes := preload("../core/vfx_shapes.gd")
+const VFXStreaks := preload("../core/vfx_streaks.gd")
 
 @export_group("Cone")
 ## Direction the flash points. The convenience method sets it.

@@ -1,5 +1,5 @@
 class_name BlinkEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Two-point teleport: the source collapses inward, a stretched streak snaps
 ## across the gap, then a ring and spark burst open at the destination.
 ##

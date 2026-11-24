@@ -1,10 +1,11 @@
 class_name ExplosionEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Radial explosion: expanding shockwave, layered fireball and flying debris.
 ##
 ## Spawn it with [code]VFX2D.explosion(position, {"radius": 96.0})[/code].
 
 const VFXShapes := preload("../core/vfx_shapes.gd")
+const VFXStreaks := preload("../core/vfx_streaks.gd")
 
 @export_group("Blast")
 ## Overall blast size in pixels. Every other size is derived from it.

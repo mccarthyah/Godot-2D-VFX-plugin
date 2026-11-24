@@ -1,5 +1,5 @@
 class_name LightningEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Procedural lightning bolt with optional branches and flicker.
 ##
 ## The bolt is regenerated a few times per second while it is alive, which reads

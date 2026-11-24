@@ -1,5 +1,5 @@
 class_name SlashArcEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Melee crescent: a tapered arc that sweeps through its angle, shedding sparkles
 ## along the cut. Use it for sword swings, claws and parries.
 ##

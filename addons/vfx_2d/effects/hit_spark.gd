@@ -1,11 +1,12 @@
 class_name HitSparkEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Impact spark: a bright flash plus a short directional burst of sparks.
 ##
 ## Use it for melee hits, bullet impacts and pickups. Spawn it with
 ## [code]VFX2D.hit_spark(position, direction)[/code].
 
 const VFXShapes := preload("../core/vfx_shapes.gd")
+const VFXStreaks := preload("../core/vfx_streaks.gd")
 
 @export_group("Sparks")
 ## Direction the sparks travel. Set through the convenience method argument.

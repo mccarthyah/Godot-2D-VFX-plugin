@@ -1,5 +1,5 @@
 class_name ImpactCrackEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Ground-aligned slam: jagged cracks race outward along the surface, dust puffs
 ## up between them and a flat flash marks the hit. Rotate it to the surface
 ## normal so it lies on the floor instead of floating.

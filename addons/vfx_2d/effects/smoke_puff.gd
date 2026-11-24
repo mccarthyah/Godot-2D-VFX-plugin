@@ -1,5 +1,5 @@
 class_name SmokePuffEffect
-extends VFXEffect
+extends "res://addons/vfx_2d/core/vfx_effect.gd"
 ## Soft smoke or dust cloud: overlapping blobs that billow, drift upward and
 ## dissipate. Good for landings, footsteps, dashes and anything that needs weight
 ## without light.
