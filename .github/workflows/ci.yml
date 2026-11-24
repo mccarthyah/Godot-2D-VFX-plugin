@@ -54,6 +54,25 @@ jobs:
             echo "::error::GDScript errors were reported during the test run"
             exit 1
           fi
+          # A green job must mean the suite really ran: require its PASS summary
+          # and a plausible check count, so a silently skipped run cannot pass.
+          if ! grep -q "\[VFX TESTS\] PASS" /tmp/tests.log; then
+            echo "::error::The test suite did not report a PASS summary"
+            exit 1
+          fi
+          checks="$(grep -oE '[0-9]+ checks' /tmp/tests.log | tail -n 1 | cut -d' ' -f 1)"
+          if [ -z "${checks}" ] || [ "${checks}" -lt 40 ]; then
+            echo "::error::Expected at least 40 checks, got '${checks}'"
+            exit 1
+          fi
+          summary="$(grep -E "\[VFX TESTS\] (PASS|FAIL)" /tmp/tests.log | tail -n 1)"
+          echo "::notice title=2D VFX Kit (Godot ${GODOT_VERSION})::${summary}"
+          {
+            echo "### 2D VFX Kit — Godot ${GODOT_VERSION}"
+            echo ""
+            echo "${summary}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "checks reported: ${checks}"
 
       - name: Demo smoke run
         run: |
