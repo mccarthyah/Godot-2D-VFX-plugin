@@ -254,6 +254,10 @@ pooling for free.
 - If more than `max_active_effects` effects are running, the oldest is stopped to
   keep the frame budget predictable.
 - Cooldown rings are not pooled: they are long-lived child nodes, not one-shots.
+- The pool follows the scene. Because effects live under the current scene's
+  `VFX2D_Layer`, a `change_scene_*` frees them all; the next spawn drops those
+  dead references (an earlier build tried to reuse one and raised *"Trying to
+  assign invalid previously freed instance"*). The suite covers this.
 
 ## Demo project
 
@@ -321,7 +325,7 @@ The separate [`GDExtension` workflow](.github/workflows/gdextension.yml) builds
 the C++ streak field against stock Godot 4.7.2, then runs the same suite and
 **fails if the extension silently failed to load** — the C++ tests print
 `cpp-streak-field: available|absent`, and the workflow asserts which one ran.
-Same suite, both paths: **58 checks** with the extension, **46** without, zero
+Same suite, both paths: **66 checks** with the extension, **54** without, zero
 engine errors either way.
 
 ## Repository layout

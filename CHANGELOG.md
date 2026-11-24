@@ -48,6 +48,18 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   assert which path was exercised.
 - The demo HUD reports whether the C++ streak layer is active.
 
+### Fixed
+
+- Spawning an effect after a scene change no longer raises *"Trying to assign
+  invalid previously freed instance"*. Effects are parented to a `VFX2D_Layer`
+  that belongs to the current scene, so `change_scene_*` freed the whole pool
+  while the autoload still held the instances. The pool now skips freed or
+  queued entries, prunes itself when a new layer is built, and `get_active_count()`
+  stops reporting effects that died with the scene. Seen when the demo jumped to
+  the gallery (`G`) and the gallery spawned lightning.
+- The suite grew a scene-change regression test (8 checks) that fails if dead
+  pool entries are kept, not just when the engine complains.
+
 ## [0.1.0] — 2026-11-24
 
 First working baseline: a plugin you can drop into a project and get game-feel

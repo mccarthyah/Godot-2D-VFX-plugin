@@ -42,6 +42,7 @@ func _run_all() -> void:
 		await _test_lifecycle(effect_name, effects[effect_name])
 	await _test_cooldown_ring()
 	await _test_autoload()
+	await _test_scene_change_pooling()
 	await _test_streak_field()
 
 
@@ -160,6 +161,57 @@ func _test_autoload() -> void:
 	VFX2D.stop_all()
 	await get_tree().process_frame
 	_check(VFX2D.get_active_count() == 0, "VFX2D: stop_all() clears a burst")
+#endregion
+
+
+func _test_scene_change_pooling() -> void:
+	# Effects sit under a VFX2D_Layer parented to the current scene, so
+	# change_scene_* frees the pool. Spawning afterwards used to hit a freed
+	# instance in the pool and raise "Trying to assign invalid previously freed
+	# instance" (seen when the demo switched to the gallery, which then spawned
+	# lightning). The pool has to drop dead entries instead.
+	VFX2D.stop_all()
+	await get_tree().process_frame
+	var first: VFXEffect = VFX2D.hit_spark(Vector2(40.0, 40.0), Vector2.RIGHT,
+			{"duration": 0.05})
+	_check(first != null, "scene change: spawns before the layer dies")
+	if first == null:
+		return
+	var pooled_id := first.get_instance_id()
+	await _wait(0.25)
+	_check(VFX2D.get_active_count() == 0, "scene change: finished effect left the active list")
+
+	var host: Node = get_tree().current_scene
+	var layer_holder: Node = null
+	if host != null:
+		layer_holder = host.get_node_or_null(VFX2D.container_node_name)
+	_check(layer_holder != null, "scene change: layer lives under the current scene")
+	if layer_holder == null:
+		return
+	layer_holder.free()
+
+	_check(VFX2D.get_active_count() == 0, "scene change: dead actives are pruned")
+	var bolt: VFXEffect = VFX2D.lightning(Vector2(10.0, 10.0), Vector2(120.0, 40.0),
+			{"duration": 0.05})
+	_check(bolt != null, "scene change: spawns again after the pool died")
+	if bolt == null:
+		return
+	_check(bolt.get_instance_id() != pooled_id,
+			"scene change: the freed pool entry was not reused")
+	_check(bolt.is_inside_tree(), "scene change: the new effect is in the tree")
+	# Spawning rebuilds the layer, which is where the pool gets cleaned. Reading
+	# the pool directly is what makes this fail if the dead entries are kept: the
+	# spurious engine error alone would not fail the suite, only CI's grep.
+	var stale: int = 0
+	var pools: Dictionary = VFX2D._free_instances
+	for scene_key in pools.keys():
+		for instance in pools[scene_key]:
+			if not is_instance_valid(instance):
+				stale += 1
+	_check(stale == 0, "scene change: pool holds no freed instances (stale=%d)" % stale)
+	await _wait(0.25)
+	VFX2D.stop_all()
+	await get_tree().process_frame
 #endregion
 
 

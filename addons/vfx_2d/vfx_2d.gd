@@ -126,6 +126,7 @@ func stop_all() -> void:
 
 ## Number of effects currently running.
 func get_active_count() -> int:
+	_prune_active()
 	return _active.size()
 
 #endregion
@@ -161,6 +162,10 @@ func _get_layer() -> Node2D:
 	var host: Node = get_tree().current_scene
 	if host == null:
 		host = get_tree().root
+	# A previous layer was freed with its scene, taking every pooled and active
+	# effect with it. Drop those dead references before building a new layer.
+	_prune_active()
+	_prune_pools()
 	_layer = Node2D.new()
 	_layer.name = container_node_name
 	_layer.z_index = 100
@@ -170,11 +175,23 @@ func _get_layer() -> Node2D:
 
 func _take_free_instance(scene: PackedScene) -> VFXEffect:
 	var pool: Array = _free_instances.get(scene, [])
-	while pool.size() > 0:
-		var candidate: VFXEffect = pool.pop_back()
-		if is_instance_valid(candidate):
-			_free_instances[scene] = pool
-			return candidate
+	while not pool.is_empty():
+		# Pool entries can be freed objects: effects are parented to the VFX2D
+		# layer, which belongs to the current scene, so change_scene_* frees the
+		# whole pool at once. Popping into an untyped variable is deliberate —
+		# assigning a freed instance to a typed one raises an engine error before
+		# is_instance_valid() ever runs.
+		var candidate: Variant = pool.pop_back()
+		if not is_instance_valid(candidate):
+			continue
+		var effect: Node = candidate
+		if effect.is_queued_for_deletion() or not effect.is_inside_tree():
+			continue
+		var reusable: VFXEffect = effect as VFXEffect
+		if reusable == null:
+			continue
+		_free_instances[scene] = pool
+		return reusable
 	_free_instances[scene] = pool
 	return null
 
@@ -197,11 +214,31 @@ func _on_effect_finished(effect: VFXEffect) -> void:
 
 
 func _trim_active() -> void:
+	_prune_active()
 	while _active.size() > max_active_effects:
-		var oldest: VFXEffect = _active[0]
-		_active.remove_at(0)
-		if is_instance_valid(oldest):
-			oldest.stop()
+		var oldest: Variant = _active.pop_front()
+		if not is_instance_valid(oldest):
+			continue
+		var effect: VFXEffect = oldest as VFXEffect
+		if effect != null:
+			effect.stop()
+
+
+## Forgets active effects that were freed with their scene.
+func _prune_active() -> void:
+	for index in range(_active.size() - 1, -1, -1):
+		if not is_instance_valid(_active[index]):
+			_active.remove_at(index)
+
+
+## Forgets pooled instances that were freed with their scene.
+func _prune_pools() -> void:
+	for scene in _free_instances.keys():
+		var kept: Array = []
+		for instance in _free_instances[scene]:
+			if is_instance_valid(instance):
+				kept.append(instance)
+		_free_instances[scene] = kept
 
 
 func _apply_options(object: Object, options: Dictionary) -> void:
