@@ -39,3 +39,7 @@ dist/
 /addons/sparkform/bin/
 /addons/sparkform/vfx_streaks.gdextension
 /addons/sparkform/vfx_streaks.gdextension.uid
+
+# Python bytecode from tools/gen_docs.py
+__pycache__/
+*.pyc

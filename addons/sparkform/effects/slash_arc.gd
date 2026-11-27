@@ -11,15 +11,21 @@ const VFXShapes := preload("../core/vfx_shapes.gd")
 @export_group("Arc")
 ## Centre of the swing, in this node's local space. The convenience method sets it.
 @export var direction: Vector2 = Vector2.RIGHT
+## Arc radius in pixels.
 @export_range(8.0, 512.0, 1.0, "suffix:px") var radius: float = 82.0
+## Angle the crescent sweeps through.
 @export_range(10.0, 270.0, 1.0, "suffix:deg") var arc_degrees: float = 120.0
+## Crescent thickness at its middle.
 @export_range(1.0, 64.0, 0.5, "suffix:px") var thickness: float = 10.0
 ## Fraction of the arc that is visible as a crescent at any moment.
 @export_range(0.15, 1.0, 0.01) var trail: float = 0.45
 ## Fraction of [member duration] the blade takes to complete the swing.
 @export_range(0.1, 1.0, 0.01) var sweep: float = 0.45
+## Hot inner edge.
 @export var core_color: Color = Color(1.0, 1.0, 1.0)
+## Cooler outer edge.
 @export var edge_color: Color = Color(0.62, 0.86, 1.0)
+## Sparkles shed along the cut.
 @export_range(0, 64, 1) var sparkle_count: int = 10
 
 @export_group("Chaos")

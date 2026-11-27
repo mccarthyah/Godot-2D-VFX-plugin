@@ -4,6 +4,39 @@ All notable changes to Sparkform are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-11-24
+
+Documentation release. No behaviour change: every edit here is a doc comment, a
+Markdown page or the generator that keeps them in sync.
+
+### Added
+
+- [`docs/API.md`](docs/API.md): the `Sparkform` autoload and the base classes,
+  with every method's full signature and doc comment.
+- [`docs/EFFECTS.md`](docs/EFFECTS.md): all 24 effects, each with what it is for,
+  the spawner that creates it, and every exported property with type, default and
+  description.
+- [`docs/COOKBOOK.md`](docs/COOKBOOK.md): recipes for hit feedback, aiming,
+  boss-scale variants, persistent-modifier lifetimes, frame budgets, custom
+  `VFXEffect` scenes, and a checklist for "the effect did not appear".
+- [`docs/README.md`](docs/README.md): the documentation index, and the rule that
+  pages describing code are generated from it.
+- `tools/gen_docs.py`: regenerates the two reference pages from the `##` comments
+  in the addon; `--check` fails when they are stale.
+- A `docs` CI job that runs `gen_docs.py --check` and `gdlint`, so a renamed
+  property cannot ship with a stale reference or a lint error.
+
+### Changed
+
+- Every exported property in `addons/sparkform/effects/` now has a doc comment;
+  178 of them were undocumented. Those comments are what the Godot inspector
+  shows as tooltips, so the editor and the reference now say the same thing.
+- The handful of public helper methods without a doc comment
+  (`ShieldBubble.hex_cell_margin` and friends) are documented too.
+- `README.md` links the new pages from a Documentation table and from the API and
+  effects sections; `addons/sparkform/README.md` points at the full reference
+  from inside the addon.
+
 ## [0.6.0] - 2026-11-24
 
 Renamed. The kit is now **Sparkform**, and the autoload is `Sparkform` instead of
@@ -290,6 +323,7 @@ out of in a few lines.
   import, headless tests, demo smoke run on Godot 4.2, 4.3 and 4.7.2.
 - **Packaging**: `tools/package.sh` builds `dist/sparkform-<version>.zip`.
 
+[0.6.1]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.6.1
 [0.6.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.6.0
 [0.5.1]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.5.1
 [0.5.0]: https://github.com/mccarthyah/Godot-2D-VFX-plugin/releases/tag/v0.5.0

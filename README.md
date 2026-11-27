@@ -74,6 +74,21 @@ built for **game feel plumbing**:
 - Godot **4.2 or newer** (CI runs against stock 4.2, 4.3 and 4.7.2 Linux builds)
 - Any renderer; the demo uses GL Compatibility for the widest support
 
+## Documentation
+
+| Page | What is in it |
+| --- | --- |
+| [`docs/INSTALL.md`](docs/INSTALL.md) | Step-by-step install, verification snippet, troubleshooting table |
+| [`docs/API.md`](docs/API.md) | Every autoload method with its doc comment, plus `VFXEffect`, `VFXStreaks` and the shape helpers |
+| [`docs/EFFECTS.md`](docs/EFFECTS.md) | All 24 effects: what each one is for, every exported property with type, default and description |
+| [`docs/COOKBOOK.md`](docs/COOKBOOK.md) | Recipes: hit feedback, aiming, boss-scale variants, persistent modifiers, frame budgets, custom effects, debugging |
+| [`docs/ASSETLIB.md`](docs/ASSETLIB.md) | How the release archives are built and how the AssetLib entry is submitted |
+
+`API.md` and `EFFECTS.md` are generated from the `##` doc comments in the addon
+(`python3 tools/gen_docs.py`), and CI fails if they are stale, so they always match
+the code you have. The same comments are what the Godot inspector shows as
+tooltips, which means one place to edit and two places that stay correct.
+
 ## Installation
 
 ### Option A: drop the folder in
@@ -158,6 +173,9 @@ func _ready() -> void:
 ```
 
 ## Effects
+
+Each section below is the tour; the complete, generated property reference for
+every effect is in [`docs/EFFECTS.md`](docs/EFFECTS.md).
 
 ### Hit spark: `effects/hit_spark.tscn`
 
@@ -552,6 +570,10 @@ defaults to `0.25`, so it stays readable.
 
 ## API reference
 
+The tables below are a summary. [`docs/API.md`](docs/API.md) carries the full
+signatures with the doc comment for each method, and
+[`docs/EFFECTS.md`](docs/EFFECTS.md) has the property table of every effect.
+
 ### `Sparkform` (autoload)
 
 | Method | Returns | Description |
@@ -734,7 +756,7 @@ exercised.
 addons/sparkform/
   plugin.cfg                 # Editor plugin manifest
   plugin.gd                  # Registers the Sparkform autoload
-  sparkform.gd                  # Autoload: spawn API + pooling
+  sparkform.gd               # Autoload: spawn API + pooling
   core/vfx_effect.gd         # VFXEffect base class
   core/vfx_shapes.gd         # Procedural outlines shared by the effects
   effects/hit_spark.*        # Effect scenes + scripts
@@ -761,11 +783,13 @@ addons/sparkform/
   effects/shield_bubble.*    # reactive modifiers
   effects/tether.*
   effects/vortex.*
+docs/                        # INSTALL, API, EFFECTS, COOKBOOK, ASSETLIB
 cpp/                         # Optional C++ streak field (GDExtension)
   src/vfx_streak_field.*     # Particle integration + multiline draw
   src/register_types.cpp     # Class registration / entry point
   SConstruct                 # Builds into addons/sparkform/bin/
 tools/build_extension.sh     # Fetches godot-cpp, builds, writes .gdextension
+tools/gen_docs.py            # Regenerates docs/API.md + docs/EFFECTS.md
 demo/                        # Interactive sandbox + effect gallery
   gallery.tscn               # All twenty-four effects on six themed pages
 tests/test_runner.tscn       # Headless test suite

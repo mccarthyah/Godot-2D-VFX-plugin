@@ -15,7 +15,9 @@ extends "res://addons/sparkform/core/vfx_effect.gd"
 @export_range(1.0, 48.0, 0.5, "suffix:px") var streak_width: float = 9.0
 ## Points of the spark ring that opens at the destination.
 @export_range(0, 32, 1) var spark_count: int = 8
+## Tint of the collapsing warp at the source.
 @export var warp_color: Color = Color(0.55, 0.85, 1.0)
+## Hot centre of the streak and of the destination burst.
 @export var core_color: Color = Color(1.0, 1.0, 1.0)
 
 @export_group("Chaos")

@@ -20,21 +20,29 @@ extends Node2D
 signal completed
 
 @export_group("Shape")
+## Ring radius in pixels.
 @export_range(4.0, 512.0, 1.0, "suffix:px") var radius: float = 42.0
+## Arc thickness in pixels.
 @export_range(0.5, 64.0, 0.5, "suffix:px") var width: float = 8.0
 ## Where the arc starts, in radians. The default starts at 12 o'clock.
 @export_range(-6.2832, 6.2832, 0.01, "suffix:rad") var start_angle: float = -1.5708
 ## Draw the filled arc clockwise instead of counter-clockwise.
 @export var clockwise: bool = true
+## Tick marks around the ring; 0 draws none.
 @export_range(0, 64, 1) var tick_count: int = 0
+## Tick mark tint.
 @export var tick_color: Color = Color(1.0, 1.0, 1.0, 0.35)
 
 @export_group("Colors")
+## Colour of the filling arc.
 @export var fill_color: Color = Color(0.42, 0.9, 1.0)
+## Colour of the unfilled track.
 @export var track_color: Color = Color(0.06, 0.09, 0.14, 0.6)
+## Draw the full track behind the fill.
 @export var show_track: bool = true
 
 @export_group("Timing")
+## Seconds for a full sweep.
 @export_range(0.01, 60.0, 0.01, "suffix:s") var duration: float = 1.0
 ## Start at full and drain to empty instead of filling up.
 @export var reverse: bool = false
@@ -46,6 +54,7 @@ signal completed
 ## Hand-drawn irregularity: the arc and ticks wobble slightly and a soft glow
 ## pulses. Kept low by default because a cooldown must stay readable.
 @export_range(0.0, 1.0, 0.01) var chaos: float = 0.25
+## Draw a soft glow under the arc.
 @export var glow: bool = true
 
 ## Normalized fill, [code]0.0[/code] to [code]1.0[/code]. Assigning it updates

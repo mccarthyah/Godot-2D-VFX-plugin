@@ -15,13 +15,19 @@ signal finished
 
 ## Seconds of movement kept in the ribbon.
 @export_range(0.05, 3.0, 0.01, "suffix:s") var history: float = 0.35
+## Ribbon width at the target, in pixels.
 @export_range(0.5, 64.0, 0.5, "suffix:px") var width_start: float = 8.0
+## Ribbon width at the tail, in pixels.
 @export_range(0.0, 32.0, 0.5, "suffix:px") var width_end: float = 0.8
+## Outer ribbon tint.
 @export var trail_color: Color = Color(0.62, 0.84, 1.0)
+## Inner ribbon tint.
 @export var core_color: Color = Color(0.95, 0.98, 1.0)
 ## Extra motes shed along the ribbon; [code]0[/code] keeps it a pure ribbon.
 @export_range(0, 32, 1) var mote_count: int = 6
+## Wobble in the recorded path.
 @export_range(0.0, 1.0, 0.01) var chaos: float = 0.4
+## Free the trail when its target leaves the tree.
 @export var free_with_target: bool = true
 
 var _target: Node2D = null

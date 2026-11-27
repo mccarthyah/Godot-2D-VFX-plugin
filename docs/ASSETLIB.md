@@ -30,7 +30,7 @@ script then checks the archive it just wrote, and exits non-zero if anything is
 off:
 
 ```
-Packaged dist/sparkform-0.6.0-assetlib.zip (88 files, 78 KiB)
+Packaged dist/sparkform-0.6.1-assetlib.zip (88 files, 81 KiB)
 Checks passed: plugin folder only, no native libraries, README + LICENSE inside.
 ```
 
@@ -45,7 +45,7 @@ The file set is the same GDScript-only addon folder as the drop-in
 
 ## 2. Before you submit
 
-- [ ] `addons/sparkform/plugin.cfg` has the **new** version (`version="0.6.0"`).
+- [ ] `addons/sparkform/plugin.cfg` has the **new** version (`version="0.6.1"`).
 - [ ] `CHANGELOG.md` has an entry for it, with a link reference at the bottom.
 - [ ] `./tools/package.sh --assetlib` was run after the version bump.
 - [ ] The suite is green on stock 4.2/4.3/4.7.2 (CI does this on every push).
@@ -63,7 +63,7 @@ Open <https://godotengine.org/asset-library/asset/submit> and fill it in:
 | Asset type | **Plugins** |
 | Category | **2D Tools** (secondary: *Particles*, if offered) |
 | Godot version | **4.2** and newer |
-| Version | the `plugin.cfg` version, e.g. `0.6.0` |
+| Version | the `plugin.cfg` version, e.g. `0.6.1` |
 | Repository URL | `https://github.com/mccarthyah/Godot-2D-VFX-plugin` |
 | Issue tracker URL | `https://github.com/mccarthyah/Godot-2D-VFX-plugin/issues` |
 | License | **MIT** |

@@ -11,11 +11,15 @@ const VFXShapes := preload("../core/vfx_shapes.gd")
 @export_group("Sparkles")
 ## Radius the motes spawn within, in pixels.
 @export_range(2.0, 512.0, 1.0, "suffix:px") var radius: float = 46.0
+## Drifting motes per burst.
 @export_range(1, 96, 1) var mote_count: int = 20
 ## How far motes rise over their lifetime, in pixels.
 @export_range(0.0, 512.0, 1.0, "suffix:px") var rise: float = 76.0
+## Mote tint.
 @export var sparkle_color: Color = Color(0.52, 1.0, 0.72)
+## Soft glow behind each mote.
 @export var glow_color: Color = Color(0.16, 0.55, 0.32)
+## How strongly the motes flicker.
 @export_range(0.0, 1.0, 0.01) var twinkle: float = 0.85
 
 @export_group("Stars")

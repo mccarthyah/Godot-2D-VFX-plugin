@@ -9,16 +9,22 @@ extends "res://addons/sparkform/core/vfx_effect.gd"
 ## Endpoint of the bolt, in this node's local space. The convenience method sets
 ## it from the [code]to[/code] argument minus [code]from[/code].
 @export var end_offset: Vector2 = Vector2(220.0, 0.0)
+## Outer bolt tint.
 @export var bolt_color: Color = Color(0.55, 0.75, 1.0)
+## Hot core tint.
 @export var core_color: Color = Color(1.0, 1.0, 1.0)
+## Displacement steps; more is more jagged.
 @export_range(2, 64, 1) var segments: int = 14
 ## How far the bolt strays from the straight line between its endpoints.
 @export_range(0.0, 2.0, 0.01) var jaggedness: float = 0.45
+## Bolt line width in pixels.
 @export_range(0.5, 40.0, 0.5, "suffix:px") var width: float = 3.5
+## Forked side bolts per strike.
 @export_range(0, 8, 1) var branches: int = 2
 ## [code]0[/code] freezes the bolt in shape, [code]1[/code] reshapes it at the
 ## fastest flicker rate.
 @export_range(0.0, 1.0, 0.01) var flicker: float = 0.6
+## Seconds between bolt regenerations.
 @export_range(0.01, 0.5, 0.01, "suffix:s") var flicker_interval: float = 0.05
 
 @export_group("Chaos")

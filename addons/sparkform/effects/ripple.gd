@@ -10,17 +10,23 @@ const VFXShapes := preload("../core/vfx_shapes.gd")
 @export_group("Ripple")
 ## Radius the last ring reaches, in pixels.
 @export_range(4.0, 1024.0, 1.0, "suffix:px") var radius: float = 96.0
+## Number of concentric rings.
 @export_range(1, 6, 1) var rings: int = 3
+## Ring line width.
 @export_range(1.0, 24.0, 0.5, "suffix:px") var ring_width: float = 2.5
 ## Vertical squash: [code]0[/code] draws circles, [code]0.6[/code] a flat puddle.
 @export_range(0.0, 0.9, 0.01) var squash: float = 0.45
 ## How far the outline wavers away from an ellipse.
 @export_range(0.0, 1.0, 0.01) var wobble: float = 0.3
+## Ring tint.
 @export var ring_color: Color = Color(0.6, 0.86, 1.0)
 
 @export_group("Droplets")
+## Droplets thrown by the splash.
 @export_range(0, 64, 1) var droplets: int = 10
+## Droplet speed in px/s.
 @export_range(0.0, 1200.0, 10.0, "suffix:px/s") var droplet_speed: float = 320.0
+## Droplet tint.
 @export var droplet_color: Color = Color(0.82, 0.95, 1.0)
 
 @export_group("Chaos")

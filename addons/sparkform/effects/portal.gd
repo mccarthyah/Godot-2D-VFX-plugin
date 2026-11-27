@@ -11,26 +11,37 @@ extends Node2D
 signal finished
 
 @export_group("Shape")
+## Portal width in pixels.
 @export_range(8.0, 512.0, 1.0, "suffix:px") var width: float = 58.0
+## Portal height in pixels.
 @export_range(8.0, 512.0, 1.0, "suffix:px") var height: float = 78.0
+## Thickness of the rim in pixels.
 @export_range(1.0, 32.0, 0.5, "suffix:px") var rim_width: float = 4.0
+## Rim rotation in rad/s.
 @export_range(-8.0, 8.0, 0.05, "suffix:rad/s") var spin_speed: float = 1.8
+## Shimmer motes inside the portal.
 @export_range(0, 48, 1) var shimmer_count: int = 14
 
 @export_group("Timing")
+## Seconds to open.
 @export_range(0.01, 5.0, 0.01, "suffix:s") var open_time: float = 0.3
+## Seconds to close after stop().
 @export_range(0.01, 5.0, 0.01, "suffix:s") var close_time: float = 0.35
 ## Close on its own after this many seconds; [code]0[/code] holds until stopped.
 @export_range(0.0, 120.0, 0.1, "suffix:s") var lifetime: float = 0.0
 
 @export_group("Colors")
+## Rim tint.
 @export var rim_color: Color = Color(0.62, 0.55, 1.0)
+## Interior tint.
 @export var core_color: Color = Color(0.18, 0.12, 0.42)
+## Shimmer mote tint.
 @export var shimmer_color: Color = Color(0.85, 0.8, 1.0)
 
 @export_group("Chaos")
 ## Rim waver and shimmer scatter.
 @export_range(0.0, 1.0, 0.01) var chaos: float = 0.45
+## Free the node once it has closed.
 @export var free_on_finish: bool = true
 
 var _openness: float = 0.0

@@ -261,3 +261,28 @@ jobs:
           fi
           grep -q "\[INSTALL CHECK\] active=1" /tmp/install_run.log
           grep -q "\[INSTALL CHECK\] autoload=res://addons/sparkform/sparkform.gd" /tmp/install_run.log
+
+
+  docs:
+    name: Docs match the source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # docs/API.md and docs/EFFECTS.md are generated from the doc comments in the
+      # addon. Regenerate them here and fail if that changes anything, so a renamed
+      # property cannot ship with a stale reference.
+      - name: Check the generated reference
+        run: python3 tools/gen_docs.py --check
+
+      - name: Check gdlint
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet gdtoolkit==4.5.0
+          python3 -m gdtoolkit.linter addons demo tests

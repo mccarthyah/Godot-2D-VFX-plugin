@@ -25,12 +25,12 @@ in your project root:
 
 ```bash
 # Linux / macOS, from your Godot project root
-unzip ~/Downloads/sparkform-0.6.0.zip
+unzip ~/Downloads/sparkform-0.6.1.zip
 ```
 
 ```powershell
 # Windows PowerShell, from your Godot project root
-Expand-Archive -Path "$HOME\Downloads\sparkform-0.6.0.zip" -DestinationPath .
+Expand-Archive -Path "$HOME\Downloads\sparkform-0.6.1.zip" -DestinationPath .
 ```
 
 The archive already contains the `addons/` level, so extracting it into the

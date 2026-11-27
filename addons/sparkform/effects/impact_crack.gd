@@ -11,9 +11,11 @@ const VFXShapes := preload("../core/vfx_shapes.gd")
 @export_group("Cracks")
 ## How far the cracks reach.
 @export_range(16.0, 900.0, 1.0, "suffix:px") var radius: float = 150.0
+## Cracks radiating from the hit.
 @export_range(2, 24, 1) var crack_count: int = 9
 ## kinks per crack; more segments read as rougher ground.
 @export_range(2, 16, 1) var segment_count: int = 6
+## Crack line width.
 @export_range(0.5, 12.0, 0.5, "suffix:px") var crack_width: float = 3.5
 ## How much the crack path wanders as it runs out.
 @export_range(0.0, 1.0, 0.01) var wander: float = 0.45
@@ -21,10 +23,15 @@ const VFXShapes := preload("../core/vfx_shapes.gd")
 @export var surface: Vector2 = Vector2.RIGHT
 
 @export_group("Dust")
+## Dust puffs thrown up by the impact.
 @export_range(0, 32, 1) var dust_count: int = 8
+## How far the dust climbs, in pixels.
 @export_range(0.0, 260.0, 5.0, "suffix:px") var dust_rise: float = 70.0
+## Dust tint.
 @export var dust_color: Color = Color(0.42, 0.4, 0.38)
+## Crack tint.
 @export var crack_color: Color = Color(0.15, 0.13, 0.12)
+## Tint of the flat flash.
 @export var flash_color: Color = Color(1.0, 0.86, 0.55)
 
 @export_group("Chaos")

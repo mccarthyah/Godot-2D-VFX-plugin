@@ -11,16 +11,25 @@ const VFXStreaks := preload("../core/vfx_streaks.gd")
 @export_group("Sparks")
 ## Direction the sparks travel. Set through the convenience method argument.
 @export var direction: Vector2 = Vector2.UP
+## Sparks per burst.
 @export_range(1, 64, 1) var spark_count: int = 14
+## Emission speed in px/s.
 @export_range(0.0, 2000.0, 10.0, "suffix:px/s") var spark_speed: float = 340.0
+## Cone width around [member direction].
 @export_range(0.0, 180.0, 1.0, "suffix:deg") var spread_degrees: float = 32.0
+## Spark particle scale.
 @export_range(0.5, 32.0, 0.5, "suffix:px") var spark_size: float = 3.0
+## Downward pull in px/s^2.
 @export_range(0.0, 2000.0, 10.0, "suffix:px/s²") var spark_gravity: float = 420.0
+## Spark tint.
 @export var spark_color: Color = Color(1.0, 0.95, 0.72)
 
 @export_group("Flash")
+## Radius of the impact flash.
 @export_range(0.0, 128.0, 0.5, "suffix:px") var flash_radius: float = 12.0
+## Length of the directional streak.
 @export_range(0.0, 128.0, 0.5, "suffix:px") var streak_length: float = 26.0
+## Flash tint.
 @export var flash_color: Color = Color(1.0, 1.0, 1.0)
 
 @export_group("Chaos")
@@ -32,7 +41,9 @@ const VFXStreaks := preload("../core/vfx_streaks.gd")
 ## Add the C++ streak layer when the optional GDExtension is built. Silently
 ## skipped (and the effect still plays) when it is not.
 @export var use_streaks: bool = true
+## C++ streak particles per burst.
 @export_range(0, 4096, 1) var streak_count: int = 60
+## Chaos of the streak directions.
 @export_range(0.0, 2.0, 0.01) var streak_turbulence: float = 0.15
 
 var _flash_alpha: float = 0.0

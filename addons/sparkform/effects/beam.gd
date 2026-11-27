@@ -14,26 +14,37 @@ signal finished
 ## Endpoint relative to this node's position. Set by [code]Sparkform.beam()[/code].
 @export var end_offset: Vector2 = Vector2(320.0, 0.0)
 @export_group("Beam")
+## Core line width in pixels.
 @export_range(1.0, 64.0, 0.5, "suffix:px") var width: float = 6.0
+## Soft glow width around the core.
 @export_range(1.0, 128.0, 0.5, "suffix:px") var glow_width: float = 20.0
+## Travel speed of the pulses in px/s.
 @export_range(0.0, 4000.0, 10.0, "suffix:px/s") var pulse_speed: float = 900.0
+## Distance between pulses in pixels.
 @export_range(16.0, 1024.0, 1.0, "suffix:px") var pulse_spacing: float = 120.0
+## Side-to-side jitter of the core line.
 @export_range(0.0, 1.0, 0.01) var wobble: float = 0.35
 
 @export_group("Timing")
+## Seconds to open from nothing to full width.
 @export_range(0.0, 2.0, 0.01, "suffix:s") var warmup: float = 0.12
+## Seconds to fade out after stop().
 @export_range(0.05, 2.0, 0.01, "suffix:s") var fade_time: float = 0.22
 ## Close on its own after this many seconds; [code]0[/code] holds until stopped.
 @export_range(0.0, 120.0, 0.1, "suffix:s") var lifetime: float = 0.0
 
 @export_group("Colors")
+## Colour of the core line.
 @export var core_color: Color = Color(1.0, 0.98, 0.9)
+## Colour of the surrounding glow.
 @export var glow_color: Color = Color(0.55, 0.8, 1.0)
+## Colour of the travelling pulses.
 @export var pulse_color: Color = Color(1.0, 1.0, 1.0)
 
 @export_group("Chaos")
 ## Jitter along the beam and pulse spacing variance.
 @export_range(0.0, 1.0, 0.01) var chaos: float = 0.45
+## Free the node once it has faded out.
 @export var free_on_finish: bool = true
 
 var _openness: float = 0.0

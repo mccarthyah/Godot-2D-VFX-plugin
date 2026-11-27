@@ -13,26 +13,35 @@ extends Node2D
 signal finished
 
 @export_group("Shape")
+## Bubble radius in pixels.
 @export_range(8.0, 512.0, 1.0, "suffix:px") var radius: float = 64.0
+## Hex lattice cell size.
 @export_range(4.0, 64.0, 0.5, "suffix:px") var hex_size: float = 13.0
+## Opacity of the bubble fill.
 @export_range(0.0, 1.0, 0.01) var fill_alpha: float = 0.12
+## Rim line width.
 @export_range(1.0, 8.0, 0.5, "suffix:px") var rim_width: float = 2.5
 
 @export_group("Timing")
 ## Close on its own after this many seconds; [code]0[/code] holds until stopped.
 @export_range(0.0, 120.0, 0.1, "suffix:s") var lifetime: float = 0.0
+## Seconds to fade after stop().
 @export_range(0.05, 2.0, 0.01, "suffix:s") var fade_time: float = 0.2
 ## How long a hit flash lasts.
 @export_range(0.05, 2.0, 0.01, "suffix:s") var hit_flash: float = 0.3
 
 @export_group("Colors")
+## Rim tint.
 @export var rim_color: Color = Color(0.55, 0.85, 1.0)
+## Fill tint.
 @export var fill_color: Color = Color(0.4, 0.7, 1.0)
+## Flash tint where the bubble is struck.
 @export var hit_color: Color = Color(1.0, 0.98, 0.9)
 
 @export_group("Chaos")
 ## Lattice jitter, breathing and hit ripple scatter.
 @export_range(0.0, 1.0, 0.01) var chaos: float = 0.3
+## Free the node once it has faded.
 @export var free_on_finish: bool = true
 
 var _rng := RandomNumberGenerator.new()
@@ -68,6 +77,7 @@ func stop() -> void:
 	set_process(true)
 
 
+## [code]true[/code] while the bubble is open and not already closing.
 func is_running() -> bool:
 	return _openness > 0.0 and not _closing
 
@@ -146,6 +156,7 @@ func _build_hexes() -> void:
 			})
 
 
+## Inset left between the hex lattice and the dome rim, in pixels.
 func hex_cell_margin() -> float:
 	return hex_size * (0.6 + chaos * 0.4)
 
@@ -190,6 +201,8 @@ func _draw_hits() -> void:
 					Color(hit_color, 0.45 * (1.0 - local)), 1.5, true)
 
 
+## How strongly a hit is still glowing at a world point, [code]0.0[/code] to
+## [code]1.0[/code]. Drives the per-cell flash.
 func hit_glow_at(position: Vector2) -> float:
 	var best: float = 0.0
 	for entry in _hits:

@@ -15,23 +15,31 @@ signal finished
 @export_group("Link")
 ## How far the chain sags below the straight line between the two ends.
 @export_range(0.0, 240.0, 1.0, "suffix:px") var sag: float = 42.0
+## Chain links along the tether.
 @export_range(2, 64, 1) var link_count: int = 16
+## Link line thickness.
 @export_range(0.5, 16.0, 0.5, "suffix:px") var thickness: float = 2.5
 ## Pulses travelling from the first node to the second per second.
 @export_range(0.0, 8.0, 0.05) var pulse_speed: float = 1.4
+## Pulses travelling along the chain.
 @export_range(0, 12, 1) var pulse_count: int = 3
 
 @export_group("Timing")
+## Seconds to fade after stop().
 @export_range(0.05, 2.0, 0.01, "suffix:s") var fade_time: float = 0.25
 
 @export_group("Colors")
+## Link tint.
 @export var link_color: Color = Color(0.65, 0.85, 1.0)
+## Inner line tint.
 @export var core_color: Color = Color(1.0, 0.98, 0.92)
+## Pulse tint.
 @export var pulse_color: Color = Color(1.0, 0.9, 0.6)
 
 @export_group("Chaos")
 ## Sag variance, link jitter and pulse spacing.
 @export_range(0.0, 1.0, 0.01) var chaos: float = 0.4
+## Free the node once it has faded.
 @export var free_on_finish: bool = true
 
 var _from: Node2D = null
@@ -72,6 +80,7 @@ func stop() -> void:
 	set_process(true)
 
 
+## [code]true[/code] while the chain is open and not already closing.
 func is_running() -> bool:
 	return _openness > 0.0 and not _closing
 
@@ -93,6 +102,7 @@ func get_chain_points() -> PackedVector2Array:
 	return _sample()
 
 
+## [code]true[/code] while both endpoints are still valid nodes.
 func has_ends() -> bool:
 	return is_instance_valid(_from) and is_instance_valid(_to)
 

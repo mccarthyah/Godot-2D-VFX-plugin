@@ -8,13 +8,17 @@ extends "res://addons/sparkform/core/vfx_effect.gd"
 @export_group("Collapse")
 ## Radius the streaks start on, in pixels.
 @export_range(8.0, 1024.0, 1.0, "suffix:px") var radius: float = 110.0
+## Motes pulled into the pinch.
 @export_range(1, 128, 1) var mote_count: int = 26
 ## Full turns each streak makes on its way in.
 @export_range(0.0, 3.0, 0.01) var spiral: float = 1.15
 ## How sharply the streaks accelerate as they close in.
 @export_range(0.6, 4.0, 0.05) var converge: float = 1.8
+## Length of each mote trail.
 @export_range(0.5, 24.0, 0.5, "suffix:px") var streak_length: float = 8.0
+## Mote tint.
 @export var mote_color: Color = Color(0.72, 0.55, 1.0)
+## Colour of the bright pinch.
 @export var core_color: Color = Color(1.0, 0.95, 1.0)
 
 @export_group("Pinch")

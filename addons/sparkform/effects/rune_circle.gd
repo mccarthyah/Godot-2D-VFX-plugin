@@ -14,16 +14,25 @@ signal finished
 
 ## Seconds until it closes on its own; [code]0[/code] means it runs until stopped.
 @export_range(0.0, 60.0, 0.01, "suffix:s") var lifetime: float = 0.0
+## Circle radius in pixels.
 @export_range(4.0, 512.0, 1.0, "suffix:px") var radius: float = 54.0
+## Rune ticks around the ring.
 @export_range(3, 64, 1) var segments: int = 12
+## Rotation in rad/s.
 @export_range(-8.0, 8.0, 0.05, "suffix:rad/s") var spin_speed: float = 0.7
 ## Progressive fill from 12 o'clock, [code]0.0[/code] to [code]1.0[/code].
 @export_range(0.0, 1.0, 0.01) var fill: float = 0.0
+## Glyph and tick tint.
 @export var rune_color: Color = Color(0.72, 0.62, 1.0)
+## Colour of the progressive fill.
 @export var fill_color: Color = Color(0.92, 0.86, 1.0)
+## Length of each tick in pixels.
 @export_range(0.0, 64.0, 0.5, "suffix:px") var tick_length: float = 9.0
+## Brightness pulsing as it spins.
 @export_range(0.0, 1.0, 0.01) var pulse: float = 0.35
+## Wobble in the ring geometry.
 @export_range(0.0, 1.0, 0.01) var chaos: float = 0.25
+## Free the node when it stops.
 @export var free_on_finish: bool = true
 
 var _running: bool = false

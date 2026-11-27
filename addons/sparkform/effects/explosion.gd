@@ -10,19 +10,27 @@ const VFXStreaks := preload("../core/vfx_streaks.gd")
 @export_group("Blast")
 ## Overall blast size in pixels. Every other size is derived from it.
 @export_range(4.0, 512.0, 1.0, "suffix:px") var radius: float = 76.0
+## Inner fireball tint.
 @export var core_color: Color = Color(1.0, 0.95, 0.62)
+## Outer fireball tint.
 @export var edge_color: Color = Color(1.0, 0.32, 0.06)
+## Concentric discs; more is a smoother falloff.
 @export_range(1, 16, 1) var fireball_layers: int = 7
 
 @export_group("Shockwave")
+## Shockwave ring thickness.
 @export_range(1.0, 64.0, 0.5, "suffix:px") var ring_width: float = 10.0
 ## How far the shockwave travels, as a multiple of [member radius].
 @export_range(1.0, 4.0, 0.05) var ring_expansion: float = 1.7
 
 @export_group("Debris")
+## Radial debris particles.
 @export_range(0, 128, 1) var debris_count: int = 26
+## Debris speed in px/s.
 @export_range(0.0, 2000.0, 10.0, "suffix:px/s") var debris_speed: float = 460.0
+## Debris particle size.
 @export_range(0.5, 32.0, 0.5, "suffix:px") var debris_size: float = 3.0
+## Debris tint.
 @export var debris_color: Color = Color(1.0, 0.74, 0.32)
 
 @export_group("Chaos")
@@ -33,7 +41,9 @@ const VFXStreaks := preload("../core/vfx_streaks.gd")
 @export_group("Streaks (C++)")
 ## Add the C++ streak layer when the optional GDExtension is built.
 @export var use_streaks: bool = true
+## C++ streak particles per burst.
 @export_range(0, 8192, 1) var streak_count: int = 260
+## Chaos of the streak directions.
 @export_range(0.0, 2.0, 0.01) var streak_turbulence: float = 0.35
 
 var _progress: float = 0.0

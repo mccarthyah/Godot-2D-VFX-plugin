@@ -13,21 +13,31 @@ const VFXStreaks := preload("../core/vfx_streaks.gd")
 @export_group("Cone")
 ## Direction the flash points. The convenience method sets it.
 @export var direction: Vector2 = Vector2.RIGHT
+## Flash length in pixels.
 @export_range(4.0, 512.0, 1.0, "suffix:px") var length: float = 62.0
+## Cone spread of the flash.
 @export_range(2.0, 90.0, 0.5, "suffix:deg") var cone_degrees: float = 26.0
+## Torn edge teeth along the cone.
 @export_range(2, 24, 1) var teeth: int = 7
+## Hottest part of the cone.
 @export var hot_color: Color = Color(1.0, 0.94, 0.72)
+## Colour at the far end of the cone.
 @export var tip_color: Color = Color(1.0, 0.55, 0.16)
 
 @export_group("Sparks")
+## Sparks thrown along the shot.
 @export_range(0, 64, 1) var spark_count: int = 12
+## Spark speed in px/s.
 @export_range(0.0, 4000.0, 10.0, "suffix:px/s") var spark_speed: float = 620.0
+## Spark tint.
 @export var spark_color: Color = Color(1.0, 0.86, 0.45)
 
 @export_group("Streaks (C++)")
 ## Add the C++ streak layer when the optional GDExtension is built.
 @export var use_streaks: bool = true
+## C++ streak particles per shot.
 @export_range(0, 4096, 1) var streak_count: int = 120
+## Chaos of the streak directions.
 @export_range(0.0, 2.0, 0.01) var streak_turbulence: float = 0.55
 
 @export_group("Chaos")

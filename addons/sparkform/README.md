@@ -60,6 +60,19 @@ property by name, and typos produce a warning instead of a crash. Every effect
 carries a `chaos` knob (`0` = tidy and symmetric, `1` = the wildest it gets),
 reseeded on every `play()`, so pooled effects never repeat themselves.
 
+## Full reference
+
+This page is the short version. The complete reference lives in the repository
+under `docs/`:
+
+- `docs/API.md` - every autoload method and the `VFXEffect` base class
+- `docs/EFFECTS.md` - all 24 effects, every exported property with its default
+- `docs/COOKBOOK.md` - recipes and the troubleshooting checklist
+- `docs/INSTALL.md` - install variants, verification, common errors
+
+Both generated pages are rebuilt from these scripts' doc comments, which are also
+the inspector tooltips you see in the editor.
+
 ## What is in the box
 
 One-shots (pooled, fire-and-forget): `hit_spark`, `explosion`, `lightning`,

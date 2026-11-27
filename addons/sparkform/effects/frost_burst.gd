@@ -9,15 +9,25 @@ extends "res://addons/sparkform/core/vfx_effect.gd"
 const VFXShapes := preload("../core/vfx_shapes.gd")
 
 @export_group("Shards")
+## Number of ice shards.
 @export_range(1, 96, 1) var shard_count: int = 16
+## Shard length in pixels.
 @export_range(4.0, 80.0, 0.5, "suffix:px") var shard_size: float = 15.0
+## Emission speed in px/s.
 @export_range(0.0, 2400.0, 10.0, "suffix:px/s") var speed: float = 340.0
+## Fall speed in px/s^2.
 @export_range(0.0, 2000.0, 10.0) var gravity: float = 420.0
+## Air resistance; higher slows the shards sooner.
 @export_range(0.0, 8.0, 0.05) var drag: float = 1.4
+## Shard spin in rad/s.
 @export_range(-24.0, 24.0, 0.5, "suffix:rad/s") var spin_speed: float = 5.5
+## Amount of crystalline shimmer after the burst.
 @export_range(0.0, 1.0, 0.01) var shimmer: float = 0.6
+## Shard body tint.
 @export var shard_color: Color = Color(0.72, 0.9, 1.0)
+## Bright edge of the shards.
 @export var shard_core: Color = Color(0.95, 0.99, 1.0)
+## Tint of the cold flash.
 @export var flash_color: Color = Color(0.62, 0.86, 1.0)
 
 @export_group("Chaos")

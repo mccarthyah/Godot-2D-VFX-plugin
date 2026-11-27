@@ -13,13 +13,19 @@ const VFXShapes := preload("../core/vfx_shapes.gd")
 @export_range(4.0, 1024.0, 1.0, "suffix:px") var radius: float = 96.0
 ## Multiplier on [member radius] at full expansion.
 @export_range(1.0, 6.0, 0.05) var expansion: float = 3.2
+## Concentric shock rings.
 @export_range(1, 4, 1) var rings: int = 2
+## Ring line width.
 @export_range(1.0, 64.0, 0.5, "suffix:px") var ring_width: float = 6.0
+## Ring tint.
 @export var ring_color: Color = Color(0.82, 0.94, 1.0)
+## Tint of the core flash.
 @export var core_color: Color = Color(1.0, 1.0, 1.0)
 
 @export_group("Cracks")
+## Radial cracks around the wave.
 @export_range(0, 32, 1) var cracks: int = 12
+## Crack length as a fraction of the wave radius.
 @export_range(0.0, 1.0, 0.01) var crack_length: float = 0.35
 
 @export_group("Chaos")

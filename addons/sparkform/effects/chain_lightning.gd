@@ -11,6 +11,7 @@ extends "res://addons/sparkform/core/vfx_effect.gd"
 ## [code]Sparkform.chain()[/code] builds this from the spawn point and the targets.
 @export var points: PackedVector2Array = PackedVector2Array([Vector2.ZERO,
 		Vector2(160.0, -40.0)])
+## Jagged segments per hop; more is finer.
 @export_range(3, 64, 1) var segments: int = 13
 ## Seconds between one hop appearing and the next.
 @export_range(0.0, 0.5, 0.01, "suffix:s") var hop_delay: float = 0.06
@@ -20,8 +21,11 @@ extends "res://addons/sparkform/core/vfx_effect.gd"
 @export_range(0.0, 64.0, 0.5, "suffix:px") var jaggedness: float = 14.0
 ## How often the bolt re-jags itself, in seconds ([code]0[/code] freezes it).
 @export_range(0.0, 0.5, 0.01, "suffix:s") var flicker: float = 0.05
+## Bolt line width in pixels.
 @export_range(1.0, 12.0, 0.5, "suffix:px") var width: float = 3.0
+## Outer bolt tint.
 @export var bolt_color: Color = Color(0.62, 0.78, 1.0)
+## Hot core tint.
 @export var core_color: Color = Color(1.0, 1.0, 1.0)
 
 @export_group("Chaos")

@@ -11,21 +11,30 @@ const VFXShapes := preload("../core/vfx_shapes.gd")
 @export_group("Splat")
 ## Radius of the puddle left at the spawn point.
 @export_range(4.0, 200.0, 1.0, "suffix:px") var splat_radius: float = 26.0
+## Vertical squash of the splat; 0 is a flat disc.
 @export_range(0.0, 1.0, 0.01) var splat_squash: float = 0.4
+## Splat width in pixels at full squash.
 @export_range(0.0, 600.0, 10.0, "suffix:px/s") var splat_spread: float = 210.0
+## How far the puddle drips below the splat.
 @export_range(0.0, 32.0, 0.5, "suffix:px") var drip_length: float = 9.0
 
 @export_group("Bubbles")
+## Bubbles that rise out of the puddle.
 @export_range(0, 48, 1) var bubble_count: int = 12
+## Bubble radius in pixels.
 @export_range(1.0, 24.0, 0.5, "suffix:px") var bubble_size: float = 5.0
+## Bubble climb speed in px/s.
 @export_range(0.0, 400.0, 5.0, "suffix:px/s") var rise_speed: float = 90.0
 ## Seconds before a bubble pops, randomised around this value.
 @export_range(0.05, 3.0, 0.01, "suffix:s") var pop_delay: float = 0.45
 ## Droplets thrown by each pop.
 @export_range(0, 12, 1) var pop_droplets: int = 3
 
+## Puddle and bubble tint.
 @export var acid_color: Color = Color(0.52, 0.86, 0.24)
+## Darker tone for the puddle rim.
 @export var acid_dark: Color = Color(0.24, 0.48, 0.1)
+## Tint of the droplets thrown by pops.
 @export var droplet_color: Color = Color(0.72, 0.95, 0.4)
 
 @export_group("Chaos")

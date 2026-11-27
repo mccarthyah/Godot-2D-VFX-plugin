@@ -14,22 +14,29 @@ signal finished
 const VFXStreaks := preload("../core/vfx_streaks.gd")
 
 @export_group("Field")
+## Field radius in pixels.
 @export_range(8.0, 512.0, 1.0, "suffix:px") var radius: float = 96.0
 ## Inward speed at the rim, in pixels per second.
 @export_range(0.0, 1200.0, 5.0, "suffix:px/s") var strength: float = 210.0
 ## Rotation, in radians per second.
 @export_range(0.0, 12.0, 0.1, "suffix:rad/s") var spin: float = 3.4
+## Motes spiralling in.
 @export_range(0, 96, 1) var mote_count: int = 26
+## Length of each mote trail.
 @export_range(1.0, 24.0, 0.5, "suffix:px") var mote_length: float = 7.0
 
 @export_group("Timing")
 ## Close on its own after this many seconds; [code]0[/code] holds until stopped.
 @export_range(0.0, 120.0, 0.1, "suffix:s") var lifetime: float = 0.0
+## Seconds to fade after stop().
 @export_range(0.05, 2.0, 0.01, "suffix:s") var fade_time: float = 0.3
 
 @export_group("Colors")
+## Mote tint.
 @export var mote_color: Color = Color(0.6, 0.75, 1.0)
+## Centre glow tint.
 @export var core_color: Color = Color(1.0, 0.95, 0.85)
+## Faint arc tint.
 @export var field_color: Color = Color(0.32, 0.4, 0.85)
 
 @export_group("Chaos")
@@ -37,7 +44,9 @@ const VFXStreaks := preload("../core/vfx_streaks.gd")
 @export_range(0.0, 1.0, 0.01) var chaos: float = 0.45
 ## Also spray a ring of C++ streaks on start when the extension is loaded.
 @export var use_streaks: bool = true
+## C++ streak particles when the field opens.
 @export_range(0, 600, 10) var streak_count: int = 140
+## Free the node once it has faded.
 @export var free_on_finish: bool = true
 
 var _rng := RandomNumberGenerator.new()
@@ -75,6 +84,7 @@ func stop() -> void:
 	set_process(true)
 
 
+## [code]true[/code] while the field is open and not already closing.
 func is_running() -> bool:
 	return _openness > 0.0 and not _closing
 

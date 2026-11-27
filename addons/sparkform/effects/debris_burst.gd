@@ -8,13 +8,21 @@ extends "res://addons/sparkform/core/vfx_effect.gd"
 const VFXShapes := preload("../core/vfx_shapes.gd")
 
 @export_group("Chunks")
+## Number of shards thrown.
 @export_range(1, 128, 1) var chunk_count: int = 14
+## Shard size in pixels.
 @export_range(1.0, 64.0, 0.5, "suffix:px") var chunk_size: float = 6.0
+## Emission speed in px/s.
 @export_range(0.0, 4000.0, 10.0, "suffix:px/s") var speed: float = 380.0
+## Downward pull in px/s^2.
 @export_range(0.0, 4000.0, 10.0) var gravity: float = 900.0
+## Air resistance; higher stops chunks sooner.
 @export_range(0.0, 8.0, 0.05) var drag: float = 1.2
+## Shard spin in rad/s.
 @export_range(-24.0, 24.0, 0.5, "suffix:rad/s") var spin_speed: float = 7.0
+## Lit face of the chunks.
 @export var chunk_color: Color = Color(0.78, 0.74, 0.66)
+## Shaded face of the chunks.
 @export var chunk_color_dark: Color = Color(0.38, 0.35, 0.32)
 ## Upward bias of the burst, in radians around straight up.
 @export_range(0.0, 3.14, 0.01) var upward_bias: float = 1.2

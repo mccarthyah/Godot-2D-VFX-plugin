@@ -11,8 +11,11 @@ const VFXShapes := preload("../core/vfx_shapes.gd")
 @export_group("Puff")
 ## Overall cloud size in pixels.
 @export_range(8.0, 512.0, 1.0, "suffix:px") var radius: float = 54.0
+## Overlapping smoke blobs.
 @export_range(3, 32, 1) var puff_count: int = 9
+## Blob centre tint.
 @export var inner_color: Color = Color(0.74, 0.77, 0.82, 0.55)
+## Edge tint as the smoke drifts.
 @export var outer_color: Color = Color(0.33, 0.36, 0.43, 0.0)
 ## How far the cloud drifts up, as a fraction of [member radius].
 @export_range(0.0, 2.0, 0.01) var rise: float = 0.55
