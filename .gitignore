@@ -23,3 +23,23 @@ mono_crash.*.json
 *.exe
 # Uncomment if your project does not version PCK files as runtime dependencies.
 # *.pck
+
+# Build output from tools/package.sh
+dist/
+
+# macOS
+.DS_Store
+
+# C++ GDExtension build products (rebuild with tools/build_extension.sh)
+/cpp/godot-cpp/
+/cpp/.sconsign.dblite
+/cpp/.scons_env.json
+/cpp/.sconf_temp/
+*.os
+/addons/sparkform/bin/
+/addons/sparkform/vfx_streaks.gdextension
+/addons/sparkform/vfx_streaks.gdextension.uid
+
+# Python bytecode from tools/gen_docs.py
+__pycache__/
+*.pyc

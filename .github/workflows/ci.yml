@@ -1,0 +1,288 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  headless-tests:
+    name: Godot ${{ matrix.godot }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 4.2 is the documented floor, 4.7.2 is the current stable release.
+        godot: ["4.2-stable", "4.3-stable", "4.7.2-stable"]
+    env:
+      GODOT_VERSION: ${{ matrix.godot }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Install stock Godot headless
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/godot"
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          echo "Downloading $url"
+          curl -fsSL "$url" -o /tmp/godot.zip
+          unzip -q -o /tmp/godot.zip -d "$HOME/godot"
+          bin="$(find "$HOME/godot" -maxdepth 2 -type f -name 'Godot_v*' | head -n 1)"
+          chmod +x "$bin"
+          echo "GODOT_BIN=$bin" >> "$GITHUB_ENV"
+          "$bin" --version
+
+      - name: Import project
+        run: |
+          set -euo pipefail
+          if "$GODOT_BIN" --help 2>&1 | grep -q -- '--import'; then
+            "$GODOT_BIN" --headless --path . --import
+          else
+            "$GODOT_BIN" --headless --path . --editor --quit
+          fi
+
+      - name: Run headless test suite
+        run: |
+          set -o pipefail
+          set +e
+          "$GODOT_BIN" --headless --path . res://tests/test_runner.tscn 2>&1 | tee /tmp/tests.log
+          suite_status="${PIPESTATUS[0]}"
+          set -e
+          # Surface the offending log lines as annotations: the step log itself is
+          # not always retrievable from a restricted network.
+          report_log() {
+            local shown=0
+            while IFS= read -r line; do
+              shown=$((shown + 1))
+              if [ "${shown}" -gt 8 ]; then
+                break
+              fi
+              line="${line//%/%25}"
+              echo "::error title=Sparkform (Godot ${GODOT_VERSION})::${line}"
+            done
+          }
+          if [ "${suite_status}" -ne 0 ]; then
+            echo "::error::The suite exited with status ${suite_status}"
+            grep -E "FAIL|SCRIPT ERROR|Parse Error|ERROR:|at: " /tmp/tests.log | tail -n 8 | report_log
+            exit 1
+          fi
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/tests.log; then
+            echo "::error::GDScript errors were reported during the test run"
+            grep -E "FAIL|SCRIPT ERROR|Parse Error|ERROR:|at: " /tmp/tests.log | tail -n 8 | report_log
+            exit 1
+          fi
+          # A green job must mean the suite really ran: require its PASS summary
+          # and a plausible check count, so a silently skipped run cannot pass.
+          if ! grep -q "\[VFX TESTS\] PASS" /tmp/tests.log; then
+            echo "::error::The test suite did not report a PASS summary"
+            grep -E "VFX TESTS|SCRIPT ERROR|Parse Error|ERROR:" /tmp/tests.log | tail -n 8 | report_log
+            exit 1
+          fi
+          checks="$(grep -oE '[0-9]+ checks' /tmp/tests.log | tail -n 1 | cut -d' ' -f 1)"
+          if [ -z "${checks}" ] || [ "${checks}" -lt 310 ]; then
+            echo "::error::Expected at least 310 checks, got '${checks}'"
+            grep -E "VFX TESTS|SCRIPT ERROR|Parse Error|ERROR:" /tmp/tests.log | tail -n 8 | report_log
+            exit 1
+          fi
+          summary="$(grep -E "\[VFX TESTS\] (PASS|FAIL)" /tmp/tests.log | tail -n 1)"
+          echo "::notice title=Sparkform (Godot ${GODOT_VERSION})::${summary}"
+          {
+            echo "### Sparkform / Godot ${GODOT_VERSION}"
+            echo ""
+            echo "${summary}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "checks reported: ${checks}"
+
+      - name: Demo smoke run
+        run: |
+          set -o pipefail
+          set +e
+          "$GODOT_BIN" --headless --path . --fixed-fps 60 --quit-after 300 2>&1 | tee /tmp/demo.log
+          demo_status="${PIPESTATUS[0]}"
+          set -e
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/demo.log; then
+            echo "::error::GDScript errors were reported while running the demo scene"
+            tail -n 8 /tmp/demo.log | while IFS= read -r line; do
+              echo "::error title=demo (Godot ${GODOT_VERSION})::${line//%/%25}"
+            done
+            exit 1
+          fi
+          if [ "${demo_status}" -ne 0 ]; then
+            echo "::error::The demo exited with status ${demo_status}"
+            exit 1
+          fi
+
+      - name: Gallery smoke run
+        run: |
+          set -o pipefail
+          # The gallery cycles all four effects, so this exercises every spawn
+          # path (and the C++ streak layer when present) without any input.
+          set +e
+          "$GODOT_BIN" --headless --path . res://demo/gallery.tscn \
+            --fixed-fps 60 --quit-after 400 2>&1 | tee /tmp/gallery.log
+          gallery_status="${PIPESTATUS[0]}"
+          set -e
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" /tmp/gallery.log; then
+            echo "::error::GDScript errors were reported while running the gallery scene"
+            tail -n 8 /tmp/gallery.log | while IFS= read -r line; do
+              echo "::error title=gallery (Godot ${GODOT_VERSION})::${line//%/%25}"
+            done
+            exit 1
+          fi
+          if [ "${gallery_status}" -ne 0 ]; then
+            echo "::error::The gallery exited with status ${gallery_status}"
+            exit 1
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: godot-${{ matrix.godot }}-logs
+          path: |
+            /tmp/tests.log
+            /tmp/demo.log
+            /tmp/gallery.log
+          if-no-files-found: ignore
+
+
+  plugin-install:
+    name: Packaged plugin (Godot ${{ matrix.godot }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest supported engine and current stable. 4.2 cannot read the
+        # uid:// autoload entries newer editors write.
+        godot: ["4.2-stable", "4.7.2-stable"]
+    env:
+      GODOT_VERSION: ${{ matrix.godot }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Install stock Godot headless
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/godot"
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          curl -fsSL "$url" -o /tmp/godot.zip
+          unzip -q -o /tmp/godot.zip -d "$HOME/godot"
+          bin="$(find "$HOME/godot" -maxdepth 2 -type f -name 'Godot_v*' | head -n 1)"
+          chmod +x "$bin"
+          echo "GODOT_BIN=$bin" >> "$GITHUB_ENV"
+          "$bin" --version
+
+      - name: Build the AssetLib archive
+        run: ./tools/package.sh --assetlib
+
+      - name: Install it into an empty project
+        run: |
+          set -euo pipefail
+          project="$RUNNER_TEMP/install_check"
+          mkdir -p "$project"
+          unzip -q dist/sparkform-*-assetlib.zip -d "$project"
+          test -f "$project/addons/sparkform/plugin.cfg"
+          test -f "$project/addons/sparkform/README.md"
+          test -f "$project/addons/sparkform/LICENSE"
+          cat > "$project/project.godot" <<'EOF'
+          config_version=5
+
+          [application]
+
+          config/name="VFX plugin install check"
+          run/main_scene="res://install_check.tscn"
+          config/features=PackedStringArray("4.2", "GL Compatibility")
+
+          [editor_plugins]
+
+          enabled=PackedStringArray("res://addons/sparkform/plugin.cfg")
+          EOF
+          cat > "$project/install_check.gd" <<'EOF'
+          extends Node
+
+          func _ready() -> void:
+              Sparkform.hit_spark(Vector2(40.0, 40.0), Vector2.UP)
+              print("[INSTALL CHECK] active=%d" % Sparkform.get_active_count())
+              await get_tree().create_timer(0.3).timeout
+              print("[INSTALL CHECK] autoload=", Sparkform.get_script().resource_path)
+              get_tree().quit(0)
+          EOF
+          cat > "$project/install_check.tscn" <<'EOF'
+          [gd_scene load_steps=2 format=3]
+
+          [ext_resource type="Script" path="res://install_check.gd" id="1_check"]
+
+          [node name="InstallCheck" type="Node"]
+          script = ExtResource("1_check")
+          EOF
+          echo "INSTALL_PROJECT=$project" >> "$GITHUB_ENV"
+
+      - name: Enable the plugin, then run without the repo
+        run: |
+          set -euo pipefail
+
+          # Echo error lines as annotations so a failure is visible without
+          # downloading the job logs.
+          report_errors() {
+              local log="$1" label="$2" found=0 line
+              while IFS= read -r line; do
+                  found=1
+                  echo "::error title=${label}::${line}"
+              done < <(grep -nE 'SCRIPT ERROR|Parse Error|Failed to load|ERROR:' "$log" || true)
+              return "$found"
+          }
+
+          "$GODOT_BIN" --headless --path "$INSTALL_PROJECT" --editor --quit > /tmp/install_editor.log 2>&1 || true
+          tail -n 40 /tmp/install_editor.log
+          if ! report_errors /tmp/install_editor.log "Plugin enable log"; then
+            echo "::error title=Plugin enable::Enabling the plugin raised errors"
+            exit 1
+          fi
+
+          # The stored autoload must be a res:// path, not a uid:// reference.
+          if ! grep -q '^Sparkform="\*res://addons/sparkform/sparkform.gd"' "$INSTALL_PROJECT/project.godot"; then
+            echo "::error title=Autoload::The plugin did not persist a res:// autoload entry"
+            grep -A3 '\[autoload\]' "$INSTALL_PROJECT/project.godot" || true
+            exit 1
+          fi
+
+          "$GODOT_BIN" --headless --path "$INSTALL_PROJECT" > /tmp/install_run.log 2>&1 || true
+          tail -n 40 /tmp/install_run.log
+          if ! report_errors /tmp/install_run.log "Plugin run log"; then
+            echo "::error title=Plugin run::The installed plugin raised errors at runtime"
+            exit 1
+          fi
+          grep -q "\[INSTALL CHECK\] active=1" /tmp/install_run.log
+          grep -q "\[INSTALL CHECK\] autoload=res://addons/sparkform/sparkform.gd" /tmp/install_run.log
+
+
+  docs:
+    name: Docs match the source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # docs/API.md and docs/EFFECTS.md are generated from the doc comments in the
+      # addon. Regenerate them here and fail if that changes anything, so a renamed
+      # property cannot ship with a stale reference.
+      - name: Check the generated reference
+        run: python3 tools/gen_docs.py --check
+
+      - name: Check gdlint
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet gdtoolkit==4.5.0
+          python3 -m gdtoolkit.linter addons demo tests
